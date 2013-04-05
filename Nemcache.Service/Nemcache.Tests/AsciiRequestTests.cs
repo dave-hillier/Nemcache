@@ -18,5 +18,12 @@ namespace Nemcache.Tests
             Assert.AreEqual("some_key", request.Key);
             Assert.IsTrue(new byte[] { 1, 2, 3, 4 }.SequenceEqual(request.Data));
         }
+
+        // TODO: various invalid request
+        // TODO: various flags
+        // TODO: seconds expiry
+        // TODO: unix time expiry
+
+        // TODO: get requests
     }
 }
