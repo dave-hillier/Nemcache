@@ -8,7 +8,7 @@ namespace Nemcache.Tests
     public class AsciiRequestTests
     {
         [TestMethod]
-        public void CreateRequest()
+        public void CreateSetRequest()
         {
             var input = new MemcacheCommandBuilder("set", "some_key", new byte[] { 1, 2, 3, 4 }).ToRequest();
 
@@ -17,6 +17,11 @@ namespace Nemcache.Tests
             Assert.AreEqual("set", request.Command);
             Assert.AreEqual("some_key", request.Key);
             Assert.IsTrue(new byte[] { 1, 2, 3, 4 }.SequenceEqual(request.Data));
+        }
+
+        [TestMethod]
+        public void CreateGetRequest()
+        {
         }
 
         // TODO: various invalid request
