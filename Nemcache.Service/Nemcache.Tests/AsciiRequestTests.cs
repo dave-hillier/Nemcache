@@ -5,14 +5,14 @@ using Nemcache.Service;
 namespace Nemcache.Tests
 {
     [TestClass]
-    public class RequestTests
+    public class AsciiRequestTests
     {
         [TestMethod]
         public void CreateRequest()
         {
             var input = new MemcacheCommandBuilder("set", "some_key", new byte[] { 1, 2, 3, 4 }).ToRequest();
 
-            var request = new Request(input);
+            var request = new AsciiRequest(input);
 
             Assert.AreEqual("set", request.Command);
             Assert.AreEqual("some_key", request.Key);

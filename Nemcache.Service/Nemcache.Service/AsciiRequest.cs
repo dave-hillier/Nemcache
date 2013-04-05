@@ -4,11 +4,9 @@ using System.Text;
 
 namespace Nemcache.Service
 {
-    public class Request
+    class AsciiRequest : IRequest
     {
-        // TODO: Simple ctor for tests?
-
-        public Request(byte[] input)
+        public AsciiRequest(byte[] input)
         {
             int firstLineLength = 0;
             for (int i = 0; i < input.Length-1; ++i)
