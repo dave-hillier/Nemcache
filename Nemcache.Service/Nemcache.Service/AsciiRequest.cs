@@ -21,11 +21,12 @@ namespace Nemcache.Service
             var le = input.Take(firstLineLength);
             var line = Encoding.ASCII.GetString(le.ToArray());
             var tokens = line.Split();
+            // TODO: Check the number of tokens
             CommandName = tokens[0];
             Key = tokens[1];
             if (CommandName == "set")
             {
-                int length = Convert.ToInt32(tokens[4]); //input.Length - firstLineLength - 4;
+                int length = Convert.ToInt32(tokens[4]);
                 Data = new byte[length];
                 Array.Copy(input, firstLineLength + 2, Data, 0, length);
             }
