@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Text;
 
 namespace Nemcache.Service
 {
-    class SetCommand
+    class SetCommand : ICommand
     {
         private readonly IArrayCache _cache;
 
@@ -19,7 +15,9 @@ namespace Nemcache.Service
 
         public byte[] Execute(IRequest request)
         {
-            _cache.Set(request.Key, request.Data);
+            var storeRequest = request as IStoreRequest;
+            if (storeRequest != null)
+                _cache.Set(storeRequest.Key, storeRequest.Data);
             return Encoding.ASCII.GetBytes("STORED\r\n");
         }
     }

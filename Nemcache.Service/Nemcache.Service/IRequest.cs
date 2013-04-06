@@ -2,10 +2,7 @@
 {
     public interface IRequest
     {
-        string Command { get; }
-
+        string CommandName { get; }
         string Key { get; }
-
-        byte[] Data { get; }
     }
 }

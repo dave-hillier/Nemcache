@@ -14,7 +14,7 @@ namespace Nemcache.Tests
 
             var request = new AsciiRequest(input);
 
-            Assert.AreEqual("set", request.Command);
+            Assert.AreEqual("set", request.CommandName);
             Assert.AreEqual("some_key", request.Key);
             Assert.IsTrue(new byte[] { 1, 2, 3, 4 }.SequenceEqual(request.Data));
         }
