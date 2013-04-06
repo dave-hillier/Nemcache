@@ -25,7 +25,7 @@ namespace Nemcache.Service
             Key = tokens[1];
             if (CommandName == "set")
             {
-                int length = input.Length - firstLineLength - 4;
+                int length = Convert.ToInt32(tokens[4]); //input.Length - firstLineLength - 4;
                 Data = new byte[length];
                 Array.Copy(input, firstLineLength + 2, Data, 0, length);
             }
