@@ -13,11 +13,9 @@ namespace Nemcache.Service
 
         public string Name { get { return "set"; } }
 
-        public byte[] Execute(IRequest request)
+        public byte[] Execute(IRequest storeRequest)
         {
-            var storeRequest = request as IStoreRequest;
-            if (storeRequest != null)
-                _cache.Set(storeRequest.Key, storeRequest.Data);
+            _cache.Set(storeRequest.Key, storeRequest.Data);
             return Encoding.ASCII.GetBytes("STORED\r\n");
         }
     }

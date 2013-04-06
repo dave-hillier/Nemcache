@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Nemcache.Service
 {
-    class AsciiRequest : IStoreRequest
+    class AsciiRequest : IRequest
     {
         public AsciiRequest(byte[] input)
         {
@@ -23,9 +23,16 @@ namespace Nemcache.Service
             var tokens = line.Split();
             CommandName = tokens[0];
             Key = tokens[1];
-            int length = input.Length - firstLineLength - 4;
-            Data = new byte[length];
-            Array.Copy(input, firstLineLength + 2, Data, 0, length);
+            if (CommandName == "set")
+            {
+                int length = input.Length - firstLineLength - 4;
+                Data = new byte[length];
+                Array.Copy(input, firstLineLength + 2, Data, 0, length);
+            }
+            else
+            {
+                Data = new byte[] {};
+            }
         }
 
         public string CommandName { get; private set; }

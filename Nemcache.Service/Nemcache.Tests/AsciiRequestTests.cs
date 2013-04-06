@@ -22,6 +22,11 @@ namespace Nemcache.Tests
         [TestMethod]
         public void CreateGetRequest()
         {
+            var input = new MemcacheGetCommandBuilder("get", "some_key").ToRequest();
+            var request = new AsciiRequest(input);
+
+            Assert.AreEqual("get", request.CommandName);
+            Assert.AreEqual("some_key", request.Key);
         }
 
         // TODO: various invalid request

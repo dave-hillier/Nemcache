@@ -46,7 +46,6 @@
     <Compile Include="GetCommand.cs" />
     <Compile Include="IArrayCache.cs" />
     <Compile Include="ICommand.cs" />
-    <Compile Include="IStoreRequest.cs" />
     <Compile Include="IRequest.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

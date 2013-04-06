@@ -4,5 +4,6 @@
     {
         string CommandName { get; }
         string Key { get; }
+        byte[] Data { get; }
     }
 }

@@ -24,7 +24,7 @@ namespace Nemcache.Tests
 
             var command = new SetCommand(arrayCache.Object);
 
-            var mock = new Mock<IStoreRequest>();
+            var mock = new Mock<IRequest>();
             mock.SetupGet(r => r.Key).Returns("MyKey");
             mock.SetupGet(r => r.Data).Returns(new byte[] { 5,6,7 });
 
@@ -40,14 +40,15 @@ namespace Nemcache.Tests
 
             var command = new SetCommand(arrayCache.Object);
 
-            var mock = new Mock<IStoreRequest>();
+            var mock = new Mock<IRequest>();
             mock.SetupGet(r => r.Key).Returns("MyKey");
             var payload = new byte[] {5, 6, 7};
             mock.SetupGet(r => r.Data).Returns(payload);
 
             command.Execute(mock.Object);
 
-            arrayCache.Verify(c => c.Set(It.Is<string>(k => k == "MyKey"), It.Is<byte[]>(p => p == payload)));
+            arrayCache.Verify(c => c.Set(It.Is<string>(k => k == "MyKey"), 
+                It.Is<byte[]>(p => p == payload)));
         }
     }
 }
