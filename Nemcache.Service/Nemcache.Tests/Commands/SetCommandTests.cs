@@ -1,9 +1,10 @@
-﻿using System.Text;
+using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Nemcache.Service;
+using Nemcache.Service.Commands;
 
-namespace Nemcache.Tests
+namespace Nemcache.Tests.Commands
 {
     [TestClass]
     public class SetCommandTests

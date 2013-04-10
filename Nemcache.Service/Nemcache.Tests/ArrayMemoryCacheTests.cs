@@ -59,5 +59,23 @@ namespace Nemcache.Tests
 
             Assert.IsTrue(value.SequenceEqual(result));
         }
+
+        [TestMethod]
+        public void TestDelete()
+        {
+            var cache = new ArrayMemoryCache();
+
+            // Put something in the cache
+            var value = Encoding.ASCII.GetBytes("Value");
+            cache.Storage.Set("TheKeyToBeDeleted", value, DateTimeOffset.Now + TimeSpan.FromDays(1));
+
+            // Remove it
+            cache.Remove("TheKeyToBeDeleted");
+
+            // test for presence
+            var result = cache.Get("TheKeyToBeDeleted");
+
+            Assert.IsTrue(result.Length == 0);
+        }
     }
 }

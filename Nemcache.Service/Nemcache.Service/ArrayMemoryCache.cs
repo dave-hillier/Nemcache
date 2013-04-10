@@ -20,5 +20,10 @@ namespace Nemcache.Service
                 return new byte[] {};
             return (byte[])Storage.Get(key);
         }
+
+        public void Remove(string key)
+        {
+            Storage.Remove(key);
+        }
     }
 }

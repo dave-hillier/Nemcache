@@ -41,6 +41,29 @@ namespace Nemcache.Tests
             Assert.AreEqual("some_key", request.Key);
         }
 
+        [TestMethod]
+        public void CreateDeleteRequest()
+        {
+            var input = new MemcacheGetCommandBuilder("delete", "key_to_be_deleted").ToRequest(); // TODO: builder for get
+            var request = new AsciiRequest(input);
+
+            Assert.AreEqual("delete", request.CommandName);
+            Assert.AreEqual("key_to_be_deleted", request.Key);
+        }
+
+
+        [TestMethod]
+        public void CreatIncrRequest()
+        {
+            var input = new MemcacheGetCommandBuilder("delete", "key_to_be_deleted").ToRequest(); // TODO: builder for delete
+            var request = new AsciiRequest(input);
+
+            Assert.AreEqual("delete", request.CommandName);
+            Assert.AreEqual("key_to_be_deleted", request.Key);
+        }
+        // incr key 1
+        // decr key 1
+
         // TODO: various invalid request
         // TODO: various flags
         // TODO: seconds expiry

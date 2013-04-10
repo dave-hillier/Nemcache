@@ -1,6 +1,6 @@
 ﻿using System.Text;
 
-namespace Nemcache.Service
+namespace Nemcache.Service.Commands
 {
     class SetCommand : ICommand
     {

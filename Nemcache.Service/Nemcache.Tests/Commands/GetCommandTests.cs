@@ -2,8 +2,9 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Nemcache.Service;
+using Nemcache.Service.Commands;
 
-namespace Nemcache.Tests
+namespace Nemcache.Tests.Commands
 {
     //VALUE <key> <flags> <bytes> [<cas unique>]\r\n
     //<data block>\r\n
@@ -53,4 +54,4 @@ namespace Nemcache.Tests
         // TODO: multi get
         // TODO: name
     }
-}
+}   

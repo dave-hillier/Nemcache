@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using System.Text;
 
-namespace Nemcache.Service
+namespace Nemcache.Service.Commands
 {
     internal class GetCommand : ICommand
     {

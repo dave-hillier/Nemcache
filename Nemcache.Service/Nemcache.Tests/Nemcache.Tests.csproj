@@ -55,12 +55,13 @@
   </Choose>
   <ItemGroup>
     <Compile Include="ArrayMemoryCacheTests.cs" />
-    <Compile Include="GetCommandTests.cs" />
+    <Compile Include="Commands\DeleteCommandTests.cs" />
+    <Compile Include="Commands\GetCommandTests.cs" />
     <Compile Include="MemcacheCommandBuilder.cs" />
     <Compile Include="MemcacheGetCommandBuilder.cs" />
     <Compile Include="AsciiRequestTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SetCommandTests.cs" />
+    <Compile Include="Commands\SetCommandTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Nemcache.Service\Nemcache.Service.csproj">
