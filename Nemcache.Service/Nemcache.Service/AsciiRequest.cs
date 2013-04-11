@@ -36,6 +36,11 @@ namespace Nemcache.Service
             {
                 Data = new byte[] {};
             }
+
+            if (CommandName == "incr" || CommandName == "decr")
+            {
+                Value = Int32.Parse(tokens[2]);
+            }
         }
 
         public string CommandName { get; private set; }
@@ -43,5 +48,7 @@ namespace Nemcache.Service
         public string Key { get; private set; }
 
         public byte[] Data { get; private set; }
+
+        public int Value { get; private set; }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Nemcache.Service;
 
@@ -44,7 +45,7 @@ namespace Nemcache.Tests
         [TestMethod]
         public void CreateDeleteRequest()
         {
-            var input = new MemcacheGetCommandBuilder("delete", "key_to_be_deleted").ToRequest(); // TODO: builder for get
+            var input = Encoding.ASCII.GetBytes("delete key_to_be_deleted\r\n");
             var request = new AsciiRequest(input);
 
             Assert.AreEqual("delete", request.CommandName);
@@ -55,14 +56,24 @@ namespace Nemcache.Tests
         [TestMethod]
         public void CreatIncrRequest()
         {
-            var input = new MemcacheGetCommandBuilder("delete", "key_to_be_deleted").ToRequest(); // TODO: builder for delete
+            var input = Encoding.ASCII.GetBytes("incr key_to_be_deleted 4\r\n"); 
             var request = new AsciiRequest(input);
 
-            Assert.AreEqual("delete", request.CommandName);
+            Assert.AreEqual("incr", request.CommandName);
             Assert.AreEqual("key_to_be_deleted", request.Key);
+            Assert.AreEqual(4, request.Value);
         }
-        // incr key 1
-        // decr key 1
+
+        [TestMethod]
+        public void CreatDecrRequest()
+        {
+            var input = Encoding.ASCII.GetBytes("decr keykeykeeeeey 21\r\n");
+            var request = new AsciiRequest(input);
+
+            Assert.AreEqual("decr", request.CommandName);
+            Assert.AreEqual("keykeykeeeeey", request.Key);
+            Assert.AreEqual(21, request.Value);
+        }
 
         // TODO: various invalid request
         // TODO: various flags

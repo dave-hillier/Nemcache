@@ -7,5 +7,7 @@
         string Key { get; }
         
         byte[] Data { get; }
+
+        int Value { get; }
     }
 }

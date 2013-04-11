@@ -55,7 +55,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ArrayMemoryCache.cs" />
+    <Compile Include="Commands\DecrCommand.cs" />
     <Compile Include="Commands\DeleteCommand.cs" />
+    <Compile Include="Commands\IncrCommand.cs" />
     <Compile Include="RequestResponseTcpServer.cs" />
     <Compile Include="Commands\GetCommand.cs" />
     <Compile Include="IArrayCache.cs" />

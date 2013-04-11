@@ -20,9 +20,9 @@ namespace Nemcache.Service.Commands
             if (_cache.Get(key).Any())
             {
                 _cache.Remove(key);
-                return Encoding.ASCII.GetBytes("SUCCESS");
+                return Encoding.ASCII.GetBytes("DELETED\r\n");
             }
-            return Encoding.ASCII.GetBytes("ERROR");
+            return Encoding.ASCII.GetBytes("NOT_FOUND\r\n");
         }
     }
 }

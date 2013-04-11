@@ -24,7 +24,7 @@ namespace Nemcache.Tests.Commands
                         var request = new Mock<IRequest>();
             request.SetupGet(r => r.Key).Returns("DeleteKey");
             var result = command.Execute(request.Object);
-            Assert.IsTrue(Encoding.ASCII.GetString(result).StartsWith("ERROR"));
+            Assert.AreEqual(Encoding.ASCII.GetString(result), ("NOT_FOUND\r\n"));
         }
 
         [TestMethod]
@@ -36,7 +36,9 @@ namespace Nemcache.Tests.Commands
 
             var request = new Mock<IRequest>();
             request.SetupGet(r => r.Key).Returns("DeleteKey");
-            command.Execute(request.Object);
+            var result = command.Execute(request.Object);
+
+            Assert.AreEqual(Encoding.ASCII.GetString(result), "DELETED\r\n");
             arrayCache.Verify(x => x.Remove(It.Is<string>(s => s == "DeleteKey")), Times.Once());
         }
     }

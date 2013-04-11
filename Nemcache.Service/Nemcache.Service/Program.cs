@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Text;
 using Nemcache.Service.Commands;
@@ -20,26 +21,35 @@ namespace Nemcache.Service
         public Program()
         {
             var cache = new ArrayMemoryCache();
-            var get = new GetCommand(cache);
-            var set = new SetCommand(cache);
-            var delete = new DeleteCommand(cache);
-            _commands = new Dictionary<string, ICommand>
+
+            // TODO: reflect the assembly to get these?
+            _commands = (new ICommand[]
                 {
-                    { get.Name, get }, 
-                    { set.Name, set },
-                    { delete.Name, delete },
-                };
+                    new GetCommand(cache),
+                    new SetCommand(cache),
+                    new IncrCommand(cache),
+                    new DecrCommand(cache),
+                    new DeleteCommand(cache),
+                }).ToDictionary(c => c.Name, c => c);
         }
 
         public byte[] Dispatch(string remoteEndpoint, byte[] data)
         {
-            Console.WriteLine("In: {0}", Encoding.ASCII.GetString(data));
-            var request = new AsciiRequest(data);
+            try
+            {
+                var request = new AsciiRequest(data);
+                if (_commands.ContainsKey(request.CommandName))
+                {
+                    var command = _commands[request.CommandName];
+                    return command.Execute(request);
+                }
+                return Encoding.ASCII.GetBytes(string.Format("CLIENT_ERROR Unknown command {0}\r\n", request.CommandName));
+            }
+            catch (Exception ex)
+            {
+                return Encoding.ASCII.GetBytes(string.Format("SERVER_ERROR {0}\r\n", ex.Message));
+            }
 
-            var command = _commands[request.CommandName];
-            var result = command.Execute(request);
-            Console.WriteLine("Out: {0}", Encoding.ASCII.GetString(result));
-            return result;
         }
     }
 }

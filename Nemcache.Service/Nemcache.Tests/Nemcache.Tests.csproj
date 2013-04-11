@@ -55,8 +55,10 @@
   </Choose>
   <ItemGroup>
     <Compile Include="ArrayMemoryCacheTests.cs" />
+    <Compile Include="Commands\DecrCommandTests.cs" />
     <Compile Include="Commands\DeleteCommandTests.cs" />
     <Compile Include="Commands\GetCommandTests.cs" />
+    <Compile Include="Commands\IncrCommandTests.cs" />
     <Compile Include="MemcacheCommandBuilder.cs" />
     <Compile Include="MemcacheGetCommandBuilder.cs" />
     <Compile Include="AsciiRequestTests.cs" />
