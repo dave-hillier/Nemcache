@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using System.Text;
 
-namespace Nemcache.Tests
+namespace Nemcache.Tests.Builders
 {
     class MemcacheStorageCommandBuilder
     {
@@ -17,6 +17,11 @@ namespace Nemcache.Tests
             _command = command;
             _key = key;
             _data = data;
+        }
+
+        public MemcacheStorageCommandBuilder(string command, string key, string data) :
+            this(command, key, Encoding.ASCII.GetBytes(data))
+        {
         }
 
         public MemcacheStorageCommandBuilder WithFlags(short flag)
@@ -37,7 +42,7 @@ namespace Nemcache.Tests
             return this;
         }
 
-        public byte[] ToRequest()
+        public virtual byte[] ToRequest()
         {
             var format = string.Format("{0} {1} {2} {3} {4}{5}\r\n",
                                        _command, _key, _flags, _time, _data.Length, _noReply ? " noreply" : "");

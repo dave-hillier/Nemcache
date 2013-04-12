@@ -2,6 +2,7 @@
 using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Nemcache.Service;
+using Nemcache.Tests.Builders;
 
 namespace Nemcache.Tests
 {
@@ -51,7 +52,6 @@ namespace Nemcache.Tests
             Assert.AreEqual("delete", request.CommandName);
             Assert.AreEqual("key_to_be_deleted", request.Key);
         }
-
 
         [TestMethod]
         public void CreatIncrRequest()
