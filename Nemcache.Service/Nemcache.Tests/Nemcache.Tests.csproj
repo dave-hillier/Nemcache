@@ -59,8 +59,8 @@
     <Compile Include="Commands\DeleteCommandTests.cs" />
     <Compile Include="Commands\GetCommandTests.cs" />
     <Compile Include="Commands\IncrCommandTests.cs" />
-    <Compile Include="MemcacheCommandBuilder.cs" />
-    <Compile Include="MemcacheGetCommandBuilder.cs" />
+    <Compile Include="MemcacheStorageCommandBuilder.cs" />
+    <Compile Include="MemcacheRetrivalCommandBuilder.cs" />
     <Compile Include="AsciiRequestTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Commands\SetCommandTests.cs" />

@@ -18,9 +18,11 @@ namespace Nemcache.Tests.Commands
         }
 
         [TestMethod]
-        public void GivenNothing_WhenCommandIsExecuted_ThenClientError()
+        public void GivenValue_WhenCommandIsExecuted_ThenCallsCache()
         {
             var arrayCache = new Mock<IArrayCache>();
+            arrayCache.Setup(c => c.Increase(It.IsAny<string>(), It.IsAny<ulong>()))
+                      .Returns(Encoding.ASCII.GetBytes("Value"));
 
             var command = new IncrCommand(arrayCache.Object);
 
@@ -29,37 +31,10 @@ namespace Nemcache.Tests.Commands
             mock.SetupGet(r => r.Value).Returns(1);
 
             var response = command.Execute(mock.Object);
-            throw new NotImplementedException();
-        }
+            var responseString = Encoding.ASCII.GetString(response);
 
-        [TestMethod]
-        public void GivenIntValue_WhenCommandIsExecuted_ThenSuccess()
-        {
-            var arrayCache = new Mock<IArrayCache>();
-
-            var command = new IncrCommand(arrayCache.Object);
-
-            var mock = new Mock<IRequest>();
-            mock.SetupGet(r => r.Key).Returns("MyKey");
-            mock.SetupGet(r => r.Value).Returns(99);
-
-            var response = command.Execute(mock.Object);
-            throw new NotImplementedException();
-        }
-
-        [TestMethod]
-        public void GivenNonIntValue_WhenCommandIsExecuted_ThenFail()
-        {
-            var arrayCache = new Mock<IArrayCache>();
-
-            var command = new IncrCommand(arrayCache.Object);
-
-            var mock = new Mock<IRequest>();
-            mock.SetupGet(r => r.Key).Returns("MyKey");
-            mock.SetupGet(r => r.Value).Returns(99);
-
-            var response = command.Execute(mock.Object);
-
+            Assert.AreEqual("Value", responseString);
+            arrayCache.Verify(c => c.Increase(It.Is<string>(k => k == "MyKey"), It.Is<ulong>(v => v == 1)));
         }
     }
 }

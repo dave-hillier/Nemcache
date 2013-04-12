@@ -3,12 +3,12 @@ using System.Text;
 
 namespace Nemcache.Tests
 {
-    class MemcacheGetCommandBuilder
+    class MemcacheRetrivalCommandBuilder
     {
         private readonly string _command;
         private readonly IEnumerable<string> _keys;
 
-        public MemcacheGetCommandBuilder(string command, params string[] keys)
+        public MemcacheRetrivalCommandBuilder(string command, params string[] keys)
         {
             _command = command;
             _keys = keys;

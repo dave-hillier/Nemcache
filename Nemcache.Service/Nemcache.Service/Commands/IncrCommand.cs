@@ -12,7 +12,7 @@
         public string Name { get { return "incr"; } }
         public byte[] Execute(IRequest request)
         {
-            throw new System.NotImplementedException();
+            return _arrayCache.Increase(request.Key, request.Value);
         }
     }
 }

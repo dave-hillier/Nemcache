@@ -39,7 +39,7 @@ namespace Nemcache.Service
 
             if (CommandName == "incr" || CommandName == "decr")
             {
-                Value = Int32.Parse(tokens[2]);
+                Value = ulong.Parse(tokens[2]);
             }
         }
 
@@ -49,6 +49,6 @@ namespace Nemcache.Service
 
         public byte[] Data { get; private set; }
 
-        public int Value { get; private set; }
+        public ulong Value { get; private set; }
     }
 }

@@ -11,7 +11,7 @@ namespace Nemcache.Tests
         [TestMethod]
         public void CreateSetRequest()
         {
-            var input = new MemcacheCommandBuilder("set", "some_key", new byte[] { 1, 2, 3, 4 }).ToRequest();
+            var input = new MemcacheStorageCommandBuilder("set", "some_key", new byte[] { 1, 2, 3, 4 }).ToRequest();
 
             var request = new AsciiRequest(input);
 
@@ -23,7 +23,7 @@ namespace Nemcache.Tests
         [TestMethod]
         public void CreateSetRequestWithBigBuffer()
         {
-            var inputSmall = new MemcacheCommandBuilder("set", "some_key", new byte[] { 1, 2, 3, 4 }).ToRequest();
+            var inputSmall = new MemcacheStorageCommandBuilder("set", "some_key", new byte[] { 1, 2, 3, 4 }).ToRequest();
             var input = inputSmall.Concat(new byte[10]).ToArray();
             var request = new AsciiRequest(input);
 
@@ -35,7 +35,7 @@ namespace Nemcache.Tests
         [TestMethod]
         public void CreateGetRequest()
         {
-            var input = new MemcacheGetCommandBuilder("get", "some_key").ToRequest();
+            var input = new MemcacheRetrivalCommandBuilder("get", "some_key").ToRequest();
             var request = new AsciiRequest(input);
 
             Assert.AreEqual("get", request.CommandName);
@@ -61,7 +61,7 @@ namespace Nemcache.Tests
 
             Assert.AreEqual("incr", request.CommandName);
             Assert.AreEqual("key_to_be_deleted", request.Key);
-            Assert.AreEqual(4, request.Value);
+            Assert.AreEqual((ulong)4, request.Value);
         }
 
         [TestMethod]
@@ -72,14 +72,13 @@ namespace Nemcache.Tests
 
             Assert.AreEqual("decr", request.CommandName);
             Assert.AreEqual("keykeykeeeeey", request.Key);
-            Assert.AreEqual(21, request.Value);
+            Assert.AreEqual((ulong)21, request.Value);
         }
 
-        // TODO: various invalid request
+        // TODO: various invalidequest
         // TODO: various flags
         // TODO: seconds expiry
         // TODO: unix time expiry
-
         // TODO: get requests
     }
 }

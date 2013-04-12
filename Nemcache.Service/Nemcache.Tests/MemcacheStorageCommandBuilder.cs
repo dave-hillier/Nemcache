@@ -3,7 +3,7 @@ using System.Text;
 
 namespace Nemcache.Tests
 {
-    class MemcacheCommandBuilder
+    class MemcacheStorageCommandBuilder
     {
         private readonly string _command;
         private readonly string _key;
@@ -12,26 +12,26 @@ namespace Nemcache.Tests
         private int _time;
         private bool _noReply;
 
-        public MemcacheCommandBuilder(string command, string key, byte[] data)
+        public MemcacheStorageCommandBuilder(string command, string key, byte[] data)
         {
             _command = command;
             _key = key;
             _data = data;
         }
 
-        public MemcacheCommandBuilder WithFlags(short flag)
+        public MemcacheStorageCommandBuilder WithFlags(short flag)
         {
             _flags = flag;
             return this;
         }
 
-        public MemcacheCommandBuilder WithExpiry(int time)
+        public MemcacheStorageCommandBuilder WithExpiry(int time)
         {
             _time = time;
             return this;
         }
 
-        public MemcacheCommandBuilder NoReply()
+        public MemcacheStorageCommandBuilder NoReply()
         {
             _noReply = true;
             return this;

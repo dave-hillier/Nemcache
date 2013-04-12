@@ -12,7 +12,8 @@
         public string Name { get { return "decr"; } }
         public byte[] Execute(IRequest request)
         {
-            throw new System.NotImplementedException();
+            return _arrayCache.Decrease(request.Key, request.Value);
+            
         }
     }
 }

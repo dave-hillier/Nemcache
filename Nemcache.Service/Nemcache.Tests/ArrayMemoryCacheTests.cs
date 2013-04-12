@@ -77,5 +77,80 @@ namespace Nemcache.Tests
 
             Assert.IsTrue(result.Length == 0);
         }
+
+
+        [TestMethod]
+        public void TestIncr()
+        {
+            var cache = new ArrayMemoryCache();
+
+            // Put something in the cache
+            var value = Encoding.ASCII.GetBytes("123");
+            cache.Storage.Set("Key", value, DateTimeOffset.Now + TimeSpan.FromDays(1));
+
+            var result = cache.Increase("Key", 123);
+
+            Assert.AreEqual("246\r\n", Encoding.ASCII.GetString(result));
+        }
+
+        [TestMethod]
+        public void TestIncrNotFound()
+        {
+            var cache = new ArrayMemoryCache();
+
+            // Put something in the cache
+            var value = Encoding.ASCII.GetBytes("123");
+            cache.Storage.Set("Key", value, DateTimeOffset.Now + TimeSpan.FromDays(1));
+
+            var result = cache.Increase("KeyOOOOO", 123);
+
+            Assert.AreEqual("NOT_FOUND\r\n", Encoding.ASCII.GetString(result));
+        }
+        [TestMethod]
+        public void TestDecr()
+        {
+            var cache = new ArrayMemoryCache();
+
+            // Put something in the cache
+            var value = Encoding.ASCII.GetBytes("100");
+            cache.Storage.Set("Key", value, DateTimeOffset.Now + TimeSpan.FromDays(1));
+
+            ulong decrement = 11;
+            var result = cache.Decrease("Key", decrement);
+
+            Assert.AreEqual("89\r\n", Encoding.ASCII.GetString(result));
+        }
+
+        // TODO: max ulong tests
+        [TestMethod]
+        public void TestDecrNotFound()
+        {
+            var cache = new ArrayMemoryCache();
+
+            // Put something in the cache
+            var value = Encoding.ASCII.GetBytes("100");
+            cache.Storage.Set("Key", value, DateTimeOffset.Now + TimeSpan.FromDays(1));
+
+            ulong decrement = 11;
+            var result = cache.Decrease("RandomKey", decrement);
+
+            Assert.AreEqual("NOT_FOUND\r\n", Encoding.ASCII.GetString(result));
+        }
+
+        // TODO: max ulong tests
+        [TestMethod]
+        public void TestDecrNot64Bit()
+        {
+            var cache = new ArrayMemoryCache();
+
+            // Put something in the cache
+            var value = Encoding.ASCII.GetBytes("Foo");
+            cache.Storage.Set("Key", value, DateTimeOffset.Now + TimeSpan.FromDays(1));
+
+            ulong decrement = 11;
+            var result = cache.Decrease("Key", decrement);
+
+            Assert.AreEqual("ERROR Key does not represent a 64-bit unsigned int\r\n", Encoding.ASCII.GetString(result));
+        }
     }
 }

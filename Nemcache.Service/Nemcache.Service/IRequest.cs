@@ -8,6 +8,6 @@
         
         byte[] Data { get; }
 
-        int Value { get; }
+        ulong Value { get; }
     }
 }
