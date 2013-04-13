@@ -183,12 +183,35 @@ namespace Nemcache.Service
             bool noreply = commandParams.Length == 5 && commandParams[4] == "noreply";
             byte[] data = request.Skip(input.Length + 2).Take(bytes).ToArray();
 
+            CacheEntry entry;
             switch (commandName)
             {
                 case "set":
-                    var entry = new CacheEntry { Data = data, Expiry = exptime, Flags = flags };
+                    entry = new CacheEntry { Data = data, Expiry = exptime, Flags = flags };
                     _cache[key] = entry;
                     return Encoding.ASCII.GetBytes("STORED\r\n");
+
+                case "append":
+                case "prepend":
+                    if (_cache.TryGetValue(key, out entry))
+                    {
+                        var newData = commandName == "append" ? 
+                            entry.Data.Concat(data) :
+                            data.Concat(entry.Data);
+                        var newEntry = new CacheEntry {
+                            Data = newData.ToArray(), 
+                            Expiry = entry.Expiry,
+                            Flags = entry.Flags
+                        };
+                        _cache[key] = newEntry;
+                        return Encoding.ASCII.GetBytes("STORED\r\n");
+                    }
+                    else
+                    {
+                        entry = new CacheEntry { Data = data, Expiry = exptime, Flags = flags };
+                        _cache[key] = entry;
+                        return Encoding.ASCII.GetBytes("STORED\r\n");
+                    }
             }
 
             return new byte[] { };

@@ -30,11 +30,64 @@ namespace Nemcache.Tests
         [TestMethod]
         public void Set()
         {
-            var storageBuilder = new MemcacheStorageCommandBuilder("set", "key", "value");
+            var setBuilder = new MemcacheStorageCommandBuilder("set", "key", "value");
 
-            var response = _requestHandler.Dispatch("remote", storageBuilder.ToRequest());
+            var response = _requestHandler.Dispatch("remote", setBuilder.ToRequest());
 
             Assert.AreEqual("STORED\r\n", response.ToAsciiString());
+        }
+
+        [TestMethod]
+        public void AppendToEmpty()
+        {
+            var appendBuilder = new MemcacheStorageCommandBuilder("append", "key", "value");
+
+            var response = _requestHandler.Dispatch("", appendBuilder.ToRequest());
+
+            Assert.AreEqual("STORED\r\n", response.ToAsciiString());
+        }
+
+
+        [TestMethod]
+        public void AppendToExisting()
+        {
+            var setBuilder = new MemcacheStorageCommandBuilder("set", "key", "value");
+
+            _requestHandler.Dispatch("remote", setBuilder.ToRequest());  
+          
+            var appendBuilder = new MemcacheStorageCommandBuilder("append", "key", "value");
+
+            var response = _requestHandler.Dispatch("", appendBuilder.ToRequest());
+
+            Assert.AreEqual("STORED\r\n", response.ToAsciiString());
+        }
+
+        [TestMethod]
+        public void GetValueOfAppendToEmpty()
+        {
+            var appendBuilder = new MemcacheStorageCommandBuilder("append", "key", "value");
+
+            _requestHandler.Dispatch("", appendBuilder.ToRequest());
+
+            var getBuilder = new MemcacheRetrivalCommandBuilder("get", "key");
+            var response = _requestHandler.Dispatch("", getBuilder.ToRequest());
+            Assert.AreEqual("VALUE key 0 5\r\nvalue\r\nEND\r\n", response.ToAsciiString());
+        }
+
+        // TODO: append ignores existing flags and exp
+
+        [TestMethod]
+        public void GetValueOfAppendToExisting()
+        {
+            var setBuilder = new MemcacheStorageCommandBuilder("set", "key", "first");
+            _requestHandler.Dispatch("remote", setBuilder.ToRequest());
+
+            var appendBuilder = new MemcacheStorageCommandBuilder("append", "key", " second");
+            _requestHandler.Dispatch("", appendBuilder.ToRequest());
+
+            var getBuilder = new MemcacheRetrivalCommandBuilder("get", "key");
+            var response = _requestHandler.Dispatch("", getBuilder.ToRequest());
+            Assert.AreEqual("VALUE key 0 12\r\nfirst second\r\nEND\r\n", response.ToAsciiString());
         }
 
         [TestMethod]
@@ -57,9 +110,7 @@ namespace Nemcache.Tests
             _requestHandler.Dispatch("remote", storageBuilder.ToRequest());
 
             var getBuilder = new MemcacheRetrivalCommandBuilder("get", "key");
-
             var response = _requestHandler.Dispatch("", getBuilder.ToRequest());
-
             Assert.AreEqual("VALUE key 0 5\r\nvalue\r\nEND\r\n", response.ToAsciiString());
         }
 
@@ -172,5 +223,58 @@ namespace Nemcache.Tests
         }
 
         // TODO: incr/decr max and overflow, non-int start value
+
+        [TestMethod]
+        public void PrependToEmpty()
+        {
+            var prependBuilder = new MemcacheStorageCommandBuilder("prepend", "key", "value");
+
+            var response = _requestHandler.Dispatch("", prependBuilder.ToRequest());
+
+            Assert.AreEqual("STORED\r\n", response.ToAsciiString());
+        }
+
+
+        [TestMethod]
+        public void PrependToExisting()
+        {
+            var setBuilder = new MemcacheStorageCommandBuilder("set", "key", "value");
+
+            _requestHandler.Dispatch("remote", setBuilder.ToRequest());
+
+            var prependBuilder = new MemcacheStorageCommandBuilder("prepend", "key", "value");
+
+            var response = _requestHandler.Dispatch("", prependBuilder.ToRequest());
+
+            Assert.AreEqual("STORED\r\n", response.ToAsciiString());
+        }
+
+        [TestMethod]
+        public void GetValueOfPrependToEmpty()
+        {
+            var prependBuilder = new MemcacheStorageCommandBuilder("prepend", "key", "value");
+
+            _requestHandler.Dispatch("", prependBuilder.ToRequest());
+
+            var getBuilder = new MemcacheRetrivalCommandBuilder("get", "key");
+            var response = _requestHandler.Dispatch("", getBuilder.ToRequest());
+            Assert.AreEqual("VALUE key 0 5\r\nvalue\r\nEND\r\n", response.ToAsciiString());
+        }
+
+        // TODO: prepend ignores existing flags and exp
+
+        [TestMethod]
+        public void GetValueOfPrependToExisting()
+        {
+            var setBuilder = new MemcacheStorageCommandBuilder("set", "key", "first");
+            _requestHandler.Dispatch("remote", setBuilder.ToRequest());
+
+            var prependBuilder = new MemcacheStorageCommandBuilder("prepend", "key", "second ");
+            _requestHandler.Dispatch("", prependBuilder.ToRequest());
+
+            var getBuilder = new MemcacheRetrivalCommandBuilder("get", "key");
+            var response = _requestHandler.Dispatch("", getBuilder.ToRequest());
+            Assert.AreEqual("VALUE key 0 12\r\nsecond first\r\nEND\r\n", response.ToAsciiString());
+        }
     }
 }
