@@ -127,5 +127,50 @@ namespace Nemcache.Tests
             var response = _requestHandler.Dispatch("", getBuilder.ToRequest());
             Assert.AreEqual("END\r\n", response.ToAsciiString());
         }
+
+        [TestMethod]
+        public void IncrNotFound()
+        {
+            var builder = new MemcacheIncrCommandBuilder("incr", "key", 1);
+            var response = _requestHandler.Dispatch("", builder.ToRequest());
+
+            Assert.AreEqual("NOT_FOUND\r\n", response.ToAsciiString());
+        }
+        [TestMethod]
+        public void DecrNotFound()
+        {
+            var builder = new MemcacheIncrCommandBuilder("decr", "key", 1);
+            var response = _requestHandler.Dispatch("", builder.ToRequest());
+
+            Assert.AreEqual("NOT_FOUND\r\n", response.ToAsciiString());
+        }
+
+        [TestMethod]
+        public void Incr()
+        {
+            var storageBuilder = new MemcacheStorageCommandBuilder("set", "key", "123");
+
+            _requestHandler.Dispatch("remote", storageBuilder.ToRequest());
+
+            var builder = new MemcacheIncrCommandBuilder("incr", "key", 1);
+            var response = _requestHandler.Dispatch("", builder.ToRequest());
+
+            Assert.AreEqual("124\r\n", response.ToAsciiString());
+        }
+
+        [TestMethod]
+        public void Decr()
+        {
+            var storageBuilder = new MemcacheStorageCommandBuilder("set", "key", "123");
+
+            _requestHandler.Dispatch("remote", storageBuilder.ToRequest());
+
+            var builder = new MemcacheIncrCommandBuilder("decr", "key", 1);
+            var response = _requestHandler.Dispatch("", builder.ToRequest());
+
+            Assert.AreEqual("122\r\n", response.ToAsciiString());
+        }
+
+        // TODO: incr/decr max and overflow, non-int start value
     }
 }

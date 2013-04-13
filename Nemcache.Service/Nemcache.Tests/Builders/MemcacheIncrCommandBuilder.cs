@@ -5,12 +5,14 @@ namespace Nemcache.Tests.Builders
     class MemcacheIncrCommandBuilder
     {
         private readonly string _command;
+        private readonly string _key;
         private readonly ulong _value;
         private bool _noReply;
 
-        public MemcacheIncrCommandBuilder(string command, ulong value)
+        public MemcacheIncrCommandBuilder(string command, string key, ulong value)
         {
             _command = command;
+            _key = key;
             _value = value;
         }
 
@@ -22,7 +24,7 @@ namespace Nemcache.Tests.Builders
 
         public byte[] ToRequest()
         {
-            var result = _command + " " + _value;
+            var result = string.Format("{0} {1} {2}", _command, _key, _value);
             if (_noReply)
                 result += " " + _noReply;
             return Encoding.ASCII.GetBytes(result + "\r\n");

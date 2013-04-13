@@ -17,6 +17,7 @@ namespace Nemcache.Service
             public uint Expiry { get; set; }
             public ulong CasUnique { get; set; }
             public byte[] Data { get; set; }
+            // TODO: when stored?
         }
 
         private static void Main(string[] args)
@@ -136,7 +137,22 @@ namespace Nemcache.Service
             var key = ToKey(commandParams[0]);
             var incr = ulong.Parse(commandParams[1]);
             bool noreply = commandParams.Length == 3 && commandParams[2] == "noreply";
-            return new byte[] { };
+
+            CacheEntry entry;
+            if (_cache.TryGetValue(key, out entry))
+            {
+                var value = ulong.Parse(Encoding.ASCII.GetString(entry.Data));
+                if (commandName == "incr")
+                    value += incr;
+                else
+                    value -= incr;
+                var result = Encoding.ASCII.GetBytes(value.ToString());
+                entry.Data = result;
+                _cache[key] = entry;
+                return result.Concat(EndOfLine).ToArray();
+            }
+
+            return Encoding.ASCII.GetBytes("NOT_FOUND\r\n");
         }
 
         private byte[] HandleDelete(string[] commandParams)
