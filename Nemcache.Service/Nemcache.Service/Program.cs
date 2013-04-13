@@ -159,7 +159,15 @@ namespace Nemcache.Service
         {
             var key = ToKey(commandParams[0]);
             bool noreply = commandParams.Length == 2 && commandParams[1] == "noreply";
-            return new byte[] { };
+
+            CacheEntry entry;
+            if (_cache.TryGetValue(key, out entry))
+            {
+                _cache.Remove(key);
+                return Encoding.ASCII.GetBytes("DELETED\r\n");
+            }
+
+            return Encoding.ASCII.GetBytes("NOT_FOUND\r\n");
         }
 
         private byte[] HandleCas(byte[] request, byte[] input, string[] commandParams)
