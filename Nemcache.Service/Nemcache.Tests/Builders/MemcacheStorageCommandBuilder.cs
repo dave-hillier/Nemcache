@@ -6,11 +6,12 @@ namespace Nemcache.Tests.Builders
     class MemcacheStorageCommandBuilder
     {
         private readonly string _command;
-        private readonly string _key;
-        private readonly byte[] _data;
-        private short _flags;
-        private int _time;
-        private bool _noReply;
+
+        protected readonly string _key;
+        protected byte[] _data;
+        protected short _flags;
+        protected int _time;
+        protected bool _noReply;
 
         public MemcacheStorageCommandBuilder(string command, string key, byte[] data)
         {
@@ -39,6 +40,12 @@ namespace Nemcache.Tests.Builders
         public MemcacheStorageCommandBuilder NoReply()
         {
             _noReply = true;
+            return this;
+        }
+
+        public MemcacheStorageCommandBuilder Data(string value)
+        {
+            _data = Encoding.ASCII.GetBytes(value);
             return this;
         }
 

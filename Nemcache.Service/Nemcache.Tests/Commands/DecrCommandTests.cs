@@ -36,7 +36,5 @@ namespace Nemcache.Tests.Commands
             Assert.AreEqual("Value", responseString);
             arrayCache.Verify(c => c.Decrease(It.Is<string>(k => k == "MyKey"), It.Is<ulong>(v => v == 1)));
         }
-
-        
     }
 }

@@ -6,6 +6,7 @@ using Nemcache.Service;
 
 namespace Nemcache.Tests
 {
+
     [TestClass]
     public class ArrayMemoryCacheTests
     {
