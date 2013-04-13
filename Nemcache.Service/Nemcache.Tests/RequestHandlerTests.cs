@@ -117,7 +117,7 @@ namespace Nemcache.Tests
             var getBuilder = new MemcacheRetrivalCommandBuilder("get", "key1", "key2");
             var response = _requestHandler.Dispatch("abc", getBuilder.ToRequest());
             
-            Assert.AreEqual("VALUE key 0 6\r\n111111\r\nVALUE key 0 3\r\n222\r\nEND\r\n", response.ToAsciiString());
+            Assert.AreEqual("VALUE key1 0 6\r\n111111\r\nVALUE key2 0 3\r\n222\r\nEND\r\n", response.ToAsciiString());
         }
 
         [TestMethod]

@@ -16,7 +16,7 @@ namespace Nemcache.Tests.Builders
 
         public byte[] ToRequest()
         {
-            return Encoding.ASCII.GetBytes(_command + " " + string.Join(",", _keys) + "\r\n");
+            return Encoding.ASCII.GetBytes(_command + " " + string.Join(" ", _keys) + "\r\n");
         }
     }
 }
