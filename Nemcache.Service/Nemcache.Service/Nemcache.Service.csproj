@@ -54,19 +54,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ArrayMemoryCache.cs" />
-    <Compile Include="Commands\DecrCommand.cs" />
-    <Compile Include="Commands\DeleteCommand.cs" />
-    <Compile Include="Commands\IncrCommand.cs" />
     <Compile Include="RequestResponseTcpServer.cs" />
-    <Compile Include="Commands\GetCommand.cs" />
-    <Compile Include="IArrayCache.cs" />
-    <Compile Include="ICommand.cs" />
-    <Compile Include="IRequest.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="AsciiRequest.cs" />
-    <Compile Include="Commands\SetCommand.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

@@ -21,7 +21,7 @@ namespace Nemcache.Tests.Builders
 
         public byte[] ToRequest()
         {
-            var format = string.Format("Delete {0}{1}\r\n", _key, _noReply ? " noreply" : "");
+            var format = string.Format("delete {0}{1}\r\n", _key, _noReply ? " noreply" : "");
             var start = Encoding.ASCII.GetBytes(format);
             var end = Encoding.ASCII.GetBytes("\r\n");
             return start.Concat(end).ToArray();

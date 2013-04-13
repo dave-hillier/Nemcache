@@ -9,7 +9,7 @@ namespace Nemcache.Tests.Builders
 
         protected readonly string _key;
         protected byte[] _data;
-        protected short _flags;
+        protected ulong _flags;
         protected int _time;
         protected bool _noReply;
 
@@ -25,7 +25,7 @@ namespace Nemcache.Tests.Builders
         {
         }
 
-        public MemcacheStorageCommandBuilder WithFlags(short flag)
+        public MemcacheStorageCommandBuilder WithFlags(ulong flag)
         {
             _flags = flag;
             return this;

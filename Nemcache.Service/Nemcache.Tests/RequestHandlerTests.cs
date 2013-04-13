@@ -64,6 +64,34 @@ namespace Nemcache.Tests
         }
 
         [TestMethod]
+        public void FlagsSetAndGet()
+        {
+            var storageBuilder = new MemcacheStorageCommandBuilder("set", "key", "value");
+            storageBuilder.WithFlags(1234567890);
+            _requestHandler.Dispatch("remote", storageBuilder.ToRequest());
+
+            var getBuilder = new MemcacheRetrivalCommandBuilder("get", "key");
+
+            var response = _requestHandler.Dispatch("", getBuilder.ToRequest());
+
+            Assert.AreEqual("VALUE key 1234567890 5\r\nvalue\r\nEND\r\n", response.ToAsciiString());
+        }
+
+        [TestMethod]
+        public void FlagsMaxValueSetAndGet()
+        {
+            var storageBuilder = new MemcacheStorageCommandBuilder("set", "key", "value");
+            storageBuilder.WithFlags(ulong.MaxValue);
+            var request = storageBuilder.ToRequest();
+            _requestHandler.Dispatch("remote", request);
+
+            var getBuilder = new MemcacheRetrivalCommandBuilder("get", "key");
+
+            var response = _requestHandler.Dispatch("", getBuilder.ToRequest());
+            Assert.AreEqual("VALUE key " + ulong.MaxValue.ToString() + " 5\r\nvalue\r\nEND\r\n", response.ToAsciiString());
+        }
+
+        [TestMethod]
         public void SetAndSetNewThenGet()
         {
             var storageBuilder = new MemcacheStorageCommandBuilder("set", "key", "value");
@@ -83,32 +111,21 @@ namespace Nemcache.Tests
             var storageBuilder1 = new MemcacheStorageCommandBuilder("set", "key1", "111111");
             _requestHandler.Dispatch("remote", storageBuilder1.ToRequest());
 
-            var storageBuilder2 = new MemcacheStorageCommandBuilder("set", "key2", "222222");
+            var storageBuilder2 = new MemcacheStorageCommandBuilder("set", "key2", "222");
             _requestHandler.Dispatch("remote", storageBuilder2.ToRequest());
-
+            
             var getBuilder = new MemcacheRetrivalCommandBuilder("get", "key1", "key2");
-
-            var response = _requestHandler.Dispatch("", getBuilder.ToRequest());
-
-            // TODO: Ordering unimportant?
-            Assert.AreEqual("VALUE 0 0 0\r\n111111\r\nVALUE 0 0 0\r\n222222\r\nEND\r\n", response.ToAsciiString());
+            var response = _requestHandler.Dispatch("abc", getBuilder.ToRequest());
+            
+            Assert.AreEqual("VALUE key 0 6\r\n111111\r\nVALUE key 0 3\r\n222\r\nEND\r\n", response.ToAsciiString());
         }
-
 
         [TestMethod]
         public void GetNotFound()
         {
             var getBuilder = new MemcacheRetrivalCommandBuilder("get", "key");
-
             var response = _requestHandler.Dispatch("", getBuilder.ToRequest());
-
             Assert.AreEqual("END\r\n", response.ToAsciiString());
         }
-
-        [TestMethod]
-        public void Test3()
-        {
-        }
     }
-
 }

@@ -54,20 +54,13 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="ArrayMemoryCacheTests.cs" />
     <Compile Include="Builders\MemcacheCasCommandBuilder.cs" />
     <Compile Include="Builders\MemcacheDeleteCommandBuilder.cs" />
     <Compile Include="Builders\MemcacheTouchCommandBuilder.cs" />
-    <Compile Include="Commands\DecrCommandTests.cs" />
-    <Compile Include="Commands\DeleteCommandTests.cs" />
-    <Compile Include="Commands\GetCommandTests.cs" />
-    <Compile Include="Commands\IncrCommandTests.cs" />
     <Compile Include="Builders\MemcacheIncrCommandBuilder.cs" />
     <Compile Include="Builders\MemcacheStorageCommandBuilder.cs" />
     <Compile Include="Builders\MemcacheRetrivalCommandBuilder.cs" />
-    <Compile Include="AsciiRequestTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Commands\SetCommandTests.cs" />
     <Compile Include="RequestHandlerTests.cs" />
   </ItemGroup>
   <ItemGroup>
