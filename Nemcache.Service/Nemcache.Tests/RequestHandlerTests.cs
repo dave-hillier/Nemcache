@@ -371,6 +371,50 @@ namespace Nemcache.Tests
             Assert.AreEqual("END\r\n", response.ToAsciiString());
         }
 
+        [TestMethod]
+        public void TouchOk()
+        {
+            var storageBuilder = new MemcacheStorageCommandBuilder("set", "key", "value");
+            storageBuilder.WithExpiry(100);
+            _requestHandler.Dispatch("remote", storageBuilder.ToRequest());
+
+            var touchBuilder = new MemcacheTouchCommandBuilder("key");
+            touchBuilder.WithExpiry(1);
+            var response = _requestHandler.Dispatch("remote", touchBuilder.ToRequest());
+
+            Assert.AreEqual("OK\r\n", response.ToAsciiString());
+        }
+        
+        [TestMethod]
+        public void TouchNotFound()
+        {
+            var touchBuilder = new MemcacheTouchCommandBuilder("key");
+            touchBuilder.WithExpiry(1);
+            var response = _requestHandler.Dispatch("remote", touchBuilder.ToRequest());
+
+            Assert.AreEqual("NOT_FOUND\r\n", response.ToAsciiString());
+        }
+
+        // TODO: Remove time sensitive element
+        [TestMethod]
+        public void SetTouchExpiryThenGetGone()
+        {
+            var storageBuilder = new MemcacheStorageCommandBuilder("set", "key", "value");
+            storageBuilder.WithExpiry(100);
+            _requestHandler.Dispatch("remote", storageBuilder.ToRequest());
+
+            var touchBuilder = new MemcacheTouchCommandBuilder("key");
+            touchBuilder.WithExpiry(1);
+            _requestHandler.Dispatch("remote", touchBuilder.ToRequest());
+
+
+            Thread.Sleep(1100); // TODO: Fake out time??
+
+            var getBuilder = new MemcacheRetrivalCommandBuilder("get", "key");
+            var response = _requestHandler.Dispatch("", getBuilder.ToRequest());
+            Assert.AreEqual("END\r\n", response.ToAsciiString());
+        }
+
 #region Add
             
         [TestMethod]

@@ -18,17 +18,12 @@ namespace Nemcache.Service
             public ulong CasUnique { get; set; }
             public byte[] Data { get; set; }
 
-            public bool IsExpired
-            {
-                get
-                {
-                    return Expiry < DateTime.UtcNow;
-                }
-            }
+            public bool IsExpired { get { return Expiry < DateTime.UtcNow; } }
         }
 
         private static void Main(string[] args)
         {
+            
             var p = new Program();
             var server = new RequestResponseTcpServer(IPAddress.Any, 11222, p.Dispatch);
             Console.ReadLine();
@@ -102,39 +97,42 @@ namespace Nemcache.Service
                 case "get":
                 case "gets": // <key>*
                     return HandleGet(commandParams);
-
                 case "add":
                 case "replace":
                 case "append":
                 case "prepend":
                 case "set": // <command name> <key> <flags> <exptime> <bytes> [noreply]
                     return HandleStore(request, input, commandName, commandParams);
-
                 case "cas"://cas <key> <flags> <exptime> <bytes> <cas unique> [noreply]\r\n
                     return HandleCas(request, input, commandParams);
-
                 case "delete": // delete <key> [noreply]\r\n
                     return HandleDelete(commandParams);
-
                 case "incr"://incr <key> <value> [noreply]\r\n
                 case "decr":
                     return HandleIncr(commandName, commandParams);
-
                 case "touch"://touch <key> <exptime> [noreply]\r\n
                     return HandleTouch(commandParams);
-
                 case "stats":// stats <args>\r\n or stats\r\n
-                    return new byte[] { };
-
+                    return HandleStats(commandName, commandParams);
                 case "flush_all": // [numeric] [noreply]
-                    return new byte[] { };
-
+                    return HandleFlushAll();
                 case "quit": //     quit\r\n
                     return new byte[] { };
-
                 default:
                     return Encoding.ASCII.GetBytes("ERROR\r\n");
             }
+        }
+
+        private byte[] HandleStats(string commandName, string[] commandParams)
+        {
+            return new byte[] { };
+        }
+
+        private byte[] HandleFlushAll()
+        {
+            //_cache.Clear();
+            // OK\r\n
+            return Encoding.ASCII.GetBytes("NOP\r\n");
         }
 
         private byte[] HandleTouch(string[] commandParams)
@@ -146,7 +144,7 @@ namespace Nemcache.Service
             {
                 entry.Expiry = exptime;
                 _cache[key] = entry;
-                byte[] result = new byte[] { };
+                byte[] result = Encoding.ASCII.GetBytes("OK");
                 return result.Concat(EndOfLine).ToArray();
             }
             return Encoding.ASCII.GetBytes("NOT_FOUND\r\n");
@@ -156,7 +154,6 @@ namespace Nemcache.Service
         {
             var key = ToKey(commandParams[0]);
             var incr = ulong.Parse(commandParams[1]);
-
             CacheEntry entry;
             if (_cache.TryGetValue(key, out entry))
             {
@@ -170,21 +167,18 @@ namespace Nemcache.Service
                 _cache[key] = entry;
                 return result.Concat(EndOfLine).ToArray();
             }
-
             return Encoding.ASCII.GetBytes("NOT_FOUND\r\n");
         }
 
         private byte[] HandleDelete(string[] commandParams)
         {
             var key = ToKey(commandParams[0]);
-
             CacheEntry entry;
             if (_cache.TryGetValue(key, out entry))
             {
                 _cache.Remove(key);
                 return Encoding.ASCII.GetBytes("DELETED\r\n");
             }
-
             return Encoding.ASCII.GetBytes("NOT_FOUND\r\n");
         }
 
@@ -260,17 +254,14 @@ namespace Nemcache.Service
 
             var response = from entry in entries
                            where !entry.CacheEntry.IsExpired
-                           let valueText = string.Format(
-                               "VALUE {0} {1} {2}{3}\r\n", 
+                           let valueText = string.Format("VALUE {0} {1} {2}{3}\r\n", 
                                entry.Key, 
                                entry.CacheEntry.Flags, 
                                entry.CacheEntry.Data.Length,
                                entry.CacheEntry.CasUnique != 0 ? " " + entry.CacheEntry.CasUnique : "")
                            let asAscii = Encoding.ASCII.GetBytes(valueText)
                            select asAscii.Concat(entry.CacheEntry.Data).Concat(EndOfLine);
-
 	        var endOfMessage = Encoding.ASCII.GetBytes("END\r\n");
-
             return response.SelectMany(a => a).Concat(endOfMessage).ToArray();
         }
     }
