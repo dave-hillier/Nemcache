@@ -55,7 +55,8 @@ namespace Nemcache.Service
             // up to 60*60*24*30 seconds or unix time
             if (expirySeconds == 0)
                 return DateTime.MaxValue;
-            return (expirySeconds < 60 * 60 * 24 * 30 ? DateTime.UtcNow : UnixTimeEpoc) + TimeSpan.FromSeconds(expirySeconds);
+            var start = expirySeconds < 60 * 60 * 24 * 30 ? DateTime.UtcNow : UnixTimeEpoc;
+            return start + TimeSpan.FromSeconds(expirySeconds);
         }
 
         public string ToKey(string key)
@@ -131,8 +132,7 @@ namespace Nemcache.Service
         private byte[] HandleFlushAll()
         {
             //_cache.Clear();
-            // OK\r\n
-            return Encoding.ASCII.GetBytes("NOP\r\n");
+            return Encoding.ASCII.GetBytes("...\r\n");
         }
 
         private byte[] HandleTouch(string[] commandParams)
@@ -261,8 +261,9 @@ namespace Nemcache.Service
                                entry.CacheEntry.CasUnique != 0 ? " " + entry.CacheEntry.CasUnique : "")
                            let asAscii = Encoding.ASCII.GetBytes(valueText)
                            select asAscii.Concat(entry.CacheEntry.Data).Concat(EndOfLine);
-	        var endOfMessage = Encoding.ASCII.GetBytes("END\r\n");
-            return response.SelectMany(a => a).Concat(endOfMessage).ToArray();
+
+	        var endOfMessage = Encoding.ASCII.GetBytes("END");
+            return response.SelectMany(a => a).Concat(endOfMessage).Concat(EndOfLine).ToArray();
         }
     }
 }
