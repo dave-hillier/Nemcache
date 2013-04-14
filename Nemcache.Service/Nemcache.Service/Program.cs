@@ -149,10 +149,10 @@ namespace Nemcache.Service
                 var result = Encoding.ASCII.GetBytes(value.ToString());
                 entry.Data = result;
                 _cache[key] = entry;
-                return result.Concat(EndOfLine).ToArray();
+                return noreply ? new byte[] { } : result.Concat(EndOfLine).ToArray();
             }
 
-            return Encoding.ASCII.GetBytes("NOT_FOUND\r\n");
+            return noreply ? new byte[] { } : Encoding.ASCII.GetBytes("NOT_FOUND\r\n");
         }
 
         private byte[] HandleDelete(string[] commandParams)
@@ -164,10 +164,10 @@ namespace Nemcache.Service
             if (_cache.TryGetValue(key, out entry))
             {
                 _cache.Remove(key);
-                return Encoding.ASCII.GetBytes("DELETED\r\n");
+                return noreply ? new byte[] { } : Encoding.ASCII.GetBytes("DELETED\r\n");
             }
 
-            return Encoding.ASCII.GetBytes("NOT_FOUND\r\n");
+            return noreply ? new byte[] { } : Encoding.ASCII.GetBytes("NOT_FOUND\r\n");
         }
 
         private byte[] HandleCas(byte[] request, byte[] input, string[] commandParams)
@@ -197,7 +197,7 @@ namespace Nemcache.Service
                 case "set":
                     entry = new CacheEntry { Data = data, Expiry = exptime, Flags = flags };
                     _cache[key] = entry;
-                    return Encoding.ASCII.GetBytes("STORED\r\n");
+                    return noreply ? new byte[] {} : Encoding.ASCII.GetBytes("STORED\r\n");
 
                 case "append":
                 case "prepend":
@@ -212,13 +212,13 @@ namespace Nemcache.Service
                             Flags = entry.Flags
                         };
                         _cache[key] = newEntry;
-                        return Encoding.ASCII.GetBytes("STORED\r\n");
+                        return noreply ? new byte[] { } : Encoding.ASCII.GetBytes("STORED\r\n");
                     }
                     else
                     {
                         entry = new CacheEntry { Data = data, Expiry = exptime, Flags = flags };
                         _cache[key] = entry;
-                        return Encoding.ASCII.GetBytes("STORED\r\n");
+                        return noreply ? new byte[] { } : Encoding.ASCII.GetBytes("STORED\r\n");
                     }
             }
 

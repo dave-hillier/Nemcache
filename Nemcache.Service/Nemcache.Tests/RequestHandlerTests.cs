@@ -39,6 +39,17 @@ namespace Nemcache.Tests
         }
 
         [TestMethod]
+        public void SetNoReply()
+        {
+            var setBuilder = new MemcacheStorageCommandBuilder("set", "key", "value");
+            setBuilder.NoReply();
+
+            var response = _requestHandler.Dispatch("remote", setBuilder.ToRequest());
+
+            Assert.AreEqual("", response.ToAsciiString());
+        }
+
+        [TestMethod]
         public void AppendToEmpty()
         {
             var appendBuilder = new MemcacheStorageCommandBuilder("append", "key", "value");
@@ -46,6 +57,18 @@ namespace Nemcache.Tests
             var response = _requestHandler.Dispatch("", appendBuilder.ToRequest());
 
             Assert.AreEqual("STORED\r\n", response.ToAsciiString());
+        }
+
+
+        [TestMethod]
+        public void AppendNoReply()
+        {
+            var appendBuilder = new MemcacheStorageCommandBuilder("append", "key", "value");
+            appendBuilder.NoReply();
+
+            var response = _requestHandler.Dispatch("", appendBuilder.ToRequest());
+
+            Assert.AreEqual("", response.ToAsciiString());
         }
 
 
@@ -227,6 +250,16 @@ namespace Nemcache.Tests
             Assert.AreEqual("STORED\r\n", response.ToAsciiString());
         }
 
+        [TestMethod]
+        public void PrependNoReply()
+        {
+            var prependBuilder = new MemcacheStorageCommandBuilder("prepend", "key", "value");
+            prependBuilder.NoReply();
+
+            var response = _requestHandler.Dispatch("", prependBuilder.ToRequest());
+
+            Assert.AreEqual("", response.ToAsciiString());
+        }
 
         [TestMethod]
         public void PrependToExisting()
