@@ -14,7 +14,7 @@ namespace Nemcache.Service
         private struct CacheEntry
         {
             public ulong Flags { get; set; }
-            public uint Expiry { get; set; }
+            public DateTime Expiry { get; set; }
             public ulong CasUnique { get; set; }
             public byte[] Data { get; set; }
             // TODO: when stored?
@@ -25,10 +25,6 @@ namespace Nemcache.Service
             var p = new Program();
             var server = new RequestResponseTcpServer(IPAddress.Any, 11222, p.Dispatch);
             Console.ReadLine();
-        }
-
-        public Program()
-        {
         }
 
         public IEnumerable<byte> TakeFirstLine(byte[] request)
@@ -49,23 +45,26 @@ namespace Nemcache.Service
                 throw new Exception("New line not found"); // TODO: better exception type.
         }
 
+        static DateTime UnixTimeEpoc = new DateTime(1970, 1, 1, 0, 0, 0, 0);
+
+        public DateTime ToExpiry(string expiry)
+        {
+            var expirySeconds = uint.Parse(expiry);
+            // up to 60*60*24*30 seconds or unix time
+            return (expirySeconds < 60 * 60 * 24 * 30 ? DateTime.UtcNow : UnixTimeEpoc) + TimeSpan.FromSeconds(expirySeconds);
+        }
 
         public string ToKey(string key)
         {
-            //if (key.Length < 250)
-            //    throw new Exception("Key too long");
-            // TODO: 250 char long, no whitespace or control chars
+            if (key.Length > 250)
+                throw new InvalidOperationException("Key too long");
+            // TODO: no control chars
             return key;
         }
 
         public ulong ToFlags(string flags)
         {
             return ulong.Parse(flags);
-        }
-
-        public uint ToExpiry(string expiry)
-        {
-            return ushort.Parse(expiry);
         }
 
         public byte[] Dispatch(string remoteEndpoint, byte[] request)
@@ -242,6 +241,7 @@ namespace Nemcache.Service
                                entry.CacheEntry.CasUnique != 0 ? " " + entry.CacheEntry.CasUnique : "")
                            let asAscii = Encoding.ASCII.GetBytes(valueText)
                            select asAscii.Concat(entry.CacheEntry.Data).Concat(EndOfLine);
+
 	        var endOfMessage = Encoding.ASCII.GetBytes("END\r\n");
 
             return response.SelectMany(a => a).Concat(endOfMessage).ToArray();
