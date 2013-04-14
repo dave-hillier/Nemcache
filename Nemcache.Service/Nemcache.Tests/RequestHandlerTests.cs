@@ -364,11 +364,113 @@ namespace Nemcache.Tests
 
             _requestHandler.Dispatch("remote", storageBuilder.ToRequest());
 
+            
             Thread.Sleep(1100); // TODO: Fake out time??
 
             var getBuilder = new MemcacheRetrivalCommandBuilder("get", "key");
             var response = _requestHandler.Dispatch("", getBuilder.ToRequest());
             Assert.AreEqual("END\r\n", response.ToAsciiString());
         }
+
+#region Add
+            
+        [TestMethod]
+        public void AddToEmpty()
+        {
+            var addBuilder = new MemcacheStorageCommandBuilder("add", "key", "value");
+
+            var response = _requestHandler.Dispatch("", addBuilder.ToRequest());
+
+            Assert.AreEqual("STORED\r\n", response.ToAsciiString());
+        }
+
+        [TestMethod]
+        public void AddNoReply()
+        {
+            var addBuilder = new MemcacheStorageCommandBuilder("add", "key", "value");
+            addBuilder.NoReply();
+
+            var response = _requestHandler.Dispatch("", addBuilder.ToRequest());
+
+            Assert.AreEqual("", response.ToAsciiString());
+        }
+
+        [TestMethod]
+        public void AddToExisting()
+        {
+            var setBuilder = new MemcacheStorageCommandBuilder("set", "key", "value");
+
+            _requestHandler.Dispatch("remote", setBuilder.ToRequest());
+
+            var addBuilder = new MemcacheStorageCommandBuilder("add", "key", "value");
+
+            var response = _requestHandler.Dispatch("", addBuilder.ToRequest());
+
+            Assert.AreEqual("NOT_STORED\r\n", response.ToAsciiString());
+        }
+
+        [TestMethod]
+        public void GetValueOfAddToEmpty()
+        {
+            var addBuilder = new MemcacheStorageCommandBuilder("add", "key", "value");
+
+            _requestHandler.Dispatch("", addBuilder.ToRequest());
+
+            var getBuilder = new MemcacheRetrivalCommandBuilder("get", "key");
+            var response = _requestHandler.Dispatch("", getBuilder.ToRequest());
+            Assert.AreEqual("VALUE key 0 5\r\nvalue\r\nEND\r\n", response.ToAsciiString());
+        }
+
+#endregion
+#region Replace
+            
+        [TestMethod]
+        public void ReplaceToEmpty()
+        {
+            var replaceBuilder = new MemcacheStorageCommandBuilder("replace", "key", "value");
+
+            var response = _requestHandler.Dispatch("", replaceBuilder.ToRequest());
+
+            Assert.AreEqual("NOT_STORED\r\n", response.ToAsciiString());
+        }
+
+        [TestMethod]
+        public void ReplaceNoReply()
+        {
+            var replaceBuilder = new MemcacheStorageCommandBuilder("replace", "key", "value");
+            replaceBuilder.NoReply();
+
+            var response = _requestHandler.Dispatch("", replaceBuilder.ToRequest());
+
+            Assert.AreEqual("", response.ToAsciiString());
+        }
+
+        [TestMethod]
+        public void ReplaceToExisting()
+        {
+            var setBuilder = new MemcacheStorageCommandBuilder("set", "key", "value");
+            _requestHandler.Dispatch("remote", setBuilder.ToRequest());
+
+            var replaceBuilder = new MemcacheStorageCommandBuilder("replace", "key", "value");
+            var response = _requestHandler.Dispatch("", replaceBuilder.ToRequest());
+            Assert.AreEqual("STORED\r\n", response.ToAsciiString());
+        }
+
+        // TODO: replace ignores existing flags and exp
+
+        [TestMethod]
+        public void GetValueOfReplaceToExisting()
+        {
+            var setBuilder = new MemcacheStorageCommandBuilder("set", "key", "first");
+            _requestHandler.Dispatch("remote", setBuilder.ToRequest());
+
+            var replaceBuilder = new MemcacheStorageCommandBuilder("replace", "key", "second");
+            _requestHandler.Dispatch("", replaceBuilder.ToRequest());
+
+            var getBuilder = new MemcacheRetrivalCommandBuilder("get", "key");
+            var response = _requestHandler.Dispatch("", getBuilder.ToRequest());
+            Assert.AreEqual("VALUE key 0 6\r\nsecond\r\nEND\r\n", response.ToAsciiString());
+        }
+#endregion
     }
 }

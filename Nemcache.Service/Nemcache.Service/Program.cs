@@ -213,6 +213,22 @@ namespace Nemcache.Service
                     entry = new CacheEntry { Data = data, Expiry = exptime, Flags = flags };
                     _cache[key] = entry;
                     return noreply ? new byte[] {} : Encoding.ASCII.GetBytes("STORED\r\n");
+                case "replace":
+                    if (_cache.TryGetValue(key, out entry))
+                    {
+                        entry = new CacheEntry { Data = data, Expiry = exptime, Flags = flags };
+                        _cache[key] = entry;
+                        return noreply ? new byte[] { } : Encoding.ASCII.GetBytes("STORED\r\n");
+                    }
+                    return noreply ? new byte[] { } : Encoding.ASCII.GetBytes("NOT_STORED\r\n");
+                case "add":
+                    if (!_cache.TryGetValue(key, out entry))
+                    {
+                        entry = new CacheEntry { Data = data, Expiry = exptime, Flags = flags };
+                        _cache[key] = entry;
+                        return noreply ? new byte[] { } : Encoding.ASCII.GetBytes("STORED\r\n");
+                    }
+                    return noreply ? new byte[] { } : Encoding.ASCII.GetBytes("NOT_STORED\r\n");
 
                 case "append":
                 case "prepend":
