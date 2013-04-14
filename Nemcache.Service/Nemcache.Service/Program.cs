@@ -85,45 +85,9 @@ namespace Nemcache.Service
                 var requestTokens = requestFirstLine.Split(' ');
                 var commandName = requestTokens.First();
                 var commandParams = requestTokens.Skip(1).ToArray();
-
-                switch (commandName)
-                {
-                    case "get":
-                    case "gets": // <key>*
-                        return HandleGet(commandParams);
-                        
-                    case "add":
-                    case "replace":
-                    case "append":
-                    case "prepend":
-                    case "set": // <command name> <key> <flags> <exptime> <bytes> [noreply]
-                        return HandleStore(request, input, commandName, commandParams);
-
-                    case "cas"://cas <key> <flags> <exptime> <bytes> <cas unique> [noreply]\r\n
-                        return HandleCas(request, input, commandParams);
-
-                    case "delete": // delete <key> [noreply]\r\n
-                        return HandleDelete(commandParams);
-
-                    case "incr"://incr <key> <value> [noreply]\r\n
-                    case "decr":
-                        return HandleIncr(commandName, commandParams);
-
-                    case "touch"://touch <key> <exptime> [noreply]\r\n
-                        return HandleTouch(commandParams);
-
-                    case "stats":// stats <args>\r\n or stats\r\n
-                        return new byte[] { };
-
-                    case "flush_all": // [numeric] [noreply]
-                        return new byte[] { };
-
-                    case "quit": //     quit\r\n
-                        return new byte[] { };
-
-                    default:
-                        return Encoding.ASCII.GetBytes("ERROR\r\n");
-                }
+                bool noreply = commandParams.LastOrDefault() == "noreply";
+                var result = HandleCommand(request, input, commandName, commandParams);
+                return noreply ? new byte[] { } : result; 
             }
             catch (Exception ex)
             {
@@ -131,27 +95,67 @@ namespace Nemcache.Service
             }
         }
 
+        private byte[] HandleCommand(byte[] request, byte[] input, string commandName, string[] commandParams)
+        {
+            switch (commandName)
+            {
+                case "get":
+                case "gets": // <key>*
+                    return HandleGet(commandParams);
+
+                case "add":
+                case "replace":
+                case "append":
+                case "prepend":
+                case "set": // <command name> <key> <flags> <exptime> <bytes> [noreply]
+                    return HandleStore(request, input, commandName, commandParams);
+
+                case "cas"://cas <key> <flags> <exptime> <bytes> <cas unique> [noreply]\r\n
+                    return HandleCas(request, input, commandParams);
+
+                case "delete": // delete <key> [noreply]\r\n
+                    return HandleDelete(commandParams);
+
+                case "incr"://incr <key> <value> [noreply]\r\n
+                case "decr":
+                    return HandleIncr(commandName, commandParams);
+
+                case "touch"://touch <key> <exptime> [noreply]\r\n
+                    return HandleTouch(commandParams);
+
+                case "stats":// stats <args>\r\n or stats\r\n
+                    return new byte[] { };
+
+                case "flush_all": // [numeric] [noreply]
+                    return new byte[] { };
+
+                case "quit": //     quit\r\n
+                    return new byte[] { };
+
+                default:
+                    return Encoding.ASCII.GetBytes("ERROR\r\n");
+            }
+        }
+
         private byte[] HandleTouch(string[] commandParams)
         {
             var key = ToKey(commandParams[0]);
             var exptime = ToExpiry(commandParams[1]);
-            bool noreply = commandParams.Length == 3 && commandParams[2] == "noreply";
             CacheEntry entry;
             if (_cache.TryGetValue(key, out entry))
             {
                 entry.Expiry = exptime;
                 _cache[key] = entry;
                 byte[] result = new byte[] { };
-                return noreply ? new byte[] { } : result.Concat(EndOfLine).ToArray();
+                return result.Concat(EndOfLine).ToArray();
             }
-            return noreply ? new byte[] { } : Encoding.ASCII.GetBytes("NOT_FOUND\r\n");
+            return Encoding.ASCII.GetBytes("NOT_FOUND\r\n");
         }
 
         private byte[] HandleIncr(string commandName, string[] commandParams)
         {
             var key = ToKey(commandParams[0]);
             var incr = ulong.Parse(commandParams[1]);
-            bool noreply = commandParams.Length == 3 && commandParams[2] == "noreply";
 
             CacheEntry entry;
             if (_cache.TryGetValue(key, out entry))
@@ -164,25 +168,24 @@ namespace Nemcache.Service
                 var result = Encoding.ASCII.GetBytes(value.ToString());
                 entry.Data = result;
                 _cache[key] = entry;
-                return noreply ? new byte[] { } : result.Concat(EndOfLine).ToArray();
+                return result.Concat(EndOfLine).ToArray();
             }
 
-            return noreply ? new byte[] { } : Encoding.ASCII.GetBytes("NOT_FOUND\r\n");
+            return Encoding.ASCII.GetBytes("NOT_FOUND\r\n");
         }
 
         private byte[] HandleDelete(string[] commandParams)
         {
             var key = ToKey(commandParams[0]);
-            bool noreply = commandParams.Length == 2 && commandParams[1] == "noreply";
 
             CacheEntry entry;
             if (_cache.TryGetValue(key, out entry))
             {
                 _cache.Remove(key);
-                return noreply ? new byte[] { } : Encoding.ASCII.GetBytes("DELETED\r\n");
+                return Encoding.ASCII.GetBytes("DELETED\r\n");
             }
 
-            return noreply ? new byte[] { } : Encoding.ASCII.GetBytes("NOT_FOUND\r\n");
+            return Encoding.ASCII.GetBytes("NOT_FOUND\r\n");
         }
 
         private byte[] HandleCas(byte[] request, byte[] input, string[] commandParams)
@@ -192,7 +195,6 @@ namespace Nemcache.Service
             var exptime = ToExpiry(commandParams[2]);
             var bytes = int.Parse(commandParams[3]);
             var casUnique = ulong.Parse(commandParams[4]);
-            bool noreply = commandParams.Length == 6 && commandParams[5] == "noreply";
             byte[] data = request.Skip(input.Length + 2).Take(bytes).ToArray();
             return new byte[] { };
         }
@@ -203,32 +205,25 @@ namespace Nemcache.Service
             var flags = ToFlags(commandParams[1]);
             var exptime = ToExpiry(commandParams[2]);
             var bytes = int.Parse(commandParams[3]);
-            bool noreply = commandParams.Length == 5 && commandParams[4] == "noreply";
             byte[] data = request.Skip(input.Length + 2).Take(bytes).ToArray();
 
             CacheEntry entry;
             switch (commandName)
             {
                 case "set":
-                    entry = new CacheEntry { Data = data, Expiry = exptime, Flags = flags };
-                    _cache[key] = entry;
-                    return noreply ? new byte[] {} : Encoding.ASCII.GetBytes("STORED\r\n");
+                    return Store(key, flags, exptime, data);
                 case "replace":
                     if (_cache.TryGetValue(key, out entry))
                     {
-                        entry = new CacheEntry { Data = data, Expiry = exptime, Flags = flags };
-                        _cache[key] = entry;
-                        return noreply ? new byte[] { } : Encoding.ASCII.GetBytes("STORED\r\n");
+                        return Store(key, flags, exptime, data);
                     }
-                    return noreply ? new byte[] { } : Encoding.ASCII.GetBytes("NOT_STORED\r\n");
+                    return Encoding.ASCII.GetBytes("NOT_STORED\r\n");
                 case "add":
                     if (!_cache.TryGetValue(key, out entry))
                     {
-                        entry = new CacheEntry { Data = data, Expiry = exptime, Flags = flags };
-                        _cache[key] = entry;
-                        return noreply ? new byte[] { } : Encoding.ASCII.GetBytes("STORED\r\n");
+                        return Store(key, flags, exptime, data);
                     }
-                    return noreply ? new byte[] { } : Encoding.ASCII.GetBytes("NOT_STORED\r\n");
+                    return Encoding.ASCII.GetBytes("NOT_STORED\r\n");
 
                 case "append":
                 case "prepend":
@@ -237,23 +232,22 @@ namespace Nemcache.Service
                         var newData = commandName == "append" ? 
                             entry.Data.Concat(data) :
                             data.Concat(entry.Data);
-                        var newEntry = new CacheEntry {
-                            Data = newData.ToArray(), 
-                            Expiry = entry.Expiry,
-                            Flags = entry.Flags
-                        };
-                        _cache[key] = newEntry;
-                        return noreply ? new byte[] { } : Encoding.ASCII.GetBytes("STORED\r\n");
+                        return Store(key, entry.Flags, entry.Expiry, newData.ToArray());
                     }
                     else
                     {
-                        entry = new CacheEntry { Data = data, Expiry = exptime, Flags = flags };
-                        _cache[key] = entry;
-                        return noreply ? new byte[] { } : Encoding.ASCII.GetBytes("STORED\r\n");
+                        return Store(key, flags, exptime, data);
                     }
             }
 
             return Encoding.ASCII.GetBytes("ERROR\r\n");
+        }
+
+        private byte[] Store(string key, ulong flags, DateTime exptime, byte[] data)
+        {
+            var entry = new CacheEntry { Data = data, Expiry = exptime, Flags = flags };
+            _cache[key] = entry;
+            return Encoding.ASCII.GetBytes("STORED\r\n");
         }
 
         private byte[] HandleGet(string[] commandParams)

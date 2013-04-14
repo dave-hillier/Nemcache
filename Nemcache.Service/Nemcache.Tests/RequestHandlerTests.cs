@@ -304,7 +304,6 @@ namespace Nemcache.Tests
             Assert.AreEqual("VALUE key 0 12\r\nsecond first\r\nEND\r\n", response.ToAsciiString());
         }
 
-
         [TestMethod]
         public void DeleteNotFound()
         {
