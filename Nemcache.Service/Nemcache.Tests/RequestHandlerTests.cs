@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Nemcache.Tests.Builders;
 using Nemcache.Service;
+using System.Threading;
 
 namespace Nemcache.Tests
 {
@@ -339,5 +340,35 @@ namespace Nemcache.Tests
             Assert.AreEqual("END\r\n", response.ToAsciiString());
         }
 
+
+        // TODO: Remove time sensitive element
+        [TestMethod]
+        public void SetExpiryThenGet()
+        {
+            var storageBuilder = new MemcacheStorageCommandBuilder("set", "key", "value");
+            storageBuilder.WithExpiry(100);
+
+            _requestHandler.Dispatch("remote", storageBuilder.ToRequest());
+
+            var getBuilder = new MemcacheRetrivalCommandBuilder("get", "key");
+            var response = _requestHandler.Dispatch("", getBuilder.ToRequest());
+            Assert.AreEqual("VALUE key 0 5\r\nvalue\r\nEND\r\n", response.ToAsciiString());
+        }
+
+        // TODO: Remove time sensitive element
+        [TestMethod]
+        public void SetExpiryThenGetGone()
+        {
+            var storageBuilder = new MemcacheStorageCommandBuilder("set", "key", "value");
+            storageBuilder.WithExpiry(1);
+
+            _requestHandler.Dispatch("remote", storageBuilder.ToRequest());
+
+            Thread.Sleep(1100); // TODO: Fake out time??
+
+            var getBuilder = new MemcacheRetrivalCommandBuilder("get", "key");
+            var response = _requestHandler.Dispatch("", getBuilder.ToRequest());
+            Assert.AreEqual("END\r\n", response.ToAsciiString());
+        }
     }
 }

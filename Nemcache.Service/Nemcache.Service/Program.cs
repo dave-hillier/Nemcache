@@ -8,7 +8,7 @@ namespace Nemcache.Service
 {
     internal class Program
     {
-        private readonly byte[] EndOfLine = new byte[] { 13, 10 };//Encoding.ASCII.GetBytes("\r\n");
+        private readonly byte[] EndOfLine = new byte[] { 13, 10 }; //Encoding.ASCII.GetBytes("\r\n");
         private readonly Dictionary<string, CacheEntry> _cache = new Dictionary<string, CacheEntry>();
 
         private struct CacheEntry
@@ -17,7 +17,14 @@ namespace Nemcache.Service
             public DateTime Expiry { get; set; }
             public ulong CasUnique { get; set; }
             public byte[] Data { get; set; }
-            // TODO: when stored?
+
+            public bool IsExpired
+            {
+                get
+                {
+                    return Expiry < DateTime.UtcNow;
+                }
+            }
         }
 
         private static void Main(string[] args)
@@ -51,6 +58,8 @@ namespace Nemcache.Service
         {
             var expirySeconds = uint.Parse(expiry);
             // up to 60*60*24*30 seconds or unix time
+            if (expirySeconds == 0)
+                return DateTime.MaxValue;
             return (expirySeconds < 60 * 60 * 24 * 30 ? DateTime.UtcNow : UnixTimeEpoc) + TimeSpan.FromSeconds(expirySeconds);
         }
 
@@ -127,8 +136,15 @@ namespace Nemcache.Service
             var key = ToKey(commandParams[0]);
             var exptime = ToExpiry(commandParams[1]);
             bool noreply = commandParams.Length == 3 && commandParams[2] == "noreply";
-            var result = new byte[] { };
-            return result;
+            CacheEntry entry;
+            if (_cache.TryGetValue(key, out entry))
+            {
+                entry.Expiry = exptime;
+                _cache[key] = entry;
+                byte[] result = new byte[] { };
+                return noreply ? new byte[] { } : result.Concat(EndOfLine).ToArray();
+            }
+            return noreply ? new byte[] { } : Encoding.ASCII.GetBytes("NOT_FOUND\r\n");
         }
 
         private byte[] HandleIncr(string commandName, string[] commandParams)
@@ -221,7 +237,7 @@ namespace Nemcache.Service
                     }
             }
 
-            return new byte[] { };
+            return Encoding.ASCII.GetBytes("ERROR\r\n");
         }
 
         private byte[] HandleGet(string[] commandParams)
@@ -229,10 +245,11 @@ namespace Nemcache.Service
             var keys = commandParams.Select(ToKey);
             
             var entries = from key in keys 
-                          where _cache.ContainsKey(key)
+                          where _cache.ContainsKey(key) 
                           select new { Key = key, CacheEntry = _cache[key] };
 
             var response = from entry in entries
+                           where !entry.CacheEntry.IsExpired
                            let valueText = string.Format(
                                "VALUE {0} {1} {2}{3}\r\n", 
                                entry.Key, 
