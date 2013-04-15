@@ -1,8 +1,24 @@
 nemcached
 =========
 
-Memcached server implemented in C#. Currently this only implements basic get and set functionality for small payloads. This is a work in progress and my intention is to implement the protocol as described [in this document](https://raw.github.com/memcached/memcached/master/doc/protocol.txt), or at least the TCP part.
+Nemcached is a Memcached server implemented in C#. [Memcached](http://memcached.org/) is an in-memory key-value store for small chunks of arbitrary data (strings, objects) from results of database calls, API calls, or page rendering.
 
-Basic support for the following Memcached commands is implemented: get, set, append, prepend, incr and decr.
+Status
+======
 
-There is no cache eviction at the moment. Cached items will never expire or be evicted through the cache filling.
+Nemcached is not yet ready for production use due to lack of thread safety or performance testing (and probably optimisation)
+
+The following commands from the [Memcached specification](https://raw.github.com/memcached/memcached/master/doc/protocol.txt) are implemented:
+* get (and gets)
+* set 
+* add
+* replace
+* delete
+* append
+* prepend
+* incr
+* decr
+* touch
+
+Eviction works by evicting a random cache entry until the cache can insert the new value.
+
