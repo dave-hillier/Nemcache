@@ -6,8 +6,10 @@ using System.Text;
 
 namespace Nemcache.Service
 {
+
     internal class Program
     {
+
         private readonly byte[] EndOfLine = new byte[] { 13, 10 }; //Encoding.ASCII.GetBytes("\r\n");
         private readonly Dictionary<string, CacheEntry> _cache = new Dictionary<string, CacheEntry>();
 
@@ -18,7 +20,7 @@ namespace Nemcache.Service
             public ulong CasUnique { get; set; }
             public byte[] Data { get; set; }
 
-            public bool IsExpired { get { return Expiry < DateTime.UtcNow; } }
+            public bool IsExpired { get { return Expiry < Scheduler.Current.Now; } }
         }
 
         private static void Main(string[] args)
@@ -55,7 +57,7 @@ namespace Nemcache.Service
             // up to 60*60*24*30 seconds or unix time
             if (expirySeconds == 0)
                 return DateTime.MaxValue;
-            var start = expirySeconds < 60 * 60 * 24 * 30 ? DateTime.UtcNow : UnixTimeEpoc;
+            var start = expirySeconds < 60 * 60 * 24 * 30 ? Scheduler.Current.Now : UnixTimeEpoc;
             return start + TimeSpan.FromSeconds(expirySeconds);
         }
 
@@ -116,7 +118,7 @@ namespace Nemcache.Service
                 case "stats":// stats <args>\r\n or stats\r\n
                     return HandleStats(commandName, commandParams);
                 case "flush_all": // [numeric] [noreply]
-                    return HandleFlushAll();
+                    return HandleFlushAll(commandParams);
                 case "quit": //     quit\r\n
                     return new byte[] { };
                 default:
@@ -129,10 +131,12 @@ namespace Nemcache.Service
             return new byte[] { };
         }
 
-        private byte[] HandleFlushAll()
+        private byte[] HandleFlushAll(string[] commandParams)
         {
-            //_cache.Clear();
-            return Encoding.ASCII.GetBytes("...\r\n");
+            // TODO: delay by param then reset. 
+
+            _cache.Clear();
+            return Encoding.ASCII.GetBytes("OK\r\n");
         }
 
         private byte[] HandleTouch(string[] commandParams)
@@ -266,4 +270,21 @@ namespace Nemcache.Service
             return response.SelectMany(a => a).Concat(endOfMessage).Concat(EndOfLine).ToArray();
         }
     }
+
+    interface IScheduler
+    {
+        DateTime Now { get; }
+    }
+
+    class Scheduler : IScheduler
+    {
+        private static IScheduler _current = new Scheduler();
+        public static IScheduler Current
+        {
+            get { return _current; }
+            set { _current = value; }
+        }
+        public DateTime Now { get { return DateTime.UtcNow; } }
+    }
+
 }
