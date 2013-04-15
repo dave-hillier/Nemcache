@@ -6,7 +6,7 @@ Nemcached is a Memcached server implemented in C#. [Memcached](http://memcached.
 Status
 ======
 
-Nemcached is not yet ready for production use due to lack of thread safety or performance testing (and probably optimisation)
+Nemcached is not yet ready for production use as it does not support concurrent access and although functionally complete enough to be useful it is unoptimised.
 
 The following commands from the [Memcached specification](https://raw.github.com/memcached/memcached/master/doc/protocol.txt) are implemented:
 * get (and gets)
@@ -19,6 +19,22 @@ The following commands from the [Memcached specification](https://raw.github.com
 * incr
 * decr
 * touch
+* flush_all (without delay)
 
+Currently only TCP is supported including the noreply mode. 
+Flags support up-to 64 bit values, although this is a divergence from the original spec and therefore might not be supported by your client.
 Eviction works by evicting a random cache entry until the cache can insert the new value.
 
+TODO List
+=========
+Add support for the remaining commands:
+* CAS, the cas unique field is not currently 
+* Stats
+* flush_all (with a delay)
+* quit
+Fix concurrent access
+
+
+Future work
+===========
+Implement a client 
