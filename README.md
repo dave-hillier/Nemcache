@@ -40,6 +40,7 @@ TODO List
   * version
 * Fix concurrent access
 * UDP Protocol
+* Test using [Memcable](http://libmemcached.org/Memcapable.html)
 
 Future work
 ===========
