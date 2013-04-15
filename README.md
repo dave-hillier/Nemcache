@@ -30,19 +30,19 @@ Eviction works by evicting a random cache entry until the cache can insert the n
 
 TODO List
 =========
-*Run as service support
-*Configuration
-*Add support for the remaining commands:
+* Run as service support
+* Configuration
+* Add support for the remaining commands:
   * CAS, the cas unique field is not currently supported
   * flush_all (with a delay)
   * quit
   * Stats
   * version
-*Fix concurrent access
-*UDP Protocol
+* Fix concurrent access
+* UDP Protocol
 
 Future work
 ===========
-*Implement a client. The test classes
-*File-backed Persistent cache; to mitigate cold cache problems. 
+* Implement a client. The test classes
+* File-backed Persistent cache; to mitigate cold cache problems. 
 Aim is to keep compatible with Memcached as a drop in replacement. 
