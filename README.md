@@ -8,7 +8,8 @@ Nemcached can be used as a drop in replacement and is compatible with existing M
 Status
 ======
 
-Nemcached is not yet ready for production use as it does not support concurrent access and although functionally complete enough to be useful it is unoptimised.
+Nemcached is not yet ready for production use as it does not support concurrent access and, 
+although functionally complete enough to be used, it is unoptimised.
 
 The following commands from the [Memcached specification](https://raw.github.com/memcached/memcached/master/doc/protocol.txt) are implemented:
 * get (and gets)
