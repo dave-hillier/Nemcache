@@ -62,6 +62,8 @@
     <Compile Include="Builders\MemcacheRetrivalCommandBuilder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RequestHandlerTests.cs" />
+    <Compile Include="TestExt.cs" />
+    <Compile Include="TestScheduler.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Nemcache.Service\Nemcache.Service.csproj">
