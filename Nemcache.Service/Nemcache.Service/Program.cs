@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -9,10 +10,14 @@ namespace Nemcache.Service
 
     internal class Program
     {
+        public Program()
+        {
+            Capacity = 1024 * 1024 * 100;
+        }
 
         private readonly byte[] EndOfLine = new byte[] { 13, 10 }; //Encoding.ASCII.GetBytes("\r\n");
-        private readonly Dictionary<string, CacheEntry> _cache = new Dictionary<string, CacheEntry>();
-
+        private readonly Dictionary<string, CacheEntry> _cache = 
+            new Dictionary<string, CacheEntry>();
         private struct CacheEntry
         {
             public ulong Flags { get; set; }
@@ -197,6 +202,7 @@ namespace Nemcache.Service
             return new byte[] { };
         }
 
+        // TODO: consider wrapping all these parameters in a request type
         private byte[] HandleStore(byte[] request, byte[] input, string commandName, string[] commandParams)
         {
             var key = ToKey(commandParams[0]);
@@ -243,6 +249,18 @@ namespace Nemcache.Service
 
         private byte[] Store(string key, ulong flags, DateTime exptime, byte[] data)
         {
+            if (data.Length > Capacity)
+            {
+                return Encoding.ASCII.GetBytes("ERROR Over capacity\r\n");
+            }
+
+            while (Used + data.Length > Capacity)
+            {
+                var keyToEvict = _cache.Keys.OrderBy(k => Guid.NewGuid()).First();
+                _cache.Remove(keyToEvict);
+            }
+
+
             var entry = new CacheEntry { Data = data, Expiry = exptime, Flags = flags };
             _cache[key] = entry;
             return Encoding.ASCII.GetBytes("STORED\r\n");
@@ -268,6 +286,16 @@ namespace Nemcache.Service
 
 	        var endOfMessage = Encoding.ASCII.GetBytes("END");
             return response.SelectMany(a => a).Concat(endOfMessage).Concat(EndOfLine).ToArray();
+        }
+
+        public int Capacity { get; set; }
+
+        public int Used
+        {
+            get
+            {
+                return _cache.Values.Select(e => e.Data.Length).Sum();
+            }
         }
     }
 

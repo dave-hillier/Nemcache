@@ -20,7 +20,6 @@ namespace Nemcache.Tests
 
     class TestScheduler : IScheduler
     {
-        //public int Ticks { get; set; }
         private DateTime _clock = new DateTime();
 
         public void AdvanceBy(TimeSpan timespan)
@@ -44,6 +43,65 @@ namespace Nemcache.Tests
             {
                 _requestHandler = new Program();
                 Scheduler.Current = _testScheduler = new TestScheduler();
+            }
+
+            [TestMethod]
+            public void StoreInCapacity()
+            {
+                _requestHandler.Capacity = 10;
+                var setBuilder = new MemcacheStorageCommandBuilder("set", "key", "1234567890");
+
+                var response = _requestHandler.Dispatch("remote", setBuilder.ToRequest());
+
+                Assert.AreEqual("STORED\r\n", response.ToAsciiString());
+            }
+
+            [TestMethod]
+            public void StoreOverCapacity()
+            {
+                _requestHandler.Capacity = 5;
+                var setBuilder = new MemcacheStorageCommandBuilder("set", "key", "1234567890");
+
+                var response = _requestHandler.Dispatch("remote", setBuilder.ToRequest());
+
+                Assert.AreEqual("ERROR Over capacity\r\n", response.ToAsciiString());
+            }
+
+
+            [TestMethod]
+            public void StoreEvictOverCapacity()
+            {
+                _requestHandler.Capacity = 10;
+                var setBuilder1 = new MemcacheStorageCommandBuilder("set", "key1", "1234567890");
+                var setBuilder2 = new MemcacheStorageCommandBuilder("set", "key2", "1234567890");
+
+                _requestHandler.Dispatch("remote", setBuilder1.ToRequest());
+                var response = _requestHandler.Dispatch("remote", setBuilder2.ToRequest());
+                Assert.AreEqual("STORED\r\n", response.ToAsciiString());
+
+                var getBuilder = new MemcacheRetrivalCommandBuilder("get", "key1");
+                var response2 = _requestHandler.Dispatch("remote", getBuilder.ToRequest());
+                Assert.AreEqual("END\r\n", response2.ToAsciiString());
+            }
+
+            [TestMethod]
+            public void StoreMultipleEvictOverCapacity()
+            {
+                _requestHandler.Capacity = 10;
+                var setBuilder1 = new MemcacheStorageCommandBuilder("set", "key1", "12345");
+                var setBuilder2 = new MemcacheStorageCommandBuilder("set", "key2", "12345");
+                var setBuilder3 = new MemcacheStorageCommandBuilder("set", "key3", "1234567890");
+
+                _requestHandler.Dispatch("remote", setBuilder1.ToRequest());
+                _requestHandler.Dispatch("remote", setBuilder2.ToRequest());
+                _requestHandler.Dispatch("remote", setBuilder3.ToRequest());
+
+                var getBuilder1 = new MemcacheRetrivalCommandBuilder("get", "key1");
+                var response1 = _requestHandler.Dispatch("remote", getBuilder1.ToRequest());
+                Assert.AreEqual("END\r\n", response1.ToAsciiString());
+                var getBuilder2 = new MemcacheRetrivalCommandBuilder("get", "key2");
+                var response2 = _requestHandler.Dispatch("remote", getBuilder2.ToRequest());
+                Assert.AreEqual("END\r\n", response2.ToAsciiString());
             }
 
             [TestMethod]
