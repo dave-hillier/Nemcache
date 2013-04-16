@@ -128,9 +128,15 @@ namespace Nemcache.Service
 
         private byte[] HandleFlushAll(string[] commandParams)
         {
-            // TODO: delay by param then reset. 
-
-            _cache.Clear();
+            if (commandParams.Length > 0)
+            {
+                var delay = TimeSpan.FromSeconds(uint.Parse(commandParams[0]));
+                Scheduler.Current.Schedule(delay, () => _cache.Clear());
+            }
+            else 
+            {
+                _cache.Clear();
+            }
             return Encoding.ASCII.GetBytes("OK\r\n");
         }
 

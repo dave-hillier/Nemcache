@@ -584,6 +584,95 @@ namespace Nemcache.Tests
             Assert.AreEqual("VALUE key 0 6\r\nsecond\r\nEND\r\n", response.ToAsciiString());
         }
         #endregion
+
+        #region flush
+        [TestMethod]
+        public void FlushResponse()
+        {
+            var storageBuilder = new MemcacheStorageCommandBuilder("set", "key", "value");
+            _requestHandler.Dispatch("remote", storageBuilder.ToRequest());
+
+            var flushRequest = Encoding.ASCII.GetBytes("flush_all\r\n");
+            var response = _requestHandler.Dispatch("remote", flushRequest);
+
+            Assert.AreEqual("OK\r\n", response.ToAsciiString());
+        }
+
+        [TestMethod]
+        public void FlushDelayResponse()
+        {
+            var storageBuilder = new MemcacheStorageCommandBuilder("set", "key", "value");
+            _requestHandler.Dispatch("remote", storageBuilder.ToRequest());
+
+            var flushRequest = Encoding.ASCII.GetBytes("flush_all 123\r\n");
+            var response = _requestHandler.Dispatch("remote", flushRequest);
+
+            Assert.AreEqual("OK\r\n", response.ToAsciiString());
+        }
+        
+        [TestMethod]
+        public void FlushClearsCache()
+        {
+            var storageBuilder = new MemcacheStorageCommandBuilder("set", "key", "value");
+            _requestHandler.Dispatch("remote", storageBuilder.ToRequest());
+
+            var flushRequest = Encoding.ASCII.GetBytes("flush_all\r\n");
+            _requestHandler.Dispatch("remote", flushRequest);
+
+            var getBuilder = new MemcacheRetrivalCommandBuilder("get", "key");
+            var response = _requestHandler.Dispatch("", getBuilder.ToRequest());
+            Assert.AreEqual("END\r\n", response.ToAsciiString());
+        }
+        [TestMethod]
+        public void FlushClearsCacheMultiple()
+        {
+            var storageBuilder1 = new MemcacheStorageCommandBuilder("set", "key", "value");
+            _requestHandler.Dispatch("remote", storageBuilder1.ToRequest());
+            var storageBuilder2 = new MemcacheStorageCommandBuilder("set", "key2", "value");
+            _requestHandler.Dispatch("remote", storageBuilder2.ToRequest());
+
+            var flushRequest = Encoding.ASCII.GetBytes("flush_all\r\n");
+            _requestHandler.Dispatch("remote", flushRequest);
+
+            var getBuilder = new MemcacheRetrivalCommandBuilder("get", "key");
+            var response = _requestHandler.Dispatch("", getBuilder.ToRequest());
+            Assert.AreEqual("END\r\n", response.ToAsciiString());
+        }
+
+        [TestMethod]
+        public void FlushWithDelayNoEffect()
+        {
+            var storageBuilder = new MemcacheStorageCommandBuilder("set", "key", "value");
+            _requestHandler.Dispatch("remote", storageBuilder.ToRequest());
+
+            var flushRequest = Encoding.ASCII.GetBytes("flush_all 100\r\n");
+            _requestHandler.Dispatch("remote", flushRequest);
+
+            _testScheduler.AdvanceBy(TimeSpan.FromSeconds(90));
+
+            var getBuilder = new MemcacheRetrivalCommandBuilder("get", "key");
+            var response = _requestHandler.Dispatch("", getBuilder.ToRequest());
+            Assert.AreEqual("VALUE key 0 5\r\nvalue\r\nEND\r\n", response.ToAsciiString());
+        }
+
+
+        [TestMethod]
+        public void FlushWithDelayEmpty()
+        {
+            var storageBuilder = new MemcacheStorageCommandBuilder("set", "key", "value");
+            _requestHandler.Dispatch("remote", storageBuilder.ToRequest());
+
+            var flushRequest = Encoding.ASCII.GetBytes("flush_all 100\r\n");
+            _requestHandler.Dispatch("remote", flushRequest);
+
+            _testScheduler.AdvanceBy(TimeSpan.FromSeconds(200));
+
+            var getBuilder = new MemcacheRetrivalCommandBuilder("get", "key");
+            var response = _requestHandler.Dispatch("", getBuilder.ToRequest());
+            Assert.AreEqual("END\r\n", response.ToAsciiString());
+        }
+
+        #endregion
     }
     
 }
