@@ -31,7 +31,5 @@ namespace Nemcache.Service
             var timer = new Timer(cb => action(), null, delay, TimeSpan.FromMilliseconds(-1));
             return timer;
         }
-
-
     }
 }

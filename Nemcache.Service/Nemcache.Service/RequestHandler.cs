@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Nemcache.Service
@@ -15,6 +16,7 @@ namespace Nemcache.Service
 
         private readonly byte[] EndOfLine = new byte[] { 13, 10 }; // Ascii for "\r\n"
         private readonly Dictionary<string, CacheEntry> _cache = new Dictionary<string, CacheEntry>();
+        private long _casUnique = 1;
 
         private struct CacheEntry
         {
@@ -195,7 +197,23 @@ namespace Nemcache.Service
             var bytes = int.Parse(commandParams[3]);
             var casUnique = ulong.Parse(commandParams[4]);
             byte[] data = request.Skip(input.Length + 2).Take(bytes).ToArray();
-            return new byte[] { };
+
+            CacheEntry entry;
+            if (_cache.TryGetValue(key, out entry))
+            {
+                if (entry.CasUnique == casUnique)
+                {
+                    _cache[key] = new CacheEntry { CasUnique = casUnique, Data = data, Expiry = exptime, Flags = flags };
+                    return Encoding.ASCII.GetBytes("STORED\r\n");
+                }
+                else
+                {
+                    return Encoding.ASCII.GetBytes("EXISTS\r\n");
+                }
+            }
+
+            _cache[key] = new CacheEntry { CasUnique = casUnique, Data = data, Expiry = exptime, Flags = flags };
+            return Encoding.ASCII.GetBytes("STORED\r\n");
         }
 
         // TODO: consider wrapping all these parameters in a request type
@@ -256,7 +274,7 @@ namespace Nemcache.Service
                 _cache.Remove(keyToEvict);
             }
 
-            var entry = new CacheEntry { Data = data, Expiry = exptime, Flags = flags };
+            var entry = new CacheEntry { Data = data, Expiry = exptime, Flags = flags/*, CasUnique = (ulong)casUnique*/ };
             _cache[key] = entry;
             return Encoding.ASCII.GetBytes("STORED\r\n");
         }

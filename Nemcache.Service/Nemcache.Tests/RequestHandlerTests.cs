@@ -671,6 +671,68 @@ namespace Nemcache.Tests
             var response = _requestHandler.Dispatch("", getBuilder.ToRequest());
             Assert.AreEqual("END\r\n", response.ToAsciiString());
         }
+        #endregion
+
+        #region Cas
+
+        // TODO: cas capacity checks
+        [TestMethod]
+        public void CasNoPrevious()
+        {
+            var casBuilder = new MemcacheCasCommandBuilder("key", "value");
+            ulong lastCas = 123;
+            casBuilder.WithCasUnique(lastCas);
+
+            var response = _requestHandler.Dispatch("remote", casBuilder.ToRequest());
+            Assert.AreEqual("STORED\r\n", response.ToAsciiString());
+
+            // TODO: split test
+            var getBuilder = new MemcacheRetrivalCommandBuilder("get", "key");
+            var getResponse = _requestHandler.Dispatch("", getBuilder.ToRequest());
+            Assert.AreEqual("VALUE key 0 5 123\r\nvalue\r\nEND\r\n", getResponse.ToAsciiString());
+        }
+
+        [TestMethod]
+        public void CasUpdatePrevious()
+        {
+            var casBuilder1 = new MemcacheCasCommandBuilder("key", "value1");
+            casBuilder1.WithCasUnique(567);
+            _requestHandler.Dispatch("remote", casBuilder1.ToRequest());
+
+            var casBuilder2 = new MemcacheCasCommandBuilder("key", "value2");
+            casBuilder2.WithCasUnique(567);
+            
+            var response2 = _requestHandler.Dispatch("remote", casBuilder2.ToRequest());
+
+            Assert.AreEqual("STORED\r\n", response2.ToAsciiString());
+
+            // TODO: split test
+            var getBuilder = new MemcacheRetrivalCommandBuilder("get", "key");
+            var getResponse = _requestHandler.Dispatch("", getBuilder.ToRequest());
+            Assert.AreEqual("VALUE key 0 6 567\r\nvalue2\r\nEND\r\n", getResponse.ToAsciiString());
+        }
+
+
+        [TestMethod]
+        public void CasUpdatePreviousModified()
+        {
+            var casBuilder1 = new MemcacheCasCommandBuilder("key", "value1");
+            casBuilder1.WithCasUnique(789);
+            _requestHandler.Dispatch("remote", casBuilder1.ToRequest());
+
+            var casBuilder2 = new MemcacheCasCommandBuilder("key", "value2");
+            casBuilder2.WithCasUnique(567);
+
+            var response2 = _requestHandler.Dispatch("remote", casBuilder2.ToRequest());
+            Assert.AreEqual("EXISTS\r\n", response2.ToAsciiString());
+
+            // TODO: and not changed
+            // TODO: split test
+            var getBuilder = new MemcacheRetrivalCommandBuilder("get", "key");
+            var getResponse = _requestHandler.Dispatch("", getBuilder.ToRequest());
+            Assert.AreEqual("VALUE key 0 6 789\r\nvalue1\r\nEND\r\n", getResponse.ToAsciiString());
+        }
+
 
         #endregion
     }
