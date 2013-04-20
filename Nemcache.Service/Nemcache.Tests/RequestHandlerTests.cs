@@ -735,6 +735,5 @@ namespace Nemcache.Tests
 
 
         #endregion
-    }
-    
+    }    
 }

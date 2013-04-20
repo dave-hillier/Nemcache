@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,8 +16,7 @@ namespace Nemcache.Service
         }
 
         private readonly byte[] EndOfLine = new byte[] { 13, 10 }; // Ascii for "\r\n"
-        private readonly Dictionary<string, CacheEntry> _cache = new Dictionary<string, CacheEntry>();
-        private long _casUnique = 1;
+        private readonly ConcurrentDictionary<string, CacheEntry> _cache = new ConcurrentDictionary<string, CacheEntry>();
 
         private struct CacheEntry
         {
@@ -135,7 +135,7 @@ namespace Nemcache.Service
                 var delay = TimeSpan.FromSeconds(uint.Parse(commandParams[0]));
                 Scheduler.Current.Schedule(delay, () => _cache.Clear());
             }
-            else 
+            else
             {
                 _cache.Clear();
             }
@@ -149,10 +149,10 @@ namespace Nemcache.Service
             CacheEntry entry;
             if (_cache.TryGetValue(key, out entry))
             {
-                entry.Expiry = exptime;
-                _cache[key] = entry;
-                byte[] result = Encoding.ASCII.GetBytes("OK");
-                return result.Concat(EndOfLine).ToArray();
+                CacheEntry touched = entry;
+                touched.Expiry = exptime;
+                _cache.TryUpdate(key, touched, entry); // OK to fail if something else has updated.
+                return Encoding.ASCII.GetBytes("OK\r\n");
             }
             return Encoding.ASCII.GetBytes("NOT_FOUND\r\n");
         }
@@ -161,32 +161,30 @@ namespace Nemcache.Service
         {
             var key = ToKey(commandParams[0]);
             var incr = ulong.Parse(commandParams[1]);
-            CacheEntry entry;
-            if (_cache.TryGetValue(key, out entry))
-            {
-                var value = ulong.Parse(Encoding.ASCII.GetString(entry.Data));
-                if (commandName == "incr")
-                    value += incr;
-                else
-                    value -= incr;
-                var result = Encoding.ASCII.GetBytes(value.ToString());
-                entry.Data = result;
-                _cache[key] = entry;
-                return result.Concat(EndOfLine).ToArray();
-            }
-            return Encoding.ASCII.GetBytes("NOT_FOUND\r\n");
+
+            byte[] resultData = null;
+            var result = _cache.TryUpdate(key,
+                entry =>
+                {
+                    var value = ulong.Parse(Encoding.ASCII.GetString(entry.Data));
+                    if (commandName == "incr")
+                        value += incr;
+                    else
+                        value -= incr;
+                    resultData = Encoding.ASCII.GetBytes(value.ToString());
+                    entry.Data = resultData;
+                    return entry;
+                });
+            return result && resultData != null ? resultData.Concat(EndOfLine).ToArray()
+                : Encoding.ASCII.GetBytes("NOT_FOUND\r\n");
         }
 
         private byte[] HandleDelete(string[] commandParams)
         {
             var key = ToKey(commandParams[0]);
             CacheEntry entry;
-            if (_cache.TryGetValue(key, out entry))
-            {
-                _cache.Remove(key);
-                return Encoding.ASCII.GetBytes("DELETED\r\n");
-            }
-            return Encoding.ASCII.GetBytes("NOT_FOUND\r\n");
+            return _cache.TryRemove(key, out entry) ? Encoding.ASCII.GetBytes("DELETED\r\n") :
+                Encoding.ASCII.GetBytes("NOT_FOUND\r\n");
         }
 
         private byte[] HandleCas(byte[] request, byte[] input, string[] commandParams)
@@ -197,14 +195,15 @@ namespace Nemcache.Service
             var bytes = int.Parse(commandParams[3]);
             var casUnique = ulong.Parse(commandParams[4]);
             byte[] data = request.Skip(input.Length + 2).Take(bytes).ToArray();
-
             CacheEntry entry;
             if (_cache.TryGetValue(key, out entry))
             {
                 if (entry.CasUnique == casUnique)
                 {
-                    _cache[key] = new CacheEntry { CasUnique = casUnique, Data = data, Expiry = exptime, Flags = flags };
-                    return Encoding.ASCII.GetBytes("STORED\r\n");
+                    var newValue = new CacheEntry { CasUnique = casUnique, Data = data, Expiry = exptime, Flags = flags };
+                    var stored = _cache.TryUpdate(key, newValue, entry);
+                    return stored ? Encoding.ASCII.GetBytes("STORED\r\n") : 
+                        Encoding.ASCII.GetBytes("EXISTS\r\n");
                 }
                 else
                 {
@@ -225,59 +224,83 @@ namespace Nemcache.Service
             var bytes = int.Parse(commandParams[3]);
             byte[] data = request.Skip(input.Length + 2).Take(bytes).ToArray();
 
-            CacheEntry entry;
-            switch (commandName)
-            {
-                case "set":
-                    return Store(key, flags, exptime, data);
-                case "replace":
-                    if (_cache.TryGetValue(key, out entry))
-                    {
-                        return Store(key, flags, exptime, data);
-                    }
-                    return Encoding.ASCII.GetBytes("NOT_STORED\r\n");
-                case "add":
-                    if (!_cache.TryGetValue(key, out entry))
-                    {
-                        return Store(key, flags, exptime, data);
-                    }
-                    return Encoding.ASCII.GetBytes("NOT_STORED\r\n");
-
-                case "append":
-                case "prepend":
-                    if (_cache.TryGetValue(key, out entry))
-                    {
-                        var newData = commandName == "append" ?
-                            entry.Data.Concat(data) :
-                            data.Concat(entry.Data);
-                        return Store(key, entry.Flags, entry.Expiry, newData.ToArray());
-                    }
-                    else
-                    {
-                        return Store(key, flags, exptime, data);
-                    }
-            }
-
-            return Encoding.ASCII.GetBytes("ERROR\r\n");
-        }
-
-        private byte[] Store(string key, ulong flags, DateTime exptime, byte[] data)
-        {
             if (data.Length > Capacity)
             {
                 return Encoding.ASCII.GetBytes("ERROR Over capacity\r\n");
             }
 
-            while (Used + data.Length > Capacity)
+            switch (commandName)
             {
-                var keyToEvict = _cache.Keys.OrderBy(k => Guid.NewGuid()).First();
-                _cache.Remove(keyToEvict);
+                case "set":
+                    return Store(key, flags, exptime, data);
+                case "replace":
+                    return Replace(key, flags, exptime, data);
+                case "add":
+                    return Add(key, flags, exptime, data);
+                case "append":
+                case "prepend":
+                    return Append(key, flags, exptime, data, commandName == "append");
             }
+            return Encoding.ASCII.GetBytes("ERROR\r\n");
+        }
 
-            var entry = new CacheEntry { Data = data, Expiry = exptime, Flags = flags/*, CasUnique = (ulong)casUnique*/ };
-            _cache[key] = entry;
+        private byte[] Replace(string key, ulong flags, DateTime exptime, byte[] data)
+        {
+            MakeSpaceForData(data.Length); // TODO: current value could reduce this requirement 
+            var exists = _cache.TryUpdate(key, e =>
+            {
+                return new CacheEntry { Data = data, Expiry = exptime, Flags = flags };
+            });
+            return exists ? Encoding.ASCII.GetBytes("STORED\r\n") :
+                Encoding.ASCII.GetBytes("NOT_STORED\r\n");
+        }
+
+        private byte[] Add(string key, ulong flags, DateTime exptime, byte[] data)
+        {
+            MakeSpaceForData(data.Length);
+            var entry = new CacheEntry { Data = data, Expiry = exptime, Flags = flags };
+            var result = _cache.TryAdd(key, entry);
+            return result ? Encoding.ASCII.GetBytes("STORED\r\n") :
+                Encoding.ASCII.GetBytes("NOT_STORED\r\n");
+        }
+
+        private byte[] Append(string key, ulong flags, DateTime exptime, byte[] data, bool prepend)
+        {
+            MakeSpaceForData(data.Length);
+            var exists = _cache.TryUpdate(key, e =>
+            {
+                // TODO: ensure that this entry is not becomming bigger than capacity?
+                var newEntry = e;
+                newEntry.Data = prepend ?
+                    e.Data.Concat(data).ToArray() :
+                    data.Concat(e.Data).ToArray();
+                return newEntry;
+            });
+            return !exists ? Store(key, flags, exptime, data) : Encoding.ASCII.GetBytes("STORED\r\n");
+        }
+
+        private byte[] Store(string key, ulong flags, DateTime exptime, byte[] data)
+        {
+            MakeSpaceForData(data.Length);
+            _cache[key] = new CacheEntry { Data = data, Expiry = exptime, Flags = flags };
             return Encoding.ASCII.GetBytes("STORED\r\n");
         }
+
+        private void MakeSpaceForData(int length)
+        {
+            while (Used + length > Capacity)
+            {
+                RemoveRandomElement();
+            }
+        }
+
+        Random _rng = new Random();
+        private void RemoveRandomElement()
+        {
+            var keyToEvict = _cache.Keys.ElementAt(_rng.Next(0, _cache.Keys.Count));
+            CacheEntry entry;
+            _cache.TryRemove(keyToEvict, out entry);
+        }        
 
         private byte[] HandleGet(string[] commandParams)
         {
@@ -312,4 +335,31 @@ namespace Nemcache.Service
         }
     }
 
+
+    static class ConcurrentDictionaryHelpers
+    {
+        public static bool TryUpdate<TKey, TValue>(this ConcurrentDictionary<TKey, TValue> dict, 
+            TKey key, Func<TValue, TValue> updateFactory)
+        {
+            TValue curValue;
+            while(dict.TryGetValue(key, out curValue))
+            {
+                if(dict.TryUpdate(key, updateFactory(curValue), curValue))
+                    return true;
+                //if we're looping either the key was removed by another thread, or another thread
+                //changed the value, so we start again.
+            }
+            return false;
+        }
+
+        public static bool TryUpdateOptimisitic<TKey, TValue>(this ConcurrentDictionary<TKey, TValue> dict, 
+            TKey key, Func<TValue, TValue> updateFactory)
+        {
+            TValue curValue;
+            if (!dict.TryGetValue(key, out curValue))
+                return false;
+            dict.TryUpdate(key, updateFactory(curValue), curValue);
+            return true;
+        }
+    }
 }
