@@ -8,8 +8,8 @@ Nemcached can be used as a drop in replacement and is compatible with existing M
 Status
 ======
 
-Nemcached is not yet ready for production use as it does not support concurrent access and, 
-although functionally complete enough to be used, it is unoptimised.
+Nemcached is not yet ready for production use as it, although functionally complete enough to be used, 
+not fully tested and is unoptimised.
 
 The following commands from the [Memcached specification](https://raw.github.com/memcached/memcached/master/doc/protocol.txt) are implemented:
 * get (and gets)
@@ -22,7 +22,8 @@ The following commands from the [Memcached specification](https://raw.github.com
 * incr
 * decr
 * touch
-* flush_all (without delay)
+* flush_all
+* cas
 
 Currently only TCP is supported including the noreply mode. 
 Flags support up-to 64 bit values, although this is a divergence from the original spec and therefore might not be supported by your client.
@@ -33,13 +34,12 @@ TODO List
 * Run as service support
 * Configuration
 * Add support for the remaining commands:
-  * CAS, the cas unique field is not currently supported
-  * flush_all (with a delay)
   * quit
   * Stats
   * version
 * Fix concurrent access
 * UDP Protocol
+* Binary protocol (maybe)
 * Test using [Memcable](http://libmemcached.org/Memcapable.html)
 
 Future work
