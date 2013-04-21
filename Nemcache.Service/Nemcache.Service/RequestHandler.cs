@@ -10,13 +10,9 @@ namespace Nemcache.Service
 {
     internal class RequestHandler
     {
-        public RequestHandler()
-        {
-            Capacity = 1024 * 1024 * 100;
-        }
-
         private readonly byte[] EndOfLine = new byte[] { 13, 10 }; // Ascii for "\r\n"
         private readonly ConcurrentDictionary<string, CacheEntry> _cache = new ConcurrentDictionary<string, CacheEntry>();
+        private Random _rng = new Random();
 
         private struct CacheEntry
         {
@@ -26,6 +22,11 @@ namespace Nemcache.Service
             public byte[] Data { get; set; }
 
             public bool IsExpired { get { return Expiry < Scheduler.Current.Now; } }
+        }
+
+        public RequestHandler(int capacity)
+        {
+            Capacity = capacity;
         }
 
         public IEnumerable<byte> TakeFirstLine(byte[] request)
@@ -200,6 +201,9 @@ namespace Nemcache.Service
             {
                 if (entry.CasUnique == casUnique)
                 {
+                    var spaceRequired = Math.Abs(data.Length - entry.Data.Length);
+                    if (spaceRequired > 0)
+                        MakeSpaceForData(spaceRequired);
                     var newValue = new CacheEntry { CasUnique = casUnique, Data = data, Expiry = exptime, Flags = flags };
                     var stored = _cache.TryUpdate(key, newValue, entry);
                     return stored ? Encoding.ASCII.GetBytes("STORED\r\n") : 
@@ -290,12 +294,11 @@ namespace Nemcache.Service
         {
             while (Used + length > Capacity)
             {
-                RemoveRandomElement();
+                RemoveRandomEntry();
             }
         }
 
-        Random _rng = new Random();
-        private void RemoveRandomElement()
+        private void RemoveRandomEntry()
         {
             var keyToEvict = _cache.Keys.ElementAt(_rng.Next(0, _cache.Keys.Count));
             CacheEntry entry;

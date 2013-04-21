@@ -20,7 +20,7 @@ namespace Nemcache.Tests
         [TestInitialize]
         public void Setup()
         {
-            _requestHandler = new RequestHandler();
+            _requestHandler = new RequestHandler(100000);
             Scheduler.Current = _testScheduler = new TestScheduler();
         }
 
@@ -278,12 +278,9 @@ namespace Nemcache.Tests
         public void Incr()
         {
             var storageBuilder = new MemcacheStorageCommandBuilder("set", "key", "123");
-
             _requestHandler.Dispatch("remote", storageBuilder.ToRequest());
-
             var builder = new MemcacheIncrCommandBuilder("incr", "key", 1);
             var response = _requestHandler.Dispatch("", builder.ToRequest());
-
             Assert.AreEqual("124\r\n", response.ToAsciiString());
         }
 
@@ -291,12 +288,9 @@ namespace Nemcache.Tests
         public void Decr()
         {
             var storageBuilder = new MemcacheStorageCommandBuilder("set", "key", "123");
-
             _requestHandler.Dispatch("remote", storageBuilder.ToRequest());
-
             var builder = new MemcacheIncrCommandBuilder("decr", "key", 1);
             var response = _requestHandler.Dispatch("", builder.ToRequest());
-
             Assert.AreEqual("122\r\n", response.ToAsciiString());
         }
 
@@ -470,11 +464,10 @@ namespace Nemcache.Tests
             var storageBuilder = new MemcacheStorageCommandBuilder("set", "key", "value");
             storageBuilder.WithExpiry(100);
             _requestHandler.Dispatch("remote", storageBuilder.ToRequest());
-
+            
             var touchBuilder = new MemcacheTouchCommandBuilder("key");
             touchBuilder.WithExpiry(1);
             _requestHandler.Dispatch("remote", touchBuilder.ToRequest());
-
             _testScheduler.AdvanceBy(TimeSpan.FromSeconds(2));
 
             var getBuilder = new MemcacheRetrivalCommandBuilder("get", "key");
