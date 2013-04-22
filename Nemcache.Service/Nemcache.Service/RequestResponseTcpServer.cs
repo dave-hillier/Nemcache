@@ -2,6 +2,7 @@
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Threading.Tasks;
 using System.Threading;
@@ -15,10 +16,10 @@ namespace Nemcache.Service
         private readonly TcpListener _tcpListener;
         private readonly CancellationTokenSource _tokenSource;
         private readonly TaskFactory _taskFactory;
-        private readonly Func<string, byte[], byte[]> _callback;
+        private readonly Func<string, byte[], IDisposable, byte[]> _callback;
         private const int BufferSize = 4096;
 
-        public RequestResponseTcpServer(IPAddress address, int port, Func<string, byte[], byte[]> callback)
+        public RequestResponseTcpServer(IPAddress address, int port, Func<string, byte[], IDisposable, byte[]> callback)
         {
             _callback = callback;
             _tokenSource = new CancellationTokenSource();
@@ -58,7 +59,7 @@ namespace Nemcache.Service
                     byte[] input = memoryStream.ToArray();
                     if (input.Length != 0)
                     {
-                        var output = _callback(remoteEndpoint, input);
+                        var output = _callback(remoteEndpoint, input, Disposable.Create(networkStream.Close));
                         WriteResponse(networkStream, output);
                     }
                 }, TaskContinuationOptions.OnlyOnRanToCompletion);

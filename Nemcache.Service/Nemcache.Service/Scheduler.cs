@@ -14,7 +14,9 @@ namespace Nemcache.Service
 
         IDisposable Schedule(TimeSpan delay, Action action);
     }
-
+    /// <summary>
+    /// A wrapper for system calls to enable no time sensitive tests
+    /// </summary>
     class Scheduler : IScheduler
     {
         private static IScheduler _current = new Scheduler();

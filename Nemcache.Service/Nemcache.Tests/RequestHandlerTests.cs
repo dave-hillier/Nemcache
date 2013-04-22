@@ -31,7 +31,7 @@ namespace Nemcache.Tests
             _requestHandler.Capacity = 10;
             var setBuilder = new MemcacheStorageCommandBuilder("set", "key", "1234567890");
 
-            var response = _requestHandler.Dispatch("remote", setBuilder.ToRequest());
+            var response = Dispatch(setBuilder.ToRequest());
 
             Assert.AreEqual("STORED\r\n", response.ToAsciiString());
         }
@@ -42,7 +42,7 @@ namespace Nemcache.Tests
             _requestHandler.Capacity = 5;
             var setBuilder = new MemcacheStorageCommandBuilder("set", "key", "1234567890");
 
-            var response = _requestHandler.Dispatch("remote", setBuilder.ToRequest());
+            var response = Dispatch(setBuilder.ToRequest());
 
             Assert.AreEqual("ERROR Over capacity\r\n", response.ToAsciiString());
         }
@@ -55,12 +55,12 @@ namespace Nemcache.Tests
             var setBuilder1 = new MemcacheStorageCommandBuilder("set", "key1", "1234567890");
             var setBuilder2 = new MemcacheStorageCommandBuilder("set", "key2", "1234567890");
 
-            _requestHandler.Dispatch("remote", setBuilder1.ToRequest());
-            var response = _requestHandler.Dispatch("remote", setBuilder2.ToRequest());
+            Dispatch(setBuilder1.ToRequest());
+            var response = Dispatch(setBuilder2.ToRequest());
             Assert.AreEqual("STORED\r\n", response.ToAsciiString());
 
             var getBuilder = new MemcacheRetrivalCommandBuilder("get", "key1");
-            var response2 = _requestHandler.Dispatch("remote", getBuilder.ToRequest());
+            var response2 = Dispatch(getBuilder.ToRequest());
             Assert.AreEqual("END\r\n", response2.ToAsciiString());
         }
 
@@ -72,15 +72,15 @@ namespace Nemcache.Tests
             var setBuilder2 = new MemcacheStorageCommandBuilder("set", "key2", "12345");
             var setBuilder3 = new MemcacheStorageCommandBuilder("set", "key3", "1234567890");
 
-            _requestHandler.Dispatch("remote", setBuilder1.ToRequest());
-            _requestHandler.Dispatch("remote", setBuilder2.ToRequest());
-            _requestHandler.Dispatch("remote", setBuilder3.ToRequest());
+            Dispatch(setBuilder1.ToRequest());
+            Dispatch(setBuilder2.ToRequest());
+            Dispatch(setBuilder3.ToRequest());
 
             var getBuilder1 = new MemcacheRetrivalCommandBuilder("get", "key1");
-            var response1 = _requestHandler.Dispatch("remote", getBuilder1.ToRequest());
+            var response1 = Dispatch(getBuilder1.ToRequest());
             Assert.AreEqual("END\r\n", response1.ToAsciiString());
             var getBuilder2 = new MemcacheRetrivalCommandBuilder("get", "key2");
-            var response2 = _requestHandler.Dispatch("remote", getBuilder2.ToRequest());
+            var response2 = Dispatch(getBuilder2.ToRequest());
             Assert.AreEqual("END\r\n", response2.ToAsciiString());
         }
         #endregion
@@ -91,7 +91,7 @@ namespace Nemcache.Tests
         {
             var setBuilder = new MemcacheStorageCommandBuilder("set", "key", "value");
 
-            var response = _requestHandler.Dispatch("remote", setBuilder.ToRequest());
+            var response = Dispatch(setBuilder.ToRequest());
 
             Assert.AreEqual("STORED\r\n", response.ToAsciiString());
         }
@@ -102,7 +102,7 @@ namespace Nemcache.Tests
             var setBuilder = new MemcacheStorageCommandBuilder("set", "key", "value");
             setBuilder.NoReply();
 
-            var response = _requestHandler.Dispatch("remote", setBuilder.ToRequest());
+            var response = Dispatch(setBuilder.ToRequest());
 
             Assert.AreEqual("", response.ToAsciiString());
         }
@@ -111,10 +111,10 @@ namespace Nemcache.Tests
         public void SetTwice()
         {
             var storageBuilder = new MemcacheStorageCommandBuilder("set", "key", "value");
-            _requestHandler.Dispatch("remote", storageBuilder.ToRequest());
+            Dispatch(storageBuilder.ToRequest());
 
             storageBuilder.Data("Updated");
-            var response = _requestHandler.Dispatch("remote", storageBuilder.ToRequest());
+            var response = Dispatch(storageBuilder.ToRequest());
 
             Assert.AreEqual("STORED\r\n", response.ToAsciiString());
         }
@@ -123,10 +123,10 @@ namespace Nemcache.Tests
         public void SetThenGet()
         {
             var storageBuilder = new MemcacheStorageCommandBuilder("set", "key", "value");
-            _requestHandler.Dispatch("remote", storageBuilder.ToRequest());
+            Dispatch(storageBuilder.ToRequest());
 
             var getBuilder = new MemcacheRetrivalCommandBuilder("get", "key");
-            var response = _requestHandler.Dispatch("", getBuilder.ToRequest());
+            var response = Dispatch(getBuilder.ToRequest());
             Assert.AreEqual("VALUE key 0 5\r\nvalue\r\nEND\r\n", response.ToAsciiString());
         }
 
@@ -135,10 +135,10 @@ namespace Nemcache.Tests
         {
             var storageBuilder = new MemcacheStorageCommandBuilder("set", "key", "value");
             storageBuilder.WithFlags(1234567890);
-            _requestHandler.Dispatch("remote", storageBuilder.ToRequest());
+            Dispatch(storageBuilder.ToRequest());
 
             var getBuilder = new MemcacheRetrivalCommandBuilder("get", "key");
-            var response = _requestHandler.Dispatch("", getBuilder.ToRequest());
+            var response = Dispatch(getBuilder.ToRequest());
             Assert.AreEqual("VALUE key 1234567890 5\r\nvalue\r\nEND\r\n", response.ToAsciiString());
         }
 
@@ -147,11 +147,11 @@ namespace Nemcache.Tests
         {
             var storageBuilder = new MemcacheStorageCommandBuilder("set", "key", "value");
             storageBuilder.WithFlags(ulong.MaxValue);
-            _requestHandler.Dispatch("remote", storageBuilder.ToRequest());
+            Dispatch(storageBuilder.ToRequest());
 
             var getBuilder = new MemcacheRetrivalCommandBuilder("get", "key");
 
-            var response = _requestHandler.Dispatch("", getBuilder.ToRequest());
+            var response = Dispatch(getBuilder.ToRequest());
             Assert.AreEqual("VALUE key " + ulong.MaxValue.ToString() + " 5\r\nvalue\r\nEND\r\n", response.ToAsciiString());
         }
 
@@ -159,12 +159,12 @@ namespace Nemcache.Tests
         public void SetAndSetNewThenGet()
         {
             var storageBuilder = new MemcacheStorageCommandBuilder("set", "key", "value");
-            _requestHandler.Dispatch("remote", storageBuilder.ToRequest());
+            Dispatch(storageBuilder.ToRequest());
             storageBuilder.Data("new value");
-            _requestHandler.Dispatch("remote", storageBuilder.ToRequest());
+            Dispatch(storageBuilder.ToRequest());
             var getBuilder = new MemcacheRetrivalCommandBuilder("get", "key");
 
-            var response = _requestHandler.Dispatch("", getBuilder.ToRequest());
+            var response = Dispatch(getBuilder.ToRequest());
 
             Assert.AreEqual("VALUE key 0 9\r\nnew value\r\nEND\r\n", response.ToAsciiString());
         }
@@ -173,13 +173,13 @@ namespace Nemcache.Tests
         public void SetThenGetMultiple()
         {
             var storageBuilder1 = new MemcacheStorageCommandBuilder("set", "key1", "111111");
-            _requestHandler.Dispatch("remote", storageBuilder1.ToRequest());
+            Dispatch(storageBuilder1.ToRequest());
 
             var storageBuilder2 = new MemcacheStorageCommandBuilder("set", "key2", "222");
-            _requestHandler.Dispatch("remote", storageBuilder2.ToRequest());
+            Dispatch(storageBuilder2.ToRequest());
 
             var getBuilder = new MemcacheRetrivalCommandBuilder("get", "key1", "key2");
-            var response = _requestHandler.Dispatch("abc", getBuilder.ToRequest());
+            var response = Dispatch(getBuilder.ToRequest());
 
             Assert.AreEqual("VALUE key1 0 6\r\n111111\r\nVALUE key2 0 3\r\n222\r\nEND\r\n", response.ToAsciiString());
         }
@@ -188,7 +188,7 @@ namespace Nemcache.Tests
         public void GetNotFound()
         {
             var getBuilder = new MemcacheRetrivalCommandBuilder("get", "key");
-            var response = _requestHandler.Dispatch("", getBuilder.ToRequest());
+            var response = Dispatch(getBuilder.ToRequest());
             Assert.AreEqual("END\r\n", response.ToAsciiString());
         }
         #endregion
@@ -199,7 +199,7 @@ namespace Nemcache.Tests
         {
             var appendBuilder = new MemcacheStorageCommandBuilder("append", "key", "value");
 
-            var response = _requestHandler.Dispatch("", appendBuilder.ToRequest());
+            var response = Dispatch(appendBuilder.ToRequest());
 
             Assert.AreEqual("STORED\r\n", response.ToAsciiString());
         }
@@ -211,7 +211,7 @@ namespace Nemcache.Tests
             var appendBuilder = new MemcacheStorageCommandBuilder("append", "key", "value");
             appendBuilder.NoReply();
 
-            var response = _requestHandler.Dispatch("", appendBuilder.ToRequest());
+            var response = Dispatch(appendBuilder.ToRequest());
 
             Assert.AreEqual("", response.ToAsciiString());
         }
@@ -221,10 +221,10 @@ namespace Nemcache.Tests
         public void AppendToExisting()
         {
             var setBuilder = new MemcacheStorageCommandBuilder("set", "key", "value");
-            _requestHandler.Dispatch("remote", setBuilder.ToRequest());
+            Dispatch(setBuilder.ToRequest());
 
             var appendBuilder = new MemcacheStorageCommandBuilder("append", "key", "value");
-            var response = _requestHandler.Dispatch("", appendBuilder.ToRequest());
+            var response = Dispatch(appendBuilder.ToRequest());
             Assert.AreEqual("STORED\r\n", response.ToAsciiString());
         }
 
@@ -232,11 +232,16 @@ namespace Nemcache.Tests
         public void GetValueOfAppendToEmpty()
         {
             var appendBuilder = new MemcacheStorageCommandBuilder("append", "key", "value");
-            _requestHandler.Dispatch("", appendBuilder.ToRequest());
+            Dispatch(appendBuilder.ToRequest());
 
             var getBuilder = new MemcacheRetrivalCommandBuilder("get", "key");
-            var response = _requestHandler.Dispatch("", getBuilder.ToRequest());
+            var response = Dispatch(getBuilder.ToRequest());
             Assert.AreEqual("VALUE key 0 5\r\nvalue\r\nEND\r\n", response.ToAsciiString());
+        }
+
+        private byte[] Dispatch(byte[] p)
+        {
+            return _requestHandler.Dispatch("", p, null); 
         }
 
         // TODO: append ignores existing flags and exp
@@ -245,13 +250,13 @@ namespace Nemcache.Tests
         public void GetValueOfAppendToExisting()
         {
             var setBuilder = new MemcacheStorageCommandBuilder("set", "key", "first");
-            _requestHandler.Dispatch("remote", setBuilder.ToRequest());
+            Dispatch(setBuilder.ToRequest());
 
             var appendBuilder = new MemcacheStorageCommandBuilder("append", "key", " second");
-            _requestHandler.Dispatch("", appendBuilder.ToRequest());
+            Dispatch(appendBuilder.ToRequest());
 
             var getBuilder = new MemcacheRetrivalCommandBuilder("get", "key");
-            var response = _requestHandler.Dispatch("", getBuilder.ToRequest());
+            var response = Dispatch(getBuilder.ToRequest());
             Assert.AreEqual("VALUE key 0 12\r\nfirst second\r\nEND\r\n", response.ToAsciiString());
         }
         #endregion
@@ -261,7 +266,7 @@ namespace Nemcache.Tests
         public void IncrNotFound()
         {
             var builder = new MemcacheIncrCommandBuilder("incr", "key", 1);
-            var response = _requestHandler.Dispatch("", builder.ToRequest());
+            var response = Dispatch(builder.ToRequest());
 
             Assert.AreEqual("NOT_FOUND\r\n", response.ToAsciiString());
         }
@@ -269,7 +274,7 @@ namespace Nemcache.Tests
         public void DecrNotFound()
         {
             var builder = new MemcacheIncrCommandBuilder("decr", "key", 1);
-            var response = _requestHandler.Dispatch("", builder.ToRequest());
+            var response = Dispatch(builder.ToRequest());
 
             Assert.AreEqual("NOT_FOUND\r\n", response.ToAsciiString());
         }
@@ -278,9 +283,9 @@ namespace Nemcache.Tests
         public void Incr()
         {
             var storageBuilder = new MemcacheStorageCommandBuilder("set", "key", "123");
-            _requestHandler.Dispatch("remote", storageBuilder.ToRequest());
+            Dispatch(storageBuilder.ToRequest());
             var builder = new MemcacheIncrCommandBuilder("incr", "key", 1);
-            var response = _requestHandler.Dispatch("", builder.ToRequest());
+            var response = Dispatch(builder.ToRequest());
             Assert.AreEqual("124\r\n", response.ToAsciiString());
         }
 
@@ -288,9 +293,9 @@ namespace Nemcache.Tests
         public void Decr()
         {
             var storageBuilder = new MemcacheStorageCommandBuilder("set", "key", "123");
-            _requestHandler.Dispatch("remote", storageBuilder.ToRequest());
+            Dispatch(storageBuilder.ToRequest());
             var builder = new MemcacheIncrCommandBuilder("decr", "key", 1);
-            var response = _requestHandler.Dispatch("", builder.ToRequest());
+            var response = Dispatch(builder.ToRequest());
             Assert.AreEqual("122\r\n", response.ToAsciiString());
         }
 
@@ -303,7 +308,7 @@ namespace Nemcache.Tests
         {
             var prependBuilder = new MemcacheStorageCommandBuilder("prepend", "key", "value");
 
-            var response = _requestHandler.Dispatch("", prependBuilder.ToRequest());
+            var response = Dispatch(prependBuilder.ToRequest());
 
             Assert.AreEqual("STORED\r\n", response.ToAsciiString());
         }
@@ -314,7 +319,7 @@ namespace Nemcache.Tests
             var prependBuilder = new MemcacheStorageCommandBuilder("prepend", "key", "value");
             prependBuilder.NoReply();
 
-            var response = _requestHandler.Dispatch("", prependBuilder.ToRequest());
+            var response = Dispatch(prependBuilder.ToRequest());
 
             Assert.AreEqual("", response.ToAsciiString());
         }
@@ -324,11 +329,11 @@ namespace Nemcache.Tests
         {
             var setBuilder = new MemcacheStorageCommandBuilder("set", "key", "value");
 
-            _requestHandler.Dispatch("remote", setBuilder.ToRequest());
+            Dispatch(setBuilder.ToRequest());
 
             var prependBuilder = new MemcacheStorageCommandBuilder("prepend", "key", "value");
 
-            var response = _requestHandler.Dispatch("", prependBuilder.ToRequest());
+            var response = Dispatch(prependBuilder.ToRequest());
 
             Assert.AreEqual("STORED\r\n", response.ToAsciiString());
         }
@@ -338,10 +343,10 @@ namespace Nemcache.Tests
         {
             var prependBuilder = new MemcacheStorageCommandBuilder("prepend", "key", "value");
 
-            _requestHandler.Dispatch("", prependBuilder.ToRequest());
+            Dispatch(prependBuilder.ToRequest());
 
             var getBuilder = new MemcacheRetrivalCommandBuilder("get", "key");
-            var response = _requestHandler.Dispatch("", getBuilder.ToRequest());
+            var response = Dispatch(getBuilder.ToRequest());
             Assert.AreEqual("VALUE key 0 5\r\nvalue\r\nEND\r\n", response.ToAsciiString());
         }
 
@@ -351,13 +356,13 @@ namespace Nemcache.Tests
         public void GetValueOfPrependToExisting()
         {
             var setBuilder = new MemcacheStorageCommandBuilder("set", "key", "first");
-            _requestHandler.Dispatch("remote", setBuilder.ToRequest());
+            Dispatch(setBuilder.ToRequest());
 
             var prependBuilder = new MemcacheStorageCommandBuilder("prepend", "key", "second ");
-            _requestHandler.Dispatch("", prependBuilder.ToRequest());
+            Dispatch(prependBuilder.ToRequest());
 
             var getBuilder = new MemcacheRetrivalCommandBuilder("get", "key");
-            var response = _requestHandler.Dispatch("", getBuilder.ToRequest());
+            var response = Dispatch(getBuilder.ToRequest());
             Assert.AreEqual("VALUE key 0 12\r\nsecond first\r\nEND\r\n", response.ToAsciiString());
         }
         #endregion
@@ -368,7 +373,7 @@ namespace Nemcache.Tests
         public void DeleteNotFound()
         {
             var delBuilder = new MemcacheDeleteCommandBuilder("key");
-            var response = _requestHandler.Dispatch("remote", delBuilder.ToRequest());
+            var response = Dispatch(delBuilder.ToRequest());
 
             Assert.AreEqual("NOT_FOUND\r\n", response.ToAsciiString());
         }
@@ -377,10 +382,10 @@ namespace Nemcache.Tests
         public void DeleteExisting()
         {
             var storageBuilder = new MemcacheStorageCommandBuilder("set", "key", "value");
-            _requestHandler.Dispatch("remote", storageBuilder.ToRequest());
+            Dispatch(storageBuilder.ToRequest());
 
             var delBuilder = new MemcacheDeleteCommandBuilder("key");
-            var response = _requestHandler.Dispatch("remote", delBuilder.ToRequest());
+            var response = Dispatch(delBuilder.ToRequest());
 
             Assert.AreEqual("DELETED\r\n", response.ToAsciiString());
         }
@@ -389,13 +394,13 @@ namespace Nemcache.Tests
         public void DeleteExistingGetNotFound()
         {
             var storageBuilder = new MemcacheStorageCommandBuilder("set", "key", "value");
-            _requestHandler.Dispatch("remote", storageBuilder.ToRequest());
+            Dispatch(storageBuilder.ToRequest());
 
             var delBuilder = new MemcacheDeleteCommandBuilder("key");
-            _requestHandler.Dispatch("remote", delBuilder.ToRequest());
+            Dispatch(delBuilder.ToRequest());
 
             var getBuilder = new MemcacheRetrivalCommandBuilder("get", "key");
-            var response = _requestHandler.Dispatch("", getBuilder.ToRequest());
+            var response = Dispatch(getBuilder.ToRequest());
             Assert.AreEqual("END\r\n", response.ToAsciiString());
         }
         #endregion
@@ -408,10 +413,10 @@ namespace Nemcache.Tests
             var storageBuilder = new MemcacheStorageCommandBuilder("set", "key", "value");
             storageBuilder.WithExpiry(100);
 
-            _requestHandler.Dispatch("remote", storageBuilder.ToRequest());
+            Dispatch(storageBuilder.ToRequest());
 
             var getBuilder = new MemcacheRetrivalCommandBuilder("get", "key");
-            var response = _requestHandler.Dispatch("", getBuilder.ToRequest());
+            var response = Dispatch(getBuilder.ToRequest());
             Assert.AreEqual("VALUE key 0 5\r\nvalue\r\nEND\r\n", response.ToAsciiString());
         }
 
@@ -422,12 +427,12 @@ namespace Nemcache.Tests
             var storageBuilder = new MemcacheStorageCommandBuilder("set", "key", "value");
             storageBuilder.WithExpiry(1);
 
-            _requestHandler.Dispatch("remote", storageBuilder.ToRequest());
+            Dispatch(storageBuilder.ToRequest());
 
             _testScheduler.AdvanceBy(TimeSpan.FromSeconds(2));
 
             var getBuilder = new MemcacheRetrivalCommandBuilder("get", "key");
-            var response = _requestHandler.Dispatch("", getBuilder.ToRequest());
+            var response = Dispatch(getBuilder.ToRequest());
             Assert.AreEqual("END\r\n", response.ToAsciiString());
         }
 #endregion
@@ -438,11 +443,11 @@ namespace Nemcache.Tests
         {
             var storageBuilder = new MemcacheStorageCommandBuilder("set", "key", "value");
             storageBuilder.WithExpiry(100);
-            _requestHandler.Dispatch("remote", storageBuilder.ToRequest());
+            Dispatch(storageBuilder.ToRequest());
 
             var touchBuilder = new MemcacheTouchCommandBuilder("key");
             touchBuilder.WithExpiry(1);
-            var response = _requestHandler.Dispatch("remote", touchBuilder.ToRequest());
+            var response = Dispatch(touchBuilder.ToRequest());
 
             Assert.AreEqual("OK\r\n", response.ToAsciiString());
         }
@@ -452,7 +457,7 @@ namespace Nemcache.Tests
         {
             var touchBuilder = new MemcacheTouchCommandBuilder("key");
             touchBuilder.WithExpiry(1);
-            var response = _requestHandler.Dispatch("remote", touchBuilder.ToRequest());
+            var response = Dispatch(touchBuilder.ToRequest());
 
             Assert.AreEqual("NOT_FOUND\r\n", response.ToAsciiString());
         }
@@ -463,15 +468,15 @@ namespace Nemcache.Tests
         {
             var storageBuilder = new MemcacheStorageCommandBuilder("set", "key", "value");
             storageBuilder.WithExpiry(100);
-            _requestHandler.Dispatch("remote", storageBuilder.ToRequest());
+            Dispatch(storageBuilder.ToRequest());
             
             var touchBuilder = new MemcacheTouchCommandBuilder("key");
             touchBuilder.WithExpiry(1);
-            _requestHandler.Dispatch("remote", touchBuilder.ToRequest());
+            Dispatch(touchBuilder.ToRequest());
             _testScheduler.AdvanceBy(TimeSpan.FromSeconds(2));
 
             var getBuilder = new MemcacheRetrivalCommandBuilder("get", "key");
-            var response = _requestHandler.Dispatch("", getBuilder.ToRequest());
+            var response = Dispatch(getBuilder.ToRequest());
             Assert.AreEqual("END\r\n", response.ToAsciiString());
         }
 #endregion
@@ -483,7 +488,7 @@ namespace Nemcache.Tests
         {
             var addBuilder = new MemcacheStorageCommandBuilder("add", "key", "value");
 
-            var response = _requestHandler.Dispatch("", addBuilder.ToRequest());
+            var response = Dispatch(addBuilder.ToRequest());
 
             Assert.AreEqual("STORED\r\n", response.ToAsciiString());
         }
@@ -494,7 +499,7 @@ namespace Nemcache.Tests
             var addBuilder = new MemcacheStorageCommandBuilder("add", "key", "value");
             addBuilder.NoReply();
 
-            var response = _requestHandler.Dispatch("", addBuilder.ToRequest());
+            var response = Dispatch(addBuilder.ToRequest());
 
             Assert.AreEqual("", response.ToAsciiString());
         }
@@ -504,11 +509,11 @@ namespace Nemcache.Tests
         {
             var setBuilder = new MemcacheStorageCommandBuilder("set", "key", "value");
 
-            _requestHandler.Dispatch("remote", setBuilder.ToRequest());
+            Dispatch(setBuilder.ToRequest());
 
             var addBuilder = new MemcacheStorageCommandBuilder("add", "key", "value");
 
-            var response = _requestHandler.Dispatch("", addBuilder.ToRequest());
+            var response = Dispatch(addBuilder.ToRequest());
 
             Assert.AreEqual("NOT_STORED\r\n", response.ToAsciiString());
         }
@@ -518,10 +523,10 @@ namespace Nemcache.Tests
         {
             var addBuilder = new MemcacheStorageCommandBuilder("add", "key", "value");
 
-            _requestHandler.Dispatch("", addBuilder.ToRequest());
+            Dispatch(addBuilder.ToRequest());
 
             var getBuilder = new MemcacheRetrivalCommandBuilder("get", "key");
-            var response = _requestHandler.Dispatch("", getBuilder.ToRequest());
+            var response = Dispatch(getBuilder.ToRequest());
             Assert.AreEqual("VALUE key 0 5\r\nvalue\r\nEND\r\n", response.ToAsciiString());
         }
 
@@ -534,7 +539,7 @@ namespace Nemcache.Tests
         {
             var replaceBuilder = new MemcacheStorageCommandBuilder("replace", "key", "value");
 
-            var response = _requestHandler.Dispatch("", replaceBuilder.ToRequest());
+            var response = Dispatch(replaceBuilder.ToRequest());
 
             Assert.AreEqual("NOT_STORED\r\n", response.ToAsciiString());
         }
@@ -545,7 +550,7 @@ namespace Nemcache.Tests
             var replaceBuilder = new MemcacheStorageCommandBuilder("replace", "key", "value");
             replaceBuilder.NoReply();
 
-            var response = _requestHandler.Dispatch("", replaceBuilder.ToRequest());
+            var response = Dispatch(replaceBuilder.ToRequest());
 
             Assert.AreEqual("", response.ToAsciiString());
         }
@@ -554,10 +559,10 @@ namespace Nemcache.Tests
         public void ReplaceToExisting()
         {
             var setBuilder = new MemcacheStorageCommandBuilder("set", "key", "value");
-            _requestHandler.Dispatch("remote", setBuilder.ToRequest());
+            Dispatch(setBuilder.ToRequest());
 
             var replaceBuilder = new MemcacheStorageCommandBuilder("replace", "key", "value");
-            var response = _requestHandler.Dispatch("", replaceBuilder.ToRequest());
+            var response = Dispatch(replaceBuilder.ToRequest());
             Assert.AreEqual("STORED\r\n", response.ToAsciiString());
         }
 
@@ -567,13 +572,13 @@ namespace Nemcache.Tests
         public void GetValueOfReplaceToExisting()
         {
             var setBuilder = new MemcacheStorageCommandBuilder("set", "key", "first");
-            _requestHandler.Dispatch("remote", setBuilder.ToRequest());
+            Dispatch(setBuilder.ToRequest());
 
             var replaceBuilder = new MemcacheStorageCommandBuilder("replace", "key", "second");
-            _requestHandler.Dispatch("", replaceBuilder.ToRequest());
+            Dispatch(replaceBuilder.ToRequest());
 
             var getBuilder = new MemcacheRetrivalCommandBuilder("get", "key");
-            var response = _requestHandler.Dispatch("", getBuilder.ToRequest());
+            var response = Dispatch(getBuilder.ToRequest());
             Assert.AreEqual("VALUE key 0 6\r\nsecond\r\nEND\r\n", response.ToAsciiString());
         }
         #endregion
@@ -583,10 +588,10 @@ namespace Nemcache.Tests
         public void FlushResponse()
         {
             var storageBuilder = new MemcacheStorageCommandBuilder("set", "key", "value");
-            _requestHandler.Dispatch("remote", storageBuilder.ToRequest());
+            Dispatch(storageBuilder.ToRequest());
 
             var flushRequest = Encoding.ASCII.GetBytes("flush_all\r\n");
-            var response = _requestHandler.Dispatch("remote", flushRequest);
+            var response = _requestHandler.Dispatch("remote", flushRequest, null);
 
             Assert.AreEqual("OK\r\n", response.ToAsciiString());
         }
@@ -595,10 +600,10 @@ namespace Nemcache.Tests
         public void FlushDelayResponse()
         {
             var storageBuilder = new MemcacheStorageCommandBuilder("set", "key", "value");
-            _requestHandler.Dispatch("remote", storageBuilder.ToRequest());
+            Dispatch(storageBuilder.ToRequest());
 
             var flushRequest = Encoding.ASCII.GetBytes("flush_all 123\r\n");
-            var response = _requestHandler.Dispatch("remote", flushRequest);
+            var response = _requestHandler.Dispatch("remote", flushRequest, null);
 
             Assert.AreEqual("OK\r\n", response.ToAsciiString());
         }
@@ -607,28 +612,28 @@ namespace Nemcache.Tests
         public void FlushClearsCache()
         {
             var storageBuilder = new MemcacheStorageCommandBuilder("set", "key", "value");
-            _requestHandler.Dispatch("remote", storageBuilder.ToRequest());
+            Dispatch(storageBuilder.ToRequest());
 
             var flushRequest = Encoding.ASCII.GetBytes("flush_all\r\n");
-            _requestHandler.Dispatch("remote", flushRequest);
+            _requestHandler.Dispatch("remote", flushRequest, null);
 
             var getBuilder = new MemcacheRetrivalCommandBuilder("get", "key");
-            var response = _requestHandler.Dispatch("", getBuilder.ToRequest());
+            var response = Dispatch(getBuilder.ToRequest());
             Assert.AreEqual("END\r\n", response.ToAsciiString());
         }
         [TestMethod]
         public void FlushClearsCacheMultiple()
         {
             var storageBuilder1 = new MemcacheStorageCommandBuilder("set", "key", "value");
-            _requestHandler.Dispatch("remote", storageBuilder1.ToRequest());
+            Dispatch(storageBuilder1.ToRequest());
             var storageBuilder2 = new MemcacheStorageCommandBuilder("set", "key2", "value");
-            _requestHandler.Dispatch("remote", storageBuilder2.ToRequest());
+            Dispatch(storageBuilder2.ToRequest());
 
             var flushRequest = Encoding.ASCII.GetBytes("flush_all\r\n");
-            _requestHandler.Dispatch("remote", flushRequest);
+            _requestHandler.Dispatch("remote", flushRequest, null);
 
             var getBuilder = new MemcacheRetrivalCommandBuilder("get", "key");
-            var response = _requestHandler.Dispatch("", getBuilder.ToRequest());
+            var response = Dispatch(getBuilder.ToRequest());
             Assert.AreEqual("END\r\n", response.ToAsciiString());
         }
 
@@ -636,15 +641,15 @@ namespace Nemcache.Tests
         public void FlushWithDelayNoEffect()
         {
             var storageBuilder = new MemcacheStorageCommandBuilder("set", "key", "value");
-            _requestHandler.Dispatch("remote", storageBuilder.ToRequest());
+            Dispatch(storageBuilder.ToRequest());
 
             var flushRequest = Encoding.ASCII.GetBytes("flush_all 100\r\n");
-            _requestHandler.Dispatch("remote", flushRequest);
+            _requestHandler.Dispatch("remote", flushRequest, null);
 
             _testScheduler.AdvanceBy(TimeSpan.FromSeconds(90));
 
             var getBuilder = new MemcacheRetrivalCommandBuilder("get", "key");
-            var response = _requestHandler.Dispatch("", getBuilder.ToRequest());
+            var response = Dispatch(getBuilder.ToRequest());
             Assert.AreEqual("VALUE key 0 5\r\nvalue\r\nEND\r\n", response.ToAsciiString());
         }
 
@@ -653,15 +658,15 @@ namespace Nemcache.Tests
         public void FlushWithDelayEmpty()
         {
             var storageBuilder = new MemcacheStorageCommandBuilder("set", "key", "value");
-            _requestHandler.Dispatch("remote", storageBuilder.ToRequest());
+            Dispatch(storageBuilder.ToRequest());
 
             var flushRequest = Encoding.ASCII.GetBytes("flush_all 100\r\n");
-            _requestHandler.Dispatch("remote", flushRequest);
+            _requestHandler.Dispatch("remote", flushRequest, null);
 
             _testScheduler.AdvanceBy(TimeSpan.FromSeconds(200));
 
             var getBuilder = new MemcacheRetrivalCommandBuilder("get", "key");
-            var response = _requestHandler.Dispatch("", getBuilder.ToRequest());
+            var response = Dispatch(getBuilder.ToRequest());
             Assert.AreEqual("END\r\n", response.ToAsciiString());
         }
         #endregion
@@ -676,12 +681,12 @@ namespace Nemcache.Tests
             ulong lastCas = 123;
             casBuilder.WithCasUnique(lastCas);
 
-            var response = _requestHandler.Dispatch("remote", casBuilder.ToRequest());
+            var response = Dispatch(casBuilder.ToRequest());
             Assert.AreEqual("STORED\r\n", response.ToAsciiString());
 
             // TODO: split test
             var getBuilder = new MemcacheRetrivalCommandBuilder("get", "key");
-            var getResponse = _requestHandler.Dispatch("", getBuilder.ToRequest());
+            var getResponse = Dispatch(getBuilder.ToRequest());
             Assert.AreEqual("VALUE key 0 5 123\r\nvalue\r\nEND\r\n", getResponse.ToAsciiString());
         }
 
@@ -690,18 +695,18 @@ namespace Nemcache.Tests
         {
             var casBuilder1 = new MemcacheCasCommandBuilder("key", "value1");
             casBuilder1.WithCasUnique(567);
-            _requestHandler.Dispatch("remote", casBuilder1.ToRequest());
+            Dispatch(casBuilder1.ToRequest());
 
             var casBuilder2 = new MemcacheCasCommandBuilder("key", "value2");
             casBuilder2.WithCasUnique(567);
             
-            var response2 = _requestHandler.Dispatch("remote", casBuilder2.ToRequest());
+            var response2 = Dispatch(casBuilder2.ToRequest());
 
             Assert.AreEqual("STORED\r\n", response2.ToAsciiString());
 
             // TODO: split test
             var getBuilder = new MemcacheRetrivalCommandBuilder("get", "key");
-            var getResponse = _requestHandler.Dispatch("", getBuilder.ToRequest());
+            var getResponse = Dispatch(getBuilder.ToRequest());
             Assert.AreEqual("VALUE key 0 6 567\r\nvalue2\r\nEND\r\n", getResponse.ToAsciiString());
         }
 
@@ -711,22 +716,30 @@ namespace Nemcache.Tests
         {
             var casBuilder1 = new MemcacheCasCommandBuilder("key", "value1");
             casBuilder1.WithCasUnique(789);
-            _requestHandler.Dispatch("remote", casBuilder1.ToRequest());
+            Dispatch(casBuilder1.ToRequest());
 
             var casBuilder2 = new MemcacheCasCommandBuilder("key", "value2");
             casBuilder2.WithCasUnique(567);
 
-            var response2 = _requestHandler.Dispatch("remote", casBuilder2.ToRequest());
+            var response2 = Dispatch(casBuilder2.ToRequest());
             Assert.AreEqual("EXISTS\r\n", response2.ToAsciiString());
 
             // TODO: and not changed
             // TODO: split test
             var getBuilder = new MemcacheRetrivalCommandBuilder("get", "key");
-            var getResponse = _requestHandler.Dispatch("", getBuilder.ToRequest());
+            var getResponse = Dispatch(getBuilder.ToRequest());
             Assert.AreEqual("VALUE key 0 6 789\r\nvalue1\r\nEND\r\n", getResponse.ToAsciiString());
         }
 
 
         #endregion
+
+        [TestMethod]
+        public void Version()
+        {
+            var flushRequest = Encoding.ASCII.GetBytes("version\r\n");
+            var response = _requestHandler.Dispatch("remote", flushRequest, null);
+            Assert.AreEqual("Nemcache 1.0.0.0\r\n", response.ToAsciiString());
+        }
     }    
 }

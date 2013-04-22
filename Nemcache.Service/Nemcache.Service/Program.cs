@@ -21,8 +21,8 @@ namespace Nemcache.Service
                             s.WhenStarted(xs => xs.Start());
                             s.WhenStopped(xs => xs.Stop());
                         });
-
-                    hc.SetDescription("Simple .NET implementation of Memcache.");
+                    hc.RunAsNetworkService();
+                    hc.SetDescription("Simple .NET implementation of Memcache; an in memory key-value cache.");
 
                     // TODO: something should indicate what instance it is?
                     hc.SetDisplayName("Nemcache");

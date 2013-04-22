@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -61,8 +62,8 @@ namespace Nemcache.Service
 
         public string ToKey(string key)
         {
-            if (key.Length > 250)
-                throw new InvalidOperationException("Key too long");
+            //if (key.Length > 250)
+            //    throw new InvalidOperationException("Key too long");
             // TODO: no control chars
             return key;
         }
@@ -72,7 +73,7 @@ namespace Nemcache.Service
             return ulong.Parse(flags);
         }
 
-        public byte[] Dispatch(string remoteEndpoint, byte[] request)
+        public byte[] Dispatch(string remoteEndpoint, byte[] request, IDisposable clientConnectionHandle) // TODO: an interface for this?
         {
             try
             {
@@ -81,8 +82,8 @@ namespace Nemcache.Service
                 var requestTokens = requestFirstLine.Split(' ');
                 var commandName = requestTokens.First();
                 var commandParams = requestTokens.Skip(1).ToArray();
-                bool noreply = commandParams.LastOrDefault() == "noreply";
-                var result = HandleCommand(request, input, commandName, commandParams);
+                bool noreply = commandParams.LastOrDefault() == "noreply" && !commandName.StartsWith("get");
+                var result = HandleCommand(request, input, commandName, commandParams, clientConnectionHandle);
                 return noreply ? new byte[] { } : result;
             }
             catch (Exception ex)
@@ -91,7 +92,7 @@ namespace Nemcache.Service
             }
         }
 
-        private byte[] HandleCommand(byte[] request, byte[] input, string commandName, string[] commandParams)
+        private byte[] HandleCommand(byte[] request, byte[] input, string commandName, string[] commandParams, IDisposable clientConnectionHandle)
         {
             switch (commandName)
             {
@@ -118,7 +119,11 @@ namespace Nemcache.Service
                 case "flush_all": // [numeric] [noreply]
                     return HandleFlushAll(commandParams);
                 case "quit": //     quit\r\n
+                    clientConnectionHandle.Dispose();
                     return new byte[] { };
+                case "version":
+                    return Encoding.ASCII.GetBytes("Nemcache " + 
+                        GetType().Assembly.GetName().Version + "\r\n");
                 default:
                     return Encoding.ASCII.GetBytes("ERROR\r\n");
             }
