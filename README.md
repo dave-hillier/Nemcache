@@ -24,6 +24,8 @@ The following commands from the [Memcached specification](https://raw.github.com
 * touch
 * flush_all
 * cas
+* quit
+* version
 
 Currently only TCP is supported including the noreply mode. 
 Flags support up-to 64 bit values, although this is a divergence from the original spec and therefore might not be supported by your client.
@@ -34,9 +36,7 @@ TODO List
 * Run as service support
 * Configuration
 * Add support for the remaining commands:
-  * quit
   * Stats
-  * version
 * Fix concurrent access
 * UDP Protocol
 * Binary protocol (maybe)
