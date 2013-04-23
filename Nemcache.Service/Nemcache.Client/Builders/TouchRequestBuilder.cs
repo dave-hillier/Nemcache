@@ -30,7 +30,7 @@ namespace Nemcache.Client.Builders
         {
             var format = string.Format("touch {0} {1}{2}\r\n",
                                        _key, _time, _noReply ? " noreply" : "");
-            return format;
+            return Encoding.ASCII.GetBytes(format);
         }
     }
 }

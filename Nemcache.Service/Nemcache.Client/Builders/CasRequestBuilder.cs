@@ -28,7 +28,10 @@ namespace Nemcache.Client.Builders
         {
             var format = string.Format("cas {0} {1} {2} {3} {4}{5}\r\n",
                                         _key, _flags, _time, _data.Length, _casUnique, _noReply ? " noreply" : "");
-            return format;
+            return Encoding.ASCII.GetBytes(format).
+                Concat(_data).
+                Concat(Encoding.ASCII.GetBytes("\r\n")).
+                ToArray();
         }
     }
 }
