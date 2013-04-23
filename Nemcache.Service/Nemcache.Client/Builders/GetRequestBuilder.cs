@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Text;
 
-namespace Nemcache.Tests.Builders
+namespace Nemcache.Client.Builders
 {
-    class GetRequestBuilder
+    class GetRequestBuilder : IRequestBuilder
     {
         private readonly string _command;
         private readonly IEnumerable<string> _keys;
@@ -14,7 +14,7 @@ namespace Nemcache.Tests.Builders
             _keys = keys;
         }
 
-        public byte[] ToRequest()
+        public byte[] ToAsciiRequest()
         {
             return Encoding.ASCII.GetBytes(_command + " " + string.Join(" ", _keys) + "\r\n");
         }

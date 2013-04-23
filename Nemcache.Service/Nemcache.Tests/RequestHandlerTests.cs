@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Nemcache.Tests.Builders;
 using Nemcache.Service;
 using System.Threading;
+using Nemcache.Client.Builders;
 
 namespace Nemcache.Tests
 {
@@ -31,7 +31,7 @@ namespace Nemcache.Tests
             _requestHandler.Capacity = 10;
             var setBuilder = new StoreRequestBuilder("set", "key", "1234567890");
 
-            var response = Dispatch(setBuilder.ToRequest());
+            var response = Dispatch(setBuilder.ToAsciiRequest());
 
             Assert.AreEqual("STORED\r\n", response.ToAsciiString());
         }
@@ -42,7 +42,7 @@ namespace Nemcache.Tests
             _requestHandler.Capacity = 5;
             var setBuilder = new StoreRequestBuilder("set", "key", "1234567890");
 
-            var response = Dispatch(setBuilder.ToRequest());
+            var response = Dispatch(setBuilder.ToAsciiRequest());
 
             Assert.AreEqual("ERROR Over capacity\r\n", response.ToAsciiString());
         }
@@ -55,12 +55,12 @@ namespace Nemcache.Tests
             var setBuilder1 = new StoreRequestBuilder("set", "key1", "1234567890");
             var setBuilder2 = new StoreRequestBuilder("set", "key2", "1234567890");
 
-            Dispatch(setBuilder1.ToRequest());
-            var response = Dispatch(setBuilder2.ToRequest());
+            Dispatch(setBuilder1.ToAsciiRequest());
+            var response = Dispatch(setBuilder2.ToAsciiRequest());
             Assert.AreEqual("STORED\r\n", response.ToAsciiString());
 
             var getBuilder = new GetRequestBuilder("get", "key1");
-            var response2 = Dispatch(getBuilder.ToRequest());
+            var response2 = Dispatch(getBuilder.ToAsciiRequest());
             Assert.AreEqual("END\r\n", response2.ToAsciiString());
         }
 
@@ -72,15 +72,15 @@ namespace Nemcache.Tests
             var setBuilder2 = new StoreRequestBuilder("set", "key2", "12345");
             var setBuilder3 = new StoreRequestBuilder("set", "key3", "1234567890");
 
-            Dispatch(setBuilder1.ToRequest());
-            Dispatch(setBuilder2.ToRequest());
-            Dispatch(setBuilder3.ToRequest());
+            Dispatch(setBuilder1.ToAsciiRequest());
+            Dispatch(setBuilder2.ToAsciiRequest());
+            Dispatch(setBuilder3.ToAsciiRequest());
 
             var getBuilder1 = new GetRequestBuilder("get", "key1");
-            var response1 = Dispatch(getBuilder1.ToRequest());
+            var response1 = Dispatch(getBuilder1.ToAsciiRequest());
             Assert.AreEqual("END\r\n", response1.ToAsciiString());
             var getBuilder2 = new GetRequestBuilder("get", "key2");
-            var response2 = Dispatch(getBuilder2.ToRequest());
+            var response2 = Dispatch(getBuilder2.ToAsciiRequest());
             Assert.AreEqual("END\r\n", response2.ToAsciiString());
         }
         #endregion
@@ -91,7 +91,7 @@ namespace Nemcache.Tests
         {
             var setBuilder = new StoreRequestBuilder("set", "key", "value");
 
-            var response = Dispatch(setBuilder.ToRequest());
+            var response = Dispatch(setBuilder.ToAsciiRequest());
 
             Assert.AreEqual("STORED\r\n", response.ToAsciiString());
         }
@@ -102,7 +102,7 @@ namespace Nemcache.Tests
             var setBuilder = new StoreRequestBuilder("set", "key", "value");
             setBuilder.NoReply();
 
-            var response = Dispatch(setBuilder.ToRequest());
+            var response = Dispatch(setBuilder.ToAsciiRequest());
 
             Assert.AreEqual("", response.ToAsciiString());
         }
@@ -111,10 +111,10 @@ namespace Nemcache.Tests
         public void SetTwice()
         {
             var storageBuilder = new StoreRequestBuilder("set", "key", "value");
-            Dispatch(storageBuilder.ToRequest());
+            Dispatch(storageBuilder.ToAsciiRequest());
 
             storageBuilder.Data("Updated");
-            var response = Dispatch(storageBuilder.ToRequest());
+            var response = Dispatch(storageBuilder.ToAsciiRequest());
 
             Assert.AreEqual("STORED\r\n", response.ToAsciiString());
         }
@@ -123,10 +123,10 @@ namespace Nemcache.Tests
         public void SetThenGet()
         {
             var storageBuilder = new StoreRequestBuilder("set", "key", "value");
-            Dispatch(storageBuilder.ToRequest());
+            Dispatch(storageBuilder.ToAsciiRequest());
 
             var getBuilder = new GetRequestBuilder("get", "key");
-            var response = Dispatch(getBuilder.ToRequest());
+            var response = Dispatch(getBuilder.ToAsciiRequest());
             Assert.AreEqual("VALUE key 0 5\r\nvalue\r\nEND\r\n", response.ToAsciiString());
         }
 
@@ -135,10 +135,10 @@ namespace Nemcache.Tests
         {
             var storageBuilder = new StoreRequestBuilder("set", "key", "value");
             storageBuilder.WithFlags(1234567890);
-            Dispatch(storageBuilder.ToRequest());
+            Dispatch(storageBuilder.ToAsciiRequest());
 
             var getBuilder = new GetRequestBuilder("get", "key");
-            var response = Dispatch(getBuilder.ToRequest());
+            var response = Dispatch(getBuilder.ToAsciiRequest());
             Assert.AreEqual("VALUE key 1234567890 5\r\nvalue\r\nEND\r\n", response.ToAsciiString());
         }
 
@@ -147,11 +147,11 @@ namespace Nemcache.Tests
         {
             var storageBuilder = new StoreRequestBuilder("set", "key", "value");
             storageBuilder.WithFlags(ulong.MaxValue);
-            Dispatch(storageBuilder.ToRequest());
+            Dispatch(storageBuilder.ToAsciiRequest());
 
             var getBuilder = new GetRequestBuilder("get", "key");
 
-            var response = Dispatch(getBuilder.ToRequest());
+            var response = Dispatch(getBuilder.ToAsciiRequest());
             Assert.AreEqual("VALUE key " + ulong.MaxValue.ToString() + " 5\r\nvalue\r\nEND\r\n", response.ToAsciiString());
         }
 
@@ -159,12 +159,12 @@ namespace Nemcache.Tests
         public void SetAndSetNewThenGet()
         {
             var storageBuilder = new StoreRequestBuilder("set", "key", "value");
-            Dispatch(storageBuilder.ToRequest());
+            Dispatch(storageBuilder.ToAsciiRequest());
             storageBuilder.Data("new value");
-            Dispatch(storageBuilder.ToRequest());
+            Dispatch(storageBuilder.ToAsciiRequest());
             var getBuilder = new GetRequestBuilder("get", "key");
 
-            var response = Dispatch(getBuilder.ToRequest());
+            var response = Dispatch(getBuilder.ToAsciiRequest());
 
             Assert.AreEqual("VALUE key 0 9\r\nnew value\r\nEND\r\n", response.ToAsciiString());
         }
@@ -173,13 +173,13 @@ namespace Nemcache.Tests
         public void SetThenGetMultiple()
         {
             var storageBuilder1 = new StoreRequestBuilder("set", "key1", "111111");
-            Dispatch(storageBuilder1.ToRequest());
+            Dispatch(storageBuilder1.ToAsciiRequest());
 
             var storageBuilder2 = new StoreRequestBuilder("set", "key2", "222");
-            Dispatch(storageBuilder2.ToRequest());
+            Dispatch(storageBuilder2.ToAsciiRequest());
 
             var getBuilder = new GetRequestBuilder("get", "key1", "key2");
-            var response = Dispatch(getBuilder.ToRequest());
+            var response = Dispatch(getBuilder.ToAsciiRequest());
 
             Assert.AreEqual("VALUE key1 0 6\r\n111111\r\nVALUE key2 0 3\r\n222\r\nEND\r\n", response.ToAsciiString());
         }
@@ -188,7 +188,7 @@ namespace Nemcache.Tests
         public void GetNotFound()
         {
             var getBuilder = new GetRequestBuilder("get", "key");
-            var response = Dispatch(getBuilder.ToRequest());
+            var response = Dispatch(getBuilder.ToAsciiRequest());
             Assert.AreEqual("END\r\n", response.ToAsciiString());
         }
         #endregion
@@ -199,7 +199,7 @@ namespace Nemcache.Tests
         {
             var appendBuilder = new StoreRequestBuilder("append", "key", "value");
 
-            var response = Dispatch(appendBuilder.ToRequest());
+            var response = Dispatch(appendBuilder.ToAsciiRequest());
 
             Assert.AreEqual("STORED\r\n", response.ToAsciiString());
         }
@@ -211,7 +211,7 @@ namespace Nemcache.Tests
             var appendBuilder = new StoreRequestBuilder("append", "key", "value");
             appendBuilder.NoReply();
 
-            var response = Dispatch(appendBuilder.ToRequest());
+            var response = Dispatch(appendBuilder.ToAsciiRequest());
 
             Assert.AreEqual("", response.ToAsciiString());
         }
@@ -221,10 +221,10 @@ namespace Nemcache.Tests
         public void AppendToExisting()
         {
             var setBuilder = new StoreRequestBuilder("set", "key", "value");
-            Dispatch(setBuilder.ToRequest());
+            Dispatch(setBuilder.ToAsciiRequest());
 
             var appendBuilder = new StoreRequestBuilder("append", "key", "value");
-            var response = Dispatch(appendBuilder.ToRequest());
+            var response = Dispatch(appendBuilder.ToAsciiRequest());
             Assert.AreEqual("STORED\r\n", response.ToAsciiString());
         }
 
@@ -232,10 +232,10 @@ namespace Nemcache.Tests
         public void GetValueOfAppendToEmpty()
         {
             var appendBuilder = new StoreRequestBuilder("append", "key", "value");
-            Dispatch(appendBuilder.ToRequest());
+            Dispatch(appendBuilder.ToAsciiRequest());
 
             var getBuilder = new GetRequestBuilder("get", "key");
-            var response = Dispatch(getBuilder.ToRequest());
+            var response = Dispatch(getBuilder.ToAsciiRequest());
             Assert.AreEqual("VALUE key 0 5\r\nvalue\r\nEND\r\n", response.ToAsciiString());
         }
 
@@ -250,13 +250,13 @@ namespace Nemcache.Tests
         public void GetValueOfAppendToExisting()
         {
             var setBuilder = new StoreRequestBuilder("set", "key", "first");
-            Dispatch(setBuilder.ToRequest());
+            Dispatch(setBuilder.ToAsciiRequest());
 
             var appendBuilder = new StoreRequestBuilder("append", "key", " second");
-            Dispatch(appendBuilder.ToRequest());
+            Dispatch(appendBuilder.ToAsciiRequest());
 
             var getBuilder = new GetRequestBuilder("get", "key");
-            var response = Dispatch(getBuilder.ToRequest());
+            var response = Dispatch(getBuilder.ToAsciiRequest());
             Assert.AreEqual("VALUE key 0 12\r\nfirst second\r\nEND\r\n", response.ToAsciiString());
         }
         #endregion
@@ -266,7 +266,7 @@ namespace Nemcache.Tests
         public void IncrNotFound()
         {
             var builder = new MutateRequestBuilder("incr", "key", 1);
-            var response = Dispatch(builder.ToRequest());
+            var response = Dispatch(builder.ToAsciiRequest());
 
             Assert.AreEqual("NOT_FOUND\r\n", response.ToAsciiString());
         }
@@ -274,7 +274,7 @@ namespace Nemcache.Tests
         public void DecrNotFound()
         {
             var builder = new MutateRequestBuilder("decr", "key", 1);
-            var response = Dispatch(builder.ToRequest());
+            var response = Dispatch(builder.ToAsciiRequest());
 
             Assert.AreEqual("NOT_FOUND\r\n", response.ToAsciiString());
         }
@@ -283,9 +283,9 @@ namespace Nemcache.Tests
         public void Incr()
         {
             var storageBuilder = new StoreRequestBuilder("set", "key", "123");
-            Dispatch(storageBuilder.ToRequest());
+            Dispatch(storageBuilder.ToAsciiRequest());
             var builder = new MutateRequestBuilder("incr", "key", 1);
-            var response = Dispatch(builder.ToRequest());
+            var response = Dispatch(builder.ToAsciiRequest());
             Assert.AreEqual("124\r\n", response.ToAsciiString());
         }
 
@@ -293,9 +293,9 @@ namespace Nemcache.Tests
         public void Decr()
         {
             var storageBuilder = new StoreRequestBuilder("set", "key", "123");
-            Dispatch(storageBuilder.ToRequest());
+            Dispatch(storageBuilder.ToAsciiRequest());
             var builder = new MutateRequestBuilder("decr", "key", 1);
-            var response = Dispatch(builder.ToRequest());
+            var response = Dispatch(builder.ToAsciiRequest());
             Assert.AreEqual("122\r\n", response.ToAsciiString());
         }
 
@@ -308,7 +308,7 @@ namespace Nemcache.Tests
         {
             var prependBuilder = new StoreRequestBuilder("prepend", "key", "value");
 
-            var response = Dispatch(prependBuilder.ToRequest());
+            var response = Dispatch(prependBuilder.ToAsciiRequest());
 
             Assert.AreEqual("STORED\r\n", response.ToAsciiString());
         }
@@ -319,7 +319,7 @@ namespace Nemcache.Tests
             var prependBuilder = new StoreRequestBuilder("prepend", "key", "value");
             prependBuilder.NoReply();
 
-            var response = Dispatch(prependBuilder.ToRequest());
+            var response = Dispatch(prependBuilder.ToAsciiRequest());
 
             Assert.AreEqual("", response.ToAsciiString());
         }
@@ -329,11 +329,11 @@ namespace Nemcache.Tests
         {
             var setBuilder = new StoreRequestBuilder("set", "key", "value");
 
-            Dispatch(setBuilder.ToRequest());
+            Dispatch(setBuilder.ToAsciiRequest());
 
             var prependBuilder = new StoreRequestBuilder("prepend", "key", "value");
 
-            var response = Dispatch(prependBuilder.ToRequest());
+            var response = Dispatch(prependBuilder.ToAsciiRequest());
 
             Assert.AreEqual("STORED\r\n", response.ToAsciiString());
         }
@@ -343,10 +343,10 @@ namespace Nemcache.Tests
         {
             var prependBuilder = new StoreRequestBuilder("prepend", "key", "value");
 
-            Dispatch(prependBuilder.ToRequest());
+            Dispatch(prependBuilder.ToAsciiRequest());
 
             var getBuilder = new GetRequestBuilder("get", "key");
-            var response = Dispatch(getBuilder.ToRequest());
+            var response = Dispatch(getBuilder.ToAsciiRequest());
             Assert.AreEqual("VALUE key 0 5\r\nvalue\r\nEND\r\n", response.ToAsciiString());
         }
 
@@ -356,13 +356,13 @@ namespace Nemcache.Tests
         public void GetValueOfPrependToExisting()
         {
             var setBuilder = new StoreRequestBuilder("set", "key", "first");
-            Dispatch(setBuilder.ToRequest());
+            Dispatch(setBuilder.ToAsciiRequest());
 
             var prependBuilder = new StoreRequestBuilder("prepend", "key", "second ");
-            Dispatch(prependBuilder.ToRequest());
+            Dispatch(prependBuilder.ToAsciiRequest());
 
             var getBuilder = new GetRequestBuilder("get", "key");
-            var response = Dispatch(getBuilder.ToRequest());
+            var response = Dispatch(getBuilder.ToAsciiRequest());
             Assert.AreEqual("VALUE key 0 12\r\nsecond first\r\nEND\r\n", response.ToAsciiString());
         }
         #endregion
@@ -373,7 +373,7 @@ namespace Nemcache.Tests
         public void DeleteNotFound()
         {
             var delBuilder = new DeleteRequestBuilder("key");
-            var response = Dispatch(delBuilder.ToRequest());
+            var response = Dispatch(delBuilder.ToAsciiRequest());
 
             Assert.AreEqual("NOT_FOUND\r\n", response.ToAsciiString());
         }
@@ -382,10 +382,10 @@ namespace Nemcache.Tests
         public void DeleteExisting()
         {
             var storageBuilder = new StoreRequestBuilder("set", "key", "value");
-            Dispatch(storageBuilder.ToRequest());
+            Dispatch(storageBuilder.ToAsciiRequest());
 
             var delBuilder = new DeleteRequestBuilder("key");
-            var response = Dispatch(delBuilder.ToRequest());
+            var response = Dispatch(delBuilder.ToAsciiRequest());
 
             Assert.AreEqual("DELETED\r\n", response.ToAsciiString());
         }
@@ -394,13 +394,13 @@ namespace Nemcache.Tests
         public void DeleteExistingGetNotFound()
         {
             var storageBuilder = new StoreRequestBuilder("set", "key", "value");
-            Dispatch(storageBuilder.ToRequest());
+            Dispatch(storageBuilder.ToAsciiRequest());
 
             var delBuilder = new DeleteRequestBuilder("key");
-            Dispatch(delBuilder.ToRequest());
+            Dispatch(delBuilder.ToAsciiRequest());
 
             var getBuilder = new GetRequestBuilder("get", "key");
-            var response = Dispatch(getBuilder.ToRequest());
+            var response = Dispatch(getBuilder.ToAsciiRequest());
             Assert.AreEqual("END\r\n", response.ToAsciiString());
         }
         #endregion
@@ -413,10 +413,10 @@ namespace Nemcache.Tests
             var storageBuilder = new StoreRequestBuilder("set", "key", "value");
             storageBuilder.WithExpiry(100);
 
-            Dispatch(storageBuilder.ToRequest());
+            Dispatch(storageBuilder.ToAsciiRequest());
 
             var getBuilder = new GetRequestBuilder("get", "key");
-            var response = Dispatch(getBuilder.ToRequest());
+            var response = Dispatch(getBuilder.ToAsciiRequest());
             Assert.AreEqual("VALUE key 0 5\r\nvalue\r\nEND\r\n", response.ToAsciiString());
         }
 
@@ -427,12 +427,12 @@ namespace Nemcache.Tests
             var storageBuilder = new StoreRequestBuilder("set", "key", "value");
             storageBuilder.WithExpiry(1);
 
-            Dispatch(storageBuilder.ToRequest());
+            Dispatch(storageBuilder.ToAsciiRequest());
 
             _testScheduler.AdvanceBy(TimeSpan.FromSeconds(2));
 
             var getBuilder = new GetRequestBuilder("get", "key");
-            var response = Dispatch(getBuilder.ToRequest());
+            var response = Dispatch(getBuilder.ToAsciiRequest());
             Assert.AreEqual("END\r\n", response.ToAsciiString());
         }
 #endregion
@@ -443,11 +443,11 @@ namespace Nemcache.Tests
         {
             var storageBuilder = new StoreRequestBuilder("set", "key", "value");
             storageBuilder.WithExpiry(100);
-            Dispatch(storageBuilder.ToRequest());
+            Dispatch(storageBuilder.ToAsciiRequest());
 
             var touchBuilder = new TouchRequestBuilder("key");
             touchBuilder.WithExpiry(1);
-            var response = Dispatch(touchBuilder.ToRequest());
+            var response = Dispatch(touchBuilder.ToAsciiRequest());
 
             Assert.AreEqual("OK\r\n", response.ToAsciiString());
         }
@@ -457,7 +457,7 @@ namespace Nemcache.Tests
         {
             var touchBuilder = new TouchRequestBuilder("key");
             touchBuilder.WithExpiry(1);
-            var response = Dispatch(touchBuilder.ToRequest());
+            var response = Dispatch(touchBuilder.ToAsciiRequest());
 
             Assert.AreEqual("NOT_FOUND\r\n", response.ToAsciiString());
         }
@@ -468,15 +468,15 @@ namespace Nemcache.Tests
         {
             var storageBuilder = new StoreRequestBuilder("set", "key", "value");
             storageBuilder.WithExpiry(100);
-            Dispatch(storageBuilder.ToRequest());
+            Dispatch(storageBuilder.ToAsciiRequest());
             
             var touchBuilder = new TouchRequestBuilder("key");
             touchBuilder.WithExpiry(1);
-            Dispatch(touchBuilder.ToRequest());
+            Dispatch(touchBuilder.ToAsciiRequest());
             _testScheduler.AdvanceBy(TimeSpan.FromSeconds(2));
 
             var getBuilder = new GetRequestBuilder("get", "key");
-            var response = Dispatch(getBuilder.ToRequest());
+            var response = Dispatch(getBuilder.ToAsciiRequest());
             Assert.AreEqual("END\r\n", response.ToAsciiString());
         }
 #endregion
@@ -488,7 +488,7 @@ namespace Nemcache.Tests
         {
             var addBuilder = new StoreRequestBuilder("add", "key", "value");
 
-            var response = Dispatch(addBuilder.ToRequest());
+            var response = Dispatch(addBuilder.ToAsciiRequest());
 
             Assert.AreEqual("STORED\r\n", response.ToAsciiString());
         }
@@ -499,7 +499,7 @@ namespace Nemcache.Tests
             var addBuilder = new StoreRequestBuilder("add", "key", "value");
             addBuilder.NoReply();
 
-            var response = Dispatch(addBuilder.ToRequest());
+            var response = Dispatch(addBuilder.ToAsciiRequest());
 
             Assert.AreEqual("", response.ToAsciiString());
         }
@@ -509,11 +509,11 @@ namespace Nemcache.Tests
         {
             var setBuilder = new StoreRequestBuilder("set", "key", "value");
 
-            Dispatch(setBuilder.ToRequest());
+            Dispatch(setBuilder.ToAsciiRequest());
 
             var addBuilder = new StoreRequestBuilder("add", "key", "value");
 
-            var response = Dispatch(addBuilder.ToRequest());
+            var response = Dispatch(addBuilder.ToAsciiRequest());
 
             Assert.AreEqual("NOT_STORED\r\n", response.ToAsciiString());
         }
@@ -523,10 +523,10 @@ namespace Nemcache.Tests
         {
             var addBuilder = new StoreRequestBuilder("add", "key", "value");
 
-            Dispatch(addBuilder.ToRequest());
+            Dispatch(addBuilder.ToAsciiRequest());
 
             var getBuilder = new GetRequestBuilder("get", "key");
-            var response = Dispatch(getBuilder.ToRequest());
+            var response = Dispatch(getBuilder.ToAsciiRequest());
             Assert.AreEqual("VALUE key 0 5\r\nvalue\r\nEND\r\n", response.ToAsciiString());
         }
 
@@ -539,7 +539,7 @@ namespace Nemcache.Tests
         {
             var replaceBuilder = new StoreRequestBuilder("replace", "key", "value");
 
-            var response = Dispatch(replaceBuilder.ToRequest());
+            var response = Dispatch(replaceBuilder.ToAsciiRequest());
 
             Assert.AreEqual("NOT_STORED\r\n", response.ToAsciiString());
         }
@@ -550,7 +550,7 @@ namespace Nemcache.Tests
             var replaceBuilder = new StoreRequestBuilder("replace", "key", "value");
             replaceBuilder.NoReply();
 
-            var response = Dispatch(replaceBuilder.ToRequest());
+            var response = Dispatch(replaceBuilder.ToAsciiRequest());
 
             Assert.AreEqual("", response.ToAsciiString());
         }
@@ -559,10 +559,10 @@ namespace Nemcache.Tests
         public void ReplaceToExisting()
         {
             var setBuilder = new StoreRequestBuilder("set", "key", "value");
-            Dispatch(setBuilder.ToRequest());
+            Dispatch(setBuilder.ToAsciiRequest());
 
             var replaceBuilder = new StoreRequestBuilder("replace", "key", "value");
-            var response = Dispatch(replaceBuilder.ToRequest());
+            var response = Dispatch(replaceBuilder.ToAsciiRequest());
             Assert.AreEqual("STORED\r\n", response.ToAsciiString());
         }
 
@@ -572,13 +572,13 @@ namespace Nemcache.Tests
         public void GetValueOfReplaceToExisting()
         {
             var setBuilder = new StoreRequestBuilder("set", "key", "first");
-            Dispatch(setBuilder.ToRequest());
+            Dispatch(setBuilder.ToAsciiRequest());
 
             var replaceBuilder = new StoreRequestBuilder("replace", "key", "second");
-            Dispatch(replaceBuilder.ToRequest());
+            Dispatch(replaceBuilder.ToAsciiRequest());
 
             var getBuilder = new GetRequestBuilder("get", "key");
-            var response = Dispatch(getBuilder.ToRequest());
+            var response = Dispatch(getBuilder.ToAsciiRequest());
             Assert.AreEqual("VALUE key 0 6\r\nsecond\r\nEND\r\n", response.ToAsciiString());
         }
         #endregion
@@ -588,7 +588,7 @@ namespace Nemcache.Tests
         public void FlushResponse()
         {
             var storageBuilder = new StoreRequestBuilder("set", "key", "value");
-            Dispatch(storageBuilder.ToRequest());
+            Dispatch(storageBuilder.ToAsciiRequest());
 
             var flushRequest = Encoding.ASCII.GetBytes("flush_all\r\n");
             var response = _requestHandler.Dispatch("remote", flushRequest, null);
@@ -600,7 +600,7 @@ namespace Nemcache.Tests
         public void FlushDelayResponse()
         {
             var storageBuilder = new StoreRequestBuilder("set", "key", "value");
-            Dispatch(storageBuilder.ToRequest());
+            Dispatch(storageBuilder.ToAsciiRequest());
 
             var flushRequest = Encoding.ASCII.GetBytes("flush_all 123\r\n");
             var response = _requestHandler.Dispatch("remote", flushRequest, null);
@@ -612,28 +612,28 @@ namespace Nemcache.Tests
         public void FlushClearsCache()
         {
             var storageBuilder = new StoreRequestBuilder("set", "key", "value");
-            Dispatch(storageBuilder.ToRequest());
+            Dispatch(storageBuilder.ToAsciiRequest());
 
             var flushRequest = Encoding.ASCII.GetBytes("flush_all\r\n");
             _requestHandler.Dispatch("remote", flushRequest, null);
 
             var getBuilder = new GetRequestBuilder("get", "key");
-            var response = Dispatch(getBuilder.ToRequest());
+            var response = Dispatch(getBuilder.ToAsciiRequest());
             Assert.AreEqual("END\r\n", response.ToAsciiString());
         }
         [TestMethod]
         public void FlushClearsCacheMultiple()
         {
             var storageBuilder1 = new StoreRequestBuilder("set", "key", "value");
-            Dispatch(storageBuilder1.ToRequest());
+            Dispatch(storageBuilder1.ToAsciiRequest());
             var storageBuilder2 = new StoreRequestBuilder("set", "key2", "value");
-            Dispatch(storageBuilder2.ToRequest());
+            Dispatch(storageBuilder2.ToAsciiRequest());
 
             var flushRequest = Encoding.ASCII.GetBytes("flush_all\r\n");
             _requestHandler.Dispatch("remote", flushRequest, null);
 
             var getBuilder = new GetRequestBuilder("get", "key");
-            var response = Dispatch(getBuilder.ToRequest());
+            var response = Dispatch(getBuilder.ToAsciiRequest());
             Assert.AreEqual("END\r\n", response.ToAsciiString());
         }
 
@@ -641,7 +641,7 @@ namespace Nemcache.Tests
         public void FlushWithDelayNoEffect()
         {
             var storageBuilder = new StoreRequestBuilder("set", "key", "value");
-            Dispatch(storageBuilder.ToRequest());
+            Dispatch(storageBuilder.ToAsciiRequest());
 
             var flushRequest = Encoding.ASCII.GetBytes("flush_all 100\r\n");
             _requestHandler.Dispatch("remote", flushRequest, null);
@@ -649,7 +649,7 @@ namespace Nemcache.Tests
             _testScheduler.AdvanceBy(TimeSpan.FromSeconds(90));
 
             var getBuilder = new GetRequestBuilder("get", "key");
-            var response = Dispatch(getBuilder.ToRequest());
+            var response = Dispatch(getBuilder.ToAsciiRequest());
             Assert.AreEqual("VALUE key 0 5\r\nvalue\r\nEND\r\n", response.ToAsciiString());
         }
 
@@ -658,7 +658,7 @@ namespace Nemcache.Tests
         public void FlushWithDelayEmpty()
         {
             var storageBuilder = new StoreRequestBuilder("set", "key", "value");
-            Dispatch(storageBuilder.ToRequest());
+            Dispatch(storageBuilder.ToAsciiRequest());
 
             var flushRequest = Encoding.ASCII.GetBytes("flush_all 100\r\n");
             _requestHandler.Dispatch("remote", flushRequest, null);
@@ -666,7 +666,7 @@ namespace Nemcache.Tests
             _testScheduler.AdvanceBy(TimeSpan.FromSeconds(200));
 
             var getBuilder = new GetRequestBuilder("get", "key");
-            var response = Dispatch(getBuilder.ToRequest());
+            var response = Dispatch(getBuilder.ToAsciiRequest());
             Assert.AreEqual("END\r\n", response.ToAsciiString());
         }
         #endregion
@@ -681,12 +681,12 @@ namespace Nemcache.Tests
             ulong lastCas = 123;
             casBuilder.WithCasUnique(lastCas);
 
-            var response = Dispatch(casBuilder.ToRequest());
+            var response = Dispatch(casBuilder.ToAsciiRequest());
             Assert.AreEqual("STORED\r\n", response.ToAsciiString());
 
             // TODO: split test
             var getBuilder = new GetRequestBuilder("get", "key");
-            var getResponse = Dispatch(getBuilder.ToRequest());
+            var getResponse = Dispatch(getBuilder.ToAsciiRequest());
             Assert.AreEqual("VALUE key 0 5 123\r\nvalue\r\nEND\r\n", getResponse.ToAsciiString());
         }
 
@@ -695,18 +695,18 @@ namespace Nemcache.Tests
         {
             var casBuilder1 = new CasRequestBuilder("key", "value1");
             casBuilder1.WithCasUnique(567);
-            Dispatch(casBuilder1.ToRequest());
+            Dispatch(casBuilder1.ToAsciiRequest());
 
             var casBuilder2 = new CasRequestBuilder("key", "value2");
             casBuilder2.WithCasUnique(567);
             
-            var response2 = Dispatch(casBuilder2.ToRequest());
+            var response2 = Dispatch(casBuilder2.ToAsciiRequest());
 
             Assert.AreEqual("STORED\r\n", response2.ToAsciiString());
 
             // TODO: split test
             var getBuilder = new GetRequestBuilder("get", "key");
-            var getResponse = Dispatch(getBuilder.ToRequest());
+            var getResponse = Dispatch(getBuilder.ToAsciiRequest());
             Assert.AreEqual("VALUE key 0 6 567\r\nvalue2\r\nEND\r\n", getResponse.ToAsciiString());
         }
 
@@ -716,18 +716,18 @@ namespace Nemcache.Tests
         {
             var casBuilder1 = new CasRequestBuilder("key", "value1");
             casBuilder1.WithCasUnique(789);
-            Dispatch(casBuilder1.ToRequest());
+            Dispatch(casBuilder1.ToAsciiRequest());
 
             var casBuilder2 = new CasRequestBuilder("key", "value2");
             casBuilder2.WithCasUnique(567);
 
-            var response2 = Dispatch(casBuilder2.ToRequest());
+            var response2 = Dispatch(casBuilder2.ToAsciiRequest());
             Assert.AreEqual("EXISTS\r\n", response2.ToAsciiString());
 
             // TODO: and not changed
             // TODO: split test
             var getBuilder = new GetRequestBuilder("get", "key");
-            var getResponse = Dispatch(getBuilder.ToRequest());
+            var getResponse = Dispatch(getBuilder.ToAsciiRequest());
             Assert.AreEqual("VALUE key 0 6 789\r\nvalue1\r\nEND\r\n", getResponse.ToAsciiString());
         }
 

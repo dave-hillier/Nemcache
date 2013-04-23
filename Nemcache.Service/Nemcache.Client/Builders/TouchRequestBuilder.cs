@@ -1,9 +1,9 @@
 ﻿using System.Linq;
 using System.Text;
 
-namespace Nemcache.Tests.Builders
+namespace Nemcache.Client.Builders
 {
-    class TouchRequestBuilder
+    class TouchRequestBuilder : IRequestBuilder
     {
         private readonly string _key;
         private int _time;
@@ -26,7 +26,7 @@ namespace Nemcache.Tests.Builders
             return this;
         }
 
-        public byte[] ToRequest()
+        public byte[] ToAsciiRequest()
         {
             var format = string.Format("touch {0} {1}{2}\r\n",
                                        _key, _time, _noReply ? " noreply" : "");

@@ -1,9 +1,11 @@
 ﻿using System.Linq;
 using System.Text;
 
-namespace Nemcache.Tests.Builders
+namespace Nemcache.Client.Builders
 {
-    class StoreRequestBuilder
+
+
+    class StoreRequestBuilder : IRequestBuilder
     {
         private readonly string _command;
 
@@ -49,7 +51,7 @@ namespace Nemcache.Tests.Builders
             return this;
         }
 
-        public virtual byte[] ToRequest()
+        public virtual byte[] ToAsciiRequest()
         {
             var format = string.Format("{0} {1} {2} {3} {4}{5}\r\n",
                                        _command, _key, _flags, _time, _data.Length, _noReply ? " noreply" : "");

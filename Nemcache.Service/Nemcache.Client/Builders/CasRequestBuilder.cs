@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Text;
 
-namespace Nemcache.Tests.Builders
+namespace Nemcache.Client.Builders
 {
     class CasRequestBuilder : StoreRequestBuilder
     {
@@ -24,7 +24,7 @@ namespace Nemcache.Tests.Builders
             return this;
         }
 
-        public override byte[] ToRequest()
+        public override byte[] ToAsciiRequest()
         {
             var format = string.Format("cas {0} {1} {2} {3} {4}{5}\r\n",
                                         _key, _flags, _time, _data.Length, _casUnique, _noReply ? " noreply" : "");

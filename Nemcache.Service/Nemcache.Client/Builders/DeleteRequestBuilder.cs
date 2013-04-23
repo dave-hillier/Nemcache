@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using System.Text;
 
-namespace Nemcache.Tests.Builders
+namespace Nemcache.Client.Builders
 {
     class DeleteRequestBuilder
     {
@@ -19,12 +19,10 @@ namespace Nemcache.Tests.Builders
             return this;
         }
 
-        public byte[] ToRequest()
+        public byte[] ToAsciiRequest()
         {
             var format = string.Format("delete {0}{1}\r\n", _key, _noReply ? " noreply" : "");
-            var start = Encoding.ASCII.GetBytes(format);
-            var end = Encoding.ASCII.GetBytes("\r\n");
-            return start.Concat(end).ToArray();
+            return Encoding.ASCII.GetBytes(format + "\r\n");
         }
     }
 }

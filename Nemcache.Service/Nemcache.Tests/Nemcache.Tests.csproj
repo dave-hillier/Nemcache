@@ -54,18 +54,16 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="Builders\CasRequestBuilder.cs" />
-    <Compile Include="Builders\DeleteRequestBuilder.cs" />
-    <Compile Include="Builders\TouchRequestBuilder.cs" />
-    <Compile Include="Builders\MutateRequestBuilder.cs" />
-    <Compile Include="Builders\StoreRequestBuilder.cs" />
-    <Compile Include="Builders\GetRequestBuilder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RequestHandlerTests.cs" />
     <Compile Include="TestExt.cs" />
     <Compile Include="TestScheduler.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Nemcache.Client\Nemcache.Client.csproj">
+      <Project>{9b7ed86e-5341-4cea-a1d6-ab6d85393ddd}</Project>
+      <Name>Nemcache.Client</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Nemcache.Service\Nemcache.Service.csproj">
       <Project>{74C89543-E71E-4D6E-95E1-796014C6CCC0}</Project>
       <Name>Nemcache.Service</Name>
