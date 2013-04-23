@@ -8,7 +8,6 @@ using Topshelf;
 
 namespace Nemcache.Service
 {
-    
     internal class Program
     {
         private static void Main(string[] args)

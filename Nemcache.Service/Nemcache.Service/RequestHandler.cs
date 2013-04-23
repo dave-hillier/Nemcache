@@ -201,6 +201,11 @@ namespace Nemcache.Service
             var bytes = int.Parse(commandParams[3]);
             var casUnique = ulong.Parse(commandParams[4]);
             byte[] data = request.Skip(input.Length + 2).Take(bytes).ToArray();
+            return Cas(key, flags, exptime, casUnique, data);
+        }
+
+        private byte[] Cas(string key, ulong flags, DateTime exptime, ulong casUnique, byte[] data)
+        {
             CacheEntry entry;
             if (_cache.TryGetValue(key, out entry))
             {
@@ -211,7 +216,7 @@ namespace Nemcache.Service
                         MakeSpaceForData(spaceRequired);
                     var newValue = new CacheEntry { CasUnique = casUnique, Data = data, Expiry = exptime, Flags = flags };
                     var stored = _cache.TryUpdate(key, newValue, entry);
-                    return stored ? Encoding.ASCII.GetBytes("STORED\r\n") : 
+                    return stored ? Encoding.ASCII.GetBytes("STORED\r\n") :
                         Encoding.ASCII.GetBytes("EXISTS\r\n");
                 }
                 else
@@ -233,49 +238,58 @@ namespace Nemcache.Service
             var bytes = int.Parse(commandParams[3]);
             byte[] data = request.Skip(input.Length + 2).Take(bytes).ToArray();
 
+            return Store(commandName, key, flags, exptime, data);
+        }
+
+        private byte[] Store(string commandName, string key, ulong flags, DateTime exptime, byte[] data)
+        {
             if (data.Length > Capacity)
             {
                 return Encoding.ASCII.GetBytes("ERROR Over capacity\r\n");
             }
 
+            MakeSpaceForData(data.Length); // In the case of replace this could be offset by the existing value
+            bool stored = false;
             switch (commandName)
             {
                 case "set":
-                    return Store(key, flags, exptime, data);
+                    stored = Store(key, flags, exptime, data);
+                    break;
                 case "replace":
-                    return Replace(key, flags, exptime, data);
+                    stored = Replace(key, flags, exptime, data);
+                    break;
                 case "add":
-                    return Add(key, flags, exptime, data);
+                    stored = Add(key, flags, exptime, data);
+                    break;
                 case "append":
                 case "prepend":
-                    return Append(key, flags, exptime, data, commandName == "append");
+                    stored = Append(key, flags, exptime, data, commandName == "append");
+                    break;
+                default:
+                    throw new InvalidOperationException("commandName");
             }
-            return Encoding.ASCII.GetBytes("ERROR\r\n");
+            return stored ? Encoding.ASCII.GetBytes("STORED\r\n") :
+                Encoding.ASCII.GetBytes("NOT_STORED\r\n");
         }
 
-        private byte[] Replace(string key, ulong flags, DateTime exptime, byte[] data)
+        private bool Replace(string key, ulong flags, DateTime exptime, byte[] data)
         {
-            MakeSpaceForData(data.Length); // TODO: current value could reduce this requirement 
             var exists = _cache.TryUpdate(key, e =>
             {
                 return new CacheEntry { Data = data, Expiry = exptime, Flags = flags };
             });
-            return exists ? Encoding.ASCII.GetBytes("STORED\r\n") :
-                Encoding.ASCII.GetBytes("NOT_STORED\r\n");
+            return exists;
         }
 
-        private byte[] Add(string key, ulong flags, DateTime exptime, byte[] data)
+        private bool Add(string key, ulong flags, DateTime exptime, byte[] data)
         {
-            MakeSpaceForData(data.Length);
             var entry = new CacheEntry { Data = data, Expiry = exptime, Flags = flags };
             var result = _cache.TryAdd(key, entry);
-            return result ? Encoding.ASCII.GetBytes("STORED\r\n") :
-                Encoding.ASCII.GetBytes("NOT_STORED\r\n");
+            return result;
         }
 
-        private byte[] Append(string key, ulong flags, DateTime exptime, byte[] data, bool prepend)
+        private bool Append(string key, ulong flags, DateTime exptime, byte[] data, bool prepend)
         {
-            MakeSpaceForData(data.Length);
             var exists = _cache.TryUpdate(key, e =>
             {
                 // TODO: ensure that this entry is not becomming bigger than capacity?
@@ -285,14 +299,13 @@ namespace Nemcache.Service
                     data.Concat(e.Data).ToArray();
                 return newEntry;
             });
-            return !exists ? Store(key, flags, exptime, data) : Encoding.ASCII.GetBytes("STORED\r\n");
+            return exists ? true : Store(key, flags, exptime, data); 
         }
 
-        private byte[] Store(string key, ulong flags, DateTime exptime, byte[] data)
+        private bool Store(string key, ulong flags, DateTime exptime, byte[] data)
         {
-            MakeSpaceForData(data.Length);
             _cache[key] = new CacheEntry { Data = data, Expiry = exptime, Flags = flags };
-            return Encoding.ASCII.GetBytes("STORED\r\n");
+            return true;
         }
 
         private void MakeSpaceForData(int length)
