@@ -55,9 +55,7 @@ namespace Nemcache.Client.Builders
         {
             var format = string.Format("{0} {1} {2} {3} {4}{5}\r\n",
                                        _command, _key, _flags, _time, _data.Length, _noReply ? " noreply" : "");
-            var start = Encoding.ASCII.GetBytes(format);
-            var end = Encoding.ASCII.GetBytes("\r\n");
-            return start.Concat(_data).Concat(end).ToArray();
+            return Encoding.ASCII.GetBytes(format);
         }
     }
 }

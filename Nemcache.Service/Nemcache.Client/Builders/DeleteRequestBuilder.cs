@@ -22,7 +22,7 @@ namespace Nemcache.Client.Builders
         public byte[] ToAsciiRequest()
         {
             var format = string.Format("delete {0}{1}\r\n", _key, _noReply ? " noreply" : "");
-            return Encoding.ASCII.GetBytes(format + "\r\n");
+            return Encoding.ASCII.GetBytes(format);
         }
     }
 }
