@@ -4,21 +4,21 @@ using System.Text;
 
 namespace Nemcache.Tests.Builders
 {
-    class MemcacheCasCommandBuilder : MemcacheStorageCommandBuilder
+    class CasRequestBuilder : StoreRequestBuilder
     {
         private ulong _casUnique;
 
-        public MemcacheCasCommandBuilder(string key, byte[] data) : 
+        public CasRequestBuilder(string key, byte[] data) : 
             base("cas", key, data)
         {
         }
 
-        public MemcacheCasCommandBuilder(string key, string data) :
+        public CasRequestBuilder(string key, string data) :
             base("cas", key, Encoding.ASCII.GetBytes(data))
         {
         }
 
-        public MemcacheCasCommandBuilder WithCasUnique(ulong casUnique)
+        public CasRequestBuilder WithCasUnique(ulong casUnique)
         {
             _casUnique = casUnique;
             return this;

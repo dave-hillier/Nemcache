@@ -2,21 +2,21 @@
 
 namespace Nemcache.Tests.Builders
 {
-    class MemcacheIncrCommandBuilder
+    class MutateRequestBuilder
     {
         private readonly string _command;
         private readonly string _key;
         private readonly ulong _value;
         private bool _noReply;
 
-        public MemcacheIncrCommandBuilder(string command, string key, ulong value)
+        public MutateRequestBuilder(string command, string key, ulong value)
         {
             _command = command;
             _key = key;
             _value = value;
         }
 
-        public MemcacheIncrCommandBuilder NoReply()
+        public MutateRequestBuilder NoReply()
         {
             _noReply = true;
             return this;

@@ -3,17 +3,24 @@ using System.Text;
 
 namespace Nemcache.Tests.Builders
 {
-    class MemcacheDeleteCommandBuilder
+    class TouchRequestBuilder
     {
         private readonly string _key;
+        private int _time;
         private bool _noReply;
 
-        public MemcacheDeleteCommandBuilder(string key)
+        public TouchRequestBuilder(string key)
         {
             _key = key;
         }
 
-        public MemcacheDeleteCommandBuilder NoReply()
+        public TouchRequestBuilder WithExpiry(int time)
+        {
+            _time = time;
+            return this;
+        }
+
+        public TouchRequestBuilder NoReply()
         {
             _noReply = true;
             return this;
@@ -21,7 +28,8 @@ namespace Nemcache.Tests.Builders
 
         public byte[] ToRequest()
         {
-            var format = string.Format("delete {0}{1}\r\n", _key, _noReply ? " noreply" : "");
+            var format = string.Format("touch {0} {1}{2}\r\n",
+                                       _key, _time, _noReply ? " noreply" : "");
             var start = Encoding.ASCII.GetBytes(format);
             var end = Encoding.ASCII.GetBytes("\r\n");
             return start.Concat(end).ToArray();

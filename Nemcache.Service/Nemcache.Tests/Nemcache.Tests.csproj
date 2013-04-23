@@ -54,12 +54,12 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="Builders\MemcacheCasCommandBuilder.cs" />
-    <Compile Include="Builders\MemcacheDeleteCommandBuilder.cs" />
-    <Compile Include="Builders\MemcacheTouchCommandBuilder.cs" />
-    <Compile Include="Builders\MemcacheIncrCommandBuilder.cs" />
-    <Compile Include="Builders\MemcacheStorageCommandBuilder.cs" />
-    <Compile Include="Builders\MemcacheRetrivalCommandBuilder.cs" />
+    <Compile Include="Builders\CasRequestBuilder.cs" />
+    <Compile Include="Builders\DeleteRequestBuilder.cs" />
+    <Compile Include="Builders\TouchRequestBuilder.cs" />
+    <Compile Include="Builders\MutateRequestBuilder.cs" />
+    <Compile Include="Builders\StoreRequestBuilder.cs" />
+    <Compile Include="Builders\GetRequestBuilder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RequestHandlerTests.cs" />
     <Compile Include="TestExt.cs" />
