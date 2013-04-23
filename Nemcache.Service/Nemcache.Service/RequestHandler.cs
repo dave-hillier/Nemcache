@@ -75,9 +75,11 @@ namespace Nemcache.Service
 
         public byte[] Dispatch(string remoteEndpoint, byte[] request, IDisposable clientConnectionHandle) // TODO: an interface for this?
         {
+            // TODO: Is it possible for the client to send multiple requests in one.
             try
             {
                 var input = TakeFirstLine(request).ToArray();
+                request = request.Skip(input.Length + 2).ToArray();
                 var requestFirstLine = Encoding.ASCII.GetString(input);
                 var requestTokens = requestFirstLine.Split(' ');
                 var commandName = requestTokens.First();
@@ -157,7 +159,7 @@ namespace Nemcache.Service
             {
                 CacheEntry touched = entry;
                 touched.Expiry = exptime;
-                _cache.TryUpdate(key, touched, entry); // OK to fail if something else has updated.
+                _cache.TryUpdate(key, touched, entry); // OK to fail if something else has updated?
                 return Encoding.ASCII.GetBytes("OK\r\n");
             }
             return Encoding.ASCII.GetBytes("NOT_FOUND\r\n");
@@ -200,7 +202,7 @@ namespace Nemcache.Service
             var exptime = ToExpiry(commandParams[2]);
             var bytes = int.Parse(commandParams[3]);
             var casUnique = ulong.Parse(commandParams[4]);
-            byte[] data = request.Skip(input.Length + 2).Take(bytes).ToArray();
+            byte[] data = request.Take(bytes).ToArray();
             return Cas(key, flags, exptime, casUnique, data);
         }
 
@@ -236,7 +238,7 @@ namespace Nemcache.Service
             var flags = ToFlags(commandParams[1]);
             var exptime = ToExpiry(commandParams[2]);
             var bytes = int.Parse(commandParams[3]);
-            byte[] data = request.Skip(input.Length + 2).Take(bytes).ToArray();
+            byte[] data = request.Take(bytes).ToArray();
 
             return Store(commandName, key, flags, exptime, data);
         }
