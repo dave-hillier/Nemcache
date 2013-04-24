@@ -6,6 +6,7 @@ using System.Text;
 
 namespace Nemcache.Service
 {
+
     internal class MemCache
     {
         private readonly ConcurrentDictionary<string, CacheEntry> _cache = new ConcurrentDictionary<string, CacheEntry>();
@@ -118,7 +119,7 @@ namespace Nemcache.Service
                 }
             }
 
-            ((ICacheObserver)_evictionStrategy).Use(key);
+            _cacheObserver.Use(key);
             _cache[key] = new CacheEntry
             {
                 Inserted = Scheduler.Current.Now,
