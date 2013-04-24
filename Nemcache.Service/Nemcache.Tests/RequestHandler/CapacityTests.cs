@@ -1,12 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Nemcache.Service;
-using System.Threading;
 using Nemcache.Client.Builders;
+using Nemcache.Service;
 
 namespace Nemcache.Tests
 {
@@ -32,7 +26,7 @@ namespace Nemcache.Tests
         [TestMethod]
         public void StoreInCapacity()
         {
-            _requestHandler.Capacity = 10;
+            _requestHandler = new RequestHandler(10);
             var setBuilder = new StoreRequestBuilder("set", "key", "1234567890");
 
             var response = Dispatch(setBuilder.ToAsciiRequest());
@@ -43,7 +37,7 @@ namespace Nemcache.Tests
         [TestMethod]
         public void StoreOverCapacity()
         {
-            _requestHandler.Capacity = 5;
+            _requestHandler = new RequestHandler(5);
             var setBuilder = new StoreRequestBuilder("set", "key", "1234567890");
 
             var response = Dispatch(setBuilder.ToAsciiRequest());
@@ -55,7 +49,7 @@ namespace Nemcache.Tests
         [TestMethod]
         public void StoreEvictOverCapacity()
         {
-            _requestHandler.Capacity = 10;
+            _requestHandler = new RequestHandler(10);
             var setBuilder1 = new StoreRequestBuilder("set", "key1", "1234567890");
             var setBuilder2 = new StoreRequestBuilder("set", "key2", "1234567890");
 
@@ -71,7 +65,7 @@ namespace Nemcache.Tests
         [TestMethod]
         public void StoreMultipleEvictOverCapacity()
         {
-            _requestHandler.Capacity = 10;
+            _requestHandler = new RequestHandler(10);
             var setBuilder1 = new StoreRequestBuilder("set", "key1", "12345");
             var setBuilder2 = new StoreRequestBuilder("set", "key2", "12345");
             var setBuilder3 = new StoreRequestBuilder("set", "key3", "1234567890");
