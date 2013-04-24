@@ -11,6 +11,22 @@ namespace Nemcache.Service
         void MakeSpaceForNewEntry(int length);
     }
 
+    internal class NullEvictionStrategy : IEvictionStrategy
+    {
+        public void MakeSpaceForNewEntry(int length)
+        {
+        }
+    }
+
+    // TODO: going to need a usage tracker? CacheObserver?
+    internal class LRUEvictionStrategy : IEvictionStrategy
+    {
+        public void MakeSpaceForNewEntry(int length)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
     internal class RandomEvictionStrategy : IEvictionStrategy
     {
         private readonly Random _rng = new Random();
