@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 
 namespace Nemcache.Service
 {
-
     internal class RequestHandler
     {
         private readonly byte[] EndOfLine = new byte[] { 13, 10 }; // Ascii for "\r\n"
@@ -75,6 +74,7 @@ namespace Nemcache.Service
                 var commandName = requestTokens.First();
                 var commandParams = requestTokens.Skip(1).ToArray();
                 bool noreply = commandParams.LastOrDefault() == "noreply" && !commandName.StartsWith("get");
+
                 var result = DispatchCommand(request, input, commandName, commandParams, clientConnectionHandle);
                 return noreply ? new byte[] { } : result;
             }
@@ -82,7 +82,6 @@ namespace Nemcache.Service
             {
                 return Encoding.ASCII.GetBytes(string.Format("SERVER_ERROR {0}\r\n", ex.Message));
             }
-
         }
 
         private byte[] DispatchCommand(byte[] request, byte[] input, string commandName, string[] commandParams, IDisposable clientConnectionHandle)
@@ -168,8 +167,8 @@ namespace Nemcache.Service
                            let asAscii = Encoding.ASCII.GetBytes(valueText)
                            select asAscii.Concat(entry.Value.Data).Concat(EndOfLine);
 
-            var endOfMessage = Encoding.ASCII.GetBytes("END");
-            return response.SelectMany(a => a).Concat(endOfMessage).Concat(EndOfLine).ToArray();
+            var endOfMessage = Encoding.ASCII.GetBytes("END\r\n");
+            return response.SelectMany(a => a).Concat(endOfMessage).ToArray();
         }
 
         private byte[] HandleTouch(string[] commandParams)
@@ -198,11 +197,11 @@ namespace Nemcache.Service
             if (commandParams.Length > 0)
             {
                 var delay = TimeSpan.FromSeconds(uint.Parse(commandParams[0]));
-                delay = _cache.ScheduleFlush(delay);
+                delay = _cache.ScheduleClear(delay);
             }
             else
             {
-                _cache.Flush();
+                _cache.Clear();
             }
             return Encoding.ASCII.GetBytes("OK\r\n");
         }
@@ -216,7 +215,7 @@ namespace Nemcache.Service
         private byte[] HandleDelete(string[] commandParams)
         {
             var key = ToKey(commandParams[0]);
-            return _cache.Delete(key) ?
+            return _cache.RemoveEntry(key) ?
                 Encoding.ASCII.GetBytes("DELETED\r\n") :
                 Encoding.ASCII.GetBytes("NOT_FOUND\r\n");
         }
@@ -246,7 +245,5 @@ namespace Nemcache.Service
 
             return Store(commandName, key, flags, exptime, data);
         }
-
-
     }
 }

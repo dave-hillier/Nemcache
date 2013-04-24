@@ -9,16 +9,18 @@ namespace Nemcache.Service
     internal class MemCache
     {
         private readonly ConcurrentDictionary<string, CacheEntry> _cache = new ConcurrentDictionary<string, CacheEntry>();
-        private readonly Random _rng = new Random(); // TODO: extract an expiry strategy
+        private readonly IEvictionStrategy _evictionStrategy;
 
         public MemCache(int capacity)
         {
             Capacity = capacity;
+            _evictionStrategy = new RandomEvictionStrategy(this); // TODO: inject
         }
 
         internal struct CacheEntry
         {
             public ulong Flags { get; set; }
+            public DateTime Inserted { get; set; }
             public DateTime Expiry { get; set; }
             public ulong CasUnique { get; set; }
             public byte[] Data { get; set; }
@@ -36,13 +38,14 @@ namespace Nemcache.Service
             }
         }
 
+        public IEnumerable<string> Keys { get { return _cache.Keys; } }
 
-        public void Flush()
+        public void Clear()
         {
             _cache.Clear();
         }
 
-        public TimeSpan ScheduleFlush(TimeSpan delay)
+        public TimeSpan ScheduleClear(TimeSpan delay)
         {
             Scheduler.Current.Schedule(delay, () => _cache.Clear());
             return delay;
@@ -62,6 +65,7 @@ namespace Nemcache.Service
             return success;
         }
 
+        // I dont like this method as it assumes a general format.
         public bool Mutate(string commandName, string key, ulong incr, out byte[] resultDataOut)
         {
             byte[] resultData = null;
@@ -82,17 +86,24 @@ namespace Nemcache.Service
         }
 
         // TODO: remove the code returns
-        public bool Cas(string key, ulong flags, DateTime exptime, ulong casUnique, byte[] data)
+        public bool Cas(string key, ulong flags, DateTime exptime, ulong casUnique, byte[] newData)
         {
             CacheEntry entry;
             if (_cache.TryGetValue(key, out entry))
             {
                 if (entry.CasUnique == casUnique)
                 {
-                    var spaceRequired = Math.Abs(data.Length - entry.Data.Length);
+                    var spaceRequired = Math.Abs(newData.Length - entry.Data.Length);
                     if (spaceRequired > 0)
-                        MakeSpaceForData(spaceRequired);
-                    var newValue = new CacheEntry { CasUnique = casUnique, Data = data, Expiry = exptime, Flags = flags };
+                        _evictionStrategy.MakeSpaceForNewEntry(spaceRequired);
+                    var newValue = new CacheEntry
+                    {
+                        Inserted = Scheduler.Current.Now,
+                        CasUnique = casUnique,
+                        Data = newData,
+                        Expiry = exptime,
+                        Flags = flags
+                    };
                     var stored = _cache.TryUpdate(key, newValue, entry);
                     return stored;
                 }
@@ -102,33 +113,50 @@ namespace Nemcache.Service
                 }
             }
 
-            _cache[key] = new CacheEntry { CasUnique = casUnique, Data = data, Expiry = exptime, Flags = flags };
+            _cache[key] = new CacheEntry
+            {
+                Inserted = Scheduler.Current.Now,
+                CasUnique = casUnique,
+                Data = newData,
+                Expiry = exptime,
+                Flags = flags
+            };
             return true;
         }
 
-
-
         public bool Replace(string key, ulong flags, DateTime exptime, byte[] data)
         {
-            MakeSpaceForData(data.Length); // In the case of replace this could be offset by the existing value
+            _evictionStrategy.MakeSpaceForNewEntry(data.Length); // In the case of replace this could be offset by the existing value
             var exists = _cache.TryUpdate(key, e =>
             {
-                return new CacheEntry { Data = data, Expiry = exptime, Flags = flags };
+                return new CacheEntry
+                {
+                    Inserted = Scheduler.Current.Now,
+                    Data = data,
+                    Expiry = exptime,
+                    Flags = flags
+                };
             });
             return exists;
         }
 
         public bool Add(string key, ulong flags, DateTime exptime, byte[] data)
         {
-            MakeSpaceForData(data.Length); // In the case of replace this could be offset by the existing value
-            var entry = new CacheEntry { Data = data, Expiry = exptime, Flags = flags };
+            _evictionStrategy.MakeSpaceForNewEntry(data.Length); // In the case of replace this could be offset by the existing value
+            var entry = new CacheEntry
+            {
+                Inserted = Scheduler.Current.Now,
+                Data = data,
+                Expiry = exptime,
+                Flags = flags
+            };
             var result = _cache.TryAdd(key, entry);
             return result;
         }
 
         public bool Append(string key, ulong flags, DateTime exptime, byte[] data, bool prepend)
         {
-            MakeSpaceForData(data.Length); // In the case of replace this could be offset by the existing value
+            _evictionStrategy.MakeSpaceForNewEntry(data.Length); // In the case of replace this could be offset by the existing value
             var exists = _cache.TryUpdate(key, e =>
             {
                 var newEntry = e;
@@ -142,30 +170,18 @@ namespace Nemcache.Service
 
         public bool Store(string key, ulong flags, DateTime exptime, byte[] data)
         {
-            MakeSpaceForData(data.Length); // In the case of replace this could be offset by the existing value
-            _cache[key] = new CacheEntry { Data = data, Expiry = exptime, Flags = flags };
+            _evictionStrategy.MakeSpaceForNewEntry(data.Length); // In the case of replace this could be offset by the existing value
+            _cache[key] = new CacheEntry { 
+                Data = data, 
+                Expiry = exptime, 
+                Flags = flags };
             return true;
         }
 
-        public bool Delete(string key)
+        public bool RemoveEntry(string key)
         {
             CacheEntry entry;
             return _cache.TryRemove(key, out entry);
-        }
-
-        private void MakeSpaceForData(int length)
-        {
-            while (Used + length > Capacity)
-            {
-                RemoveRandomEntry();
-            }
-        }
-
-        private void RemoveRandomEntry()
-        {
-            var keyToEvict = _cache.Keys.ElementAt(_rng.Next(0, _cache.Keys.Count));
-            CacheEntry entry;
-            _cache.TryRemove(keyToEvict, out entry);
         }
 
         public IEnumerable<KeyValuePair<string, CacheEntry>> Retrieve(IEnumerable<string> keys)
@@ -174,7 +190,6 @@ namespace Nemcache.Service
                    where _cache.ContainsKey(key)
                    select KeyValuePair.Create(key, _cache[key]);
         }
-
     }
 
 }

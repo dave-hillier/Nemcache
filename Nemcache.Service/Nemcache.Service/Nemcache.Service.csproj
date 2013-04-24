@@ -59,6 +59,7 @@
   <ItemGroup>
     <Compile Include="ConcurrentDictionaryExtensions.cs" />
     <Compile Include="MemCache.cs" />
+    <Compile Include="RandomEvictionStrategy.cs" />
     <Compile Include="RequestHandler.cs" />
     <Compile Include="RequestResponseTcpServer.cs" />
     <Compile Include="Program.cs" />
