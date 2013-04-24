@@ -65,6 +65,22 @@ namespace Nemcache.Tests
         }
 
         [TestMethod]
+        public void TouchPreventsEvict()
+        {
+            _cache.Store("key1", 0, DateTime.MaxValue, new byte[] { 0, 1, 2, 3, 4 });
+            _cache.Store("key2", 0, DateTime.MaxValue, new byte[] { 0, 1, 2, 3, 4 });
+            _cache.Touch("key1", DateTime.MaxValue);
+
+            _cache.Store("key3", 0, DateTime.MaxValue, new byte[] { 0, 1, 2, 3, 4 });
+
+            var keys = _cache.Keys.ToArray();
+
+            Assert.AreEqual(2, keys.Length);
+            Assert.IsTrue(keys.Contains("key1"));
+            Assert.IsTrue(keys.Contains("key3"));
+        }
+
+        [TestMethod]
         public void RetrievePreventsEvict()
         {
             _cache.Store("key1", 0, DateTime.MaxValue, new byte[] { 0, 1, 2, 3, 4 });
