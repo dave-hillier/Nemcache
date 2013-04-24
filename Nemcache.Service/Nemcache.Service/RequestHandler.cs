@@ -197,7 +197,7 @@ namespace Nemcache.Service
             if (commandParams.Length > 0)
             {
                 var delay = TimeSpan.FromSeconds(uint.Parse(commandParams[0]));
-                delay = _cache.ScheduleClear(delay);
+                _cache.ScheduleClear(delay);
             }
             else
             {

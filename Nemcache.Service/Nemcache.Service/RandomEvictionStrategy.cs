@@ -24,7 +24,6 @@ namespace Nemcache.Service
         }
     }
 
-    // TODO: going to need a usage tracker? CacheObserver?
     internal class LRUEvictionStrategy : IEvictionStrategy, ICacheObserver
     {
         private List<string> _keys = new List<string>();
@@ -87,6 +86,7 @@ namespace Nemcache.Service
             _cache = cache;
         }
 
+        // TODO: push this back into the cache.
         public void MakeSpaceForNewEntry(int length)
         {
             while (!HasAvailableSpace(length))
