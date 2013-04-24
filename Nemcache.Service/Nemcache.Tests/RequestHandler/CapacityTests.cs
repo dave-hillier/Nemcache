@@ -77,6 +77,7 @@ namespace Nemcache.Tests
             var getBuilder1 = new GetRequestBuilder("get", "key1");
             var response1 = Dispatch(getBuilder1.ToAsciiRequest());
             Assert.AreEqual("END\r\n", response1.ToAsciiString());
+
             var getBuilder2 = new GetRequestBuilder("get", "key2");
             var response2 = Dispatch(getBuilder2.ToAsciiRequest());
             Assert.AreEqual("END\r\n", response2.ToAsciiString());

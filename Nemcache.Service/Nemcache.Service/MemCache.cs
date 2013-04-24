@@ -14,7 +14,8 @@ namespace Nemcache.Service
         public MemCache(int capacity)
         {
             Capacity = capacity;
-            _evictionStrategy = new RandomEvictionStrategy(this); // TODO: inject
+            //_evictionStrategy = new RandomEvictionStrategy(this); // TODO: inject
+            _evictionStrategy = new LRUEvictionStrategy(this); // TODO: inject
         }
 
         internal struct CacheEntry
@@ -59,6 +60,7 @@ namespace Nemcache.Service
             {
                 CacheEntry touched = entry;
                 touched.Expiry = exptime;
+                ((ICacheObserver)_evictionStrategy).Use(key); 
                 _cache.TryUpdate(key, touched, entry); // OK to fail if something else has updated?
                 success = true;
             }
@@ -96,6 +98,7 @@ namespace Nemcache.Service
                     var spaceRequired = Math.Abs(newData.Length - entry.Data.Length);
                     if (spaceRequired > 0)
                         _evictionStrategy.MakeSpaceForNewEntry(spaceRequired);
+                    ((ICacheObserver)_evictionStrategy).Use(key); 
                     var newValue = new CacheEntry
                     {
                         Inserted = Scheduler.Current.Now,
@@ -113,6 +116,7 @@ namespace Nemcache.Service
                 }
             }
 
+            ((ICacheObserver)_evictionStrategy).Use(key);
             _cache[key] = new CacheEntry
             {
                 Inserted = Scheduler.Current.Now,
@@ -126,6 +130,7 @@ namespace Nemcache.Service
 
         public bool Replace(string key, ulong flags, DateTime exptime, byte[] data)
         {
+            ((ICacheObserver)_evictionStrategy).Use(key);
             _evictionStrategy.MakeSpaceForNewEntry(data.Length); // In the case of replace this could be offset by the existing value
             var exists = _cache.TryUpdate(key, e =>
             {
@@ -142,7 +147,9 @@ namespace Nemcache.Service
 
         public bool Add(string key, ulong flags, DateTime exptime, byte[] data)
         {
+            ((ICacheObserver)_evictionStrategy).Use(key); 
             _evictionStrategy.MakeSpaceForNewEntry(data.Length); // In the case of replace this could be offset by the existing value
+
             var entry = new CacheEntry
             {
                 Inserted = Scheduler.Current.Now,
@@ -156,6 +163,7 @@ namespace Nemcache.Service
 
         public bool Append(string key, ulong flags, DateTime exptime, byte[] data, bool prepend)
         {
+            ((ICacheObserver)_evictionStrategy).Use(key);
             _evictionStrategy.MakeSpaceForNewEntry(data.Length); // In the case of replace this could be offset by the existing value
             var exists = _cache.TryUpdate(key, e =>
             {
@@ -170,6 +178,7 @@ namespace Nemcache.Service
 
         public bool Store(string key, ulong flags, DateTime exptime, byte[] data)
         {
+            ((ICacheObserver)_evictionStrategy).Use(key);
             _evictionStrategy.MakeSpaceForNewEntry(data.Length); // In the case of replace this could be offset by the existing value
             _cache[key] = new CacheEntry { 
                 Data = data, 
@@ -178,14 +187,17 @@ namespace Nemcache.Service
             return true;
         }
 
-        public bool RemoveEntry(string key)
+        public bool Remove(string key)
         {
+            ((ICacheObserver)_evictionStrategy).Remove(key);
             CacheEntry entry;
             return _cache.TryRemove(key, out entry);
         }
 
         public IEnumerable<KeyValuePair<string, CacheEntry>> Retrieve(IEnumerable<string> keys)
         {
+            // ((ICacheObserver)_evictionStrategy).Use(key);
+   
             return from key in keys
                    where _cache.ContainsKey(key)
                    select KeyValuePair.Create(key, _cache[key]);

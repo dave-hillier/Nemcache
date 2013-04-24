@@ -215,7 +215,7 @@ namespace Nemcache.Service
         private byte[] HandleDelete(string[] commandParams)
         {
             var key = ToKey(commandParams[0]);
-            return _cache.RemoveEntry(key) ?
+            return _cache.Remove(key) ?
                 Encoding.ASCII.GetBytes("DELETED\r\n") :
                 Encoding.ASCII.GetBytes("NOT_FOUND\r\n");
         }

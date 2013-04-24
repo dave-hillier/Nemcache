@@ -54,6 +54,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="LRUEvictionTests.cs" />
     <Compile Include="RequestHandler\AddTest.cs" />
     <Compile Include="RequestHandler\AppendTests.cs" />
     <Compile Include="RequestHandler\CapacityTests.cs" />

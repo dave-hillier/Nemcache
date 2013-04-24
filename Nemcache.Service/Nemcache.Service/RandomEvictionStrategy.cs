@@ -11,6 +11,12 @@ namespace Nemcache.Service
         void MakeSpaceForNewEntry(int length);
     }
 
+    interface ICacheObserver
+    {
+        void Use(string key);
+        void Remove(string key);
+    }
+
     internal class NullEvictionStrategy : IEvictionStrategy
     {
         public void MakeSpaceForNewEntry(int length)
@@ -19,11 +25,55 @@ namespace Nemcache.Service
     }
 
     // TODO: going to need a usage tracker? CacheObserver?
-    internal class LRUEvictionStrategy : IEvictionStrategy
+    internal class LRUEvictionStrategy : IEvictionStrategy, ICacheObserver
     {
+        private List<string> _keys = new List<string>();
+        private MemCache _cache;
+
+        public LRUEvictionStrategy(MemCache cache)
+        {
+            _cache = cache;
+        }
+
         public void MakeSpaceForNewEntry(int length)
         {
-            throw new NotImplementedException();
+            while (!HasAvailableSpace(length))
+            {
+                RemoveLRUEntry();
+            }
+        }
+
+        private bool HasAvailableSpace(int length)
+        {
+            return _cache.Capacity >= _cache.Used + length;
+        }
+
+        private void RemoveLRUEntry()
+        {
+            lock (_keys)
+            {
+                if (_keys.Any())
+                {
+                    _cache.Remove(_keys[0]);
+                }
+            }
+        }
+
+        public void Use(string key)
+        {
+            lock (_keys)
+            {
+                _keys.Remove(key);
+                _keys.Add(key);
+            }
+        }
+
+        public void Remove(string key)
+        {
+            lock(_keys)
+            {
+                _keys.Remove(key);
+            }
         }
     }
 
@@ -53,7 +103,7 @@ namespace Nemcache.Service
         private void RemoveRandomEntry()
         {
             var keyToEvict = _cache.Keys.ElementAt(_rng.Next(0, _cache.Keys.Count()));
-            _cache.RemoveEntry(keyToEvict);
+            _cache.Remove(keyToEvict);
         }
     }
 }
