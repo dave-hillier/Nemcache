@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Nemcache.Service
 {
-    internal class MemCache : Nemcache.Service.IMemCache 
+    internal class MemCache : IMemCache 
     {
         private readonly ConcurrentDictionary<string, CacheEntry> _cache = new ConcurrentDictionary<string, CacheEntry>();
         private readonly IEvictionStrategy _evictionStrategy;
@@ -16,7 +16,6 @@ namespace Nemcache.Service
         {
             Capacity = capacity;
             //_evictionStrategy = new RandomEvictionStrategy(this); // TODO: inject
-
             var lruStrategy = new LRUEvictionStrategy(this);
             _evictionStrategy = lruStrategy;
             _cacheObserver = lruStrategy;
@@ -211,6 +210,12 @@ namespace Nemcache.Service
             return from key in tmp
                    where _cache.ContainsKey(key)
                    select KeyValuePair.Create(key, _cache[key]);
+        }
+
+
+        public IObservable<ICacheNotification> Notifications
+        {
+            get { throw new NotImplementedException(); }
         }
     }
 }
