@@ -8,7 +8,7 @@ namespace Nemcache.Service
 {
     interface IEvictionStrategy
     {
-        void MakeSpaceForNewEntry(int length);
+        void EvictEntry();
     }
 
     interface ICacheObserver
@@ -19,7 +19,8 @@ namespace Nemcache.Service
 
     internal class NullEvictionStrategy : IEvictionStrategy
     {
-        public void MakeSpaceForNewEntry(int length)
+
+        public void EvictEntry()
         {
         }
     }
@@ -38,7 +39,7 @@ namespace Nemcache.Service
         {
             while (!HasAvailableSpace(length))
             {
-                RemoveLRUEntry();
+                EvictEntry();
             }
         }
 
@@ -47,7 +48,7 @@ namespace Nemcache.Service
             return _cache.Capacity >= _cache.Used + length;
         }
 
-        private void RemoveLRUEntry()
+        public void EvictEntry()
         {
             lock (_keys)
             {
@@ -86,21 +87,7 @@ namespace Nemcache.Service
             _cache = cache;
         }
 
-        // TODO: push this back into the cache.
-        public void MakeSpaceForNewEntry(int length)
-        {
-            while (!HasAvailableSpace(length))
-            {
-                RemoveRandomEntry();
-            }
-        }
-
-        private bool HasAvailableSpace(int length)
-        {
-            return _cache.Capacity >= _cache.Used + length;
-        }
-
-        private void RemoveRandomEntry()
+        public void EvictEntry()
         {
             var keyToEvict = _cache.Keys.ElementAt(_rng.Next(0, _cache.Keys.Count()));
             _cache.Remove(keyToEvict);

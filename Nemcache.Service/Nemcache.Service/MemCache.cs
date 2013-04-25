@@ -6,8 +6,7 @@ using System.Text;
 
 namespace Nemcache.Service
 {
-
-    internal class MemCache
+    internal class MemCache : Nemcache.Service.IMemCache 
     {
         private readonly ConcurrentDictionary<string, CacheEntry> _cache = new ConcurrentDictionary<string, CacheEntry>();
         private readonly IEvictionStrategy _evictionStrategy;
@@ -51,11 +50,6 @@ namespace Nemcache.Service
             _cache.Clear();
         }
 
-        public void ScheduleClear(TimeSpan delay)
-        {
-            Scheduler.Current.Schedule(delay, () => _cache.Clear());
-        }
-
         public bool Touch(string key, DateTime exptime)
         {
             bool success = false;
@@ -91,7 +85,19 @@ namespace Nemcache.Service
             return result;
         }
 
-        // TODO: remove the code returns
+        public void MakeSpaceForNewEntry(int length)
+        {
+            while (!HasAvailableSpace(length))
+            {
+                _evictionStrategy.EvictEntry();
+            }
+        }
+
+        private bool HasAvailableSpace(int length)
+        {
+            return Capacity >= Used + length;
+        }
+
         public bool Cas(string key, ulong flags, DateTime exptime, ulong casUnique, byte[] newData)
         {
             CacheEntry entry;
@@ -101,7 +107,7 @@ namespace Nemcache.Service
                 {
                     var spaceRequired = Math.Abs(newData.Length - entry.Data.Length);
                     if (spaceRequired > 0)
-                        _evictionStrategy.MakeSpaceForNewEntry(spaceRequired);
+                        MakeSpaceForNewEntry(spaceRequired);
                     _cacheObserver.Use(key); 
                     var newValue = new CacheEntry
                     {
@@ -134,7 +140,7 @@ namespace Nemcache.Service
         public bool Replace(string key, ulong flags, DateTime exptime, byte[] data)
         {
             _cacheObserver.Use(key);
-            _evictionStrategy.MakeSpaceForNewEntry(data.Length); // In the case of replace this could be offset by the existing value
+            MakeSpaceForNewEntry(data.Length); // In the case of replace this could be offset by the existing value
             return _cache.TryUpdate(key, e =>
             {
                 return new CacheEntry
@@ -150,7 +156,7 @@ namespace Nemcache.Service
         public bool Add(string key, ulong flags, DateTime exptime, byte[] data)
         {
             _cacheObserver.Use(key); 
-            _evictionStrategy.MakeSpaceForNewEntry(data.Length); // In the case of replace this could be offset by the existing value
+            MakeSpaceForNewEntry(data.Length); // In the case of replace this could be offset by the existing value
 
             var entry = new CacheEntry
             {
@@ -165,7 +171,7 @@ namespace Nemcache.Service
         public bool Append(string key, ulong flags, DateTime exptime, byte[] data, bool prepend)
         {
             _cacheObserver.Use(key);
-            _evictionStrategy.MakeSpaceForNewEntry(data.Length); // In the case of replace this could be offset by the existing value
+            MakeSpaceForNewEntry(data.Length); // In the case of replace this could be offset by the existing value
             var exists = _cache.TryUpdate(key, e =>
             {
                 var newEntry = e;
@@ -180,7 +186,7 @@ namespace Nemcache.Service
         public bool Store(string key, ulong flags, DateTime exptime, byte[] data)
         {
             _cacheObserver.Use(key);
-            _evictionStrategy.MakeSpaceForNewEntry(data.Length); // In the case of replace this could be offset by the existing value
+            MakeSpaceForNewEntry(data.Length); // In the case of replace this could be offset by the existing value
             _cache[key] = new CacheEntry { 
                 Data = data, 
                 Expiry = exptime, 
@@ -198,12 +204,10 @@ namespace Nemcache.Service
         public IEnumerable<KeyValuePair<string, CacheEntry>> Retrieve(IEnumerable<string> keys)
         {
             var tmp = keys.ToArray();
-
             foreach (var key in tmp)
             {
                 _cacheObserver.Use(key);
             }
-   
             return from key in tmp
                    where _cache.ContainsKey(key)
                    select KeyValuePair.Create(key, _cache[key]);
