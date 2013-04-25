@@ -11,7 +11,7 @@ using Nemcache.Client.Builders;
 namespace Nemcache.Tests
 {
     [TestClass]
-    class AddTest
+    public class AddTest
     {
         RequestHandler _requestHandler;
         TestScheduler _testScheduler;

@@ -7,7 +7,7 @@ namespace Nemcache.Service
         // TODO: A sequence Id?
     }
 
-    interface IKeyCacheNotification 
+    interface IKeyCacheNotification : ICacheNotification
     { 
         string Key { get; }
     }
@@ -16,11 +16,22 @@ namespace Nemcache.Service
     {
     }
 
+    enum StoreOperation
+    {
+        Add, Append, Prepend, Store, Replace
+    }
+
     class Store : IKeyCacheNotification
     {
         public string Key {get; set; }
 
         public byte[] Data { get; set; }
+
+        public DateTime Expiry { get; set; }
+
+        public StoreOperation Operation { get; set; }
+
+        public ulong Flags { get; set; }
     }
 
     class Touch : IKeyCacheNotification

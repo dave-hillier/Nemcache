@@ -49,7 +49,7 @@
     </Reference>
     <Reference Include="System.Reactive.PlatformServices">
       <HintPath>..\packages\Rx-PlatformServices.2.1.30214.0\lib\Net45\System.Reactive.PlatformServices.dll</HintPath>
-    </Reference>	
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Runtime.Caching" />
   </ItemGroup>
@@ -66,6 +66,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="CacheClone.cs" />
     <Compile Include="LRUEvictionTests.cs" />
     <Compile Include="NotifcationsTest.cs" />
     <Compile Include="RequestHandlerIntegrationTests\AddTest.cs" />
@@ -83,6 +84,7 @@
     <Compile Include="TestScheduler.cs" />
     <Compile Include="RequestHandlerIntegrationTests\TouchTests.cs" />
     <Compile Include="RequestHandlerIntegrationTests\VersionRequestTests.cs" />
+    <Compile Include="MirroredCacheTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Nemcache.Client\Nemcache.Client.csproj">

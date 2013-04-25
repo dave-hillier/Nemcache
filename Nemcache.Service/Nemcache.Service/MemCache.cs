@@ -2,19 +2,55 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Disposables;
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using System.Text;
+using System.Threading;
 
 namespace Nemcache.Service
 {
+    class ReaderLock : IDisposable
+    {
+        private ReaderWriterLockSlim _cacheLock;
+
+        public ReaderLock(ReaderWriterLockSlim cacheLock)
+        {
+            _cacheLock = cacheLock;
+            _cacheLock.EnterReadLock();
+        }
+        public void Dispose()
+        {
+            _cacheLock.ExitReadLock();
+        }
+    }
+
+    class WriterLock : IDisposable
+    {
+        private ReaderWriterLockSlim _cacheLock;
+
+        public ReaderLock(ReaderWriterLockSlim cacheLock)
+        {
+            _cacheLock = cacheLock;
+            _cacheLock.EnterWriteLock();
+        }
+        public void Dispose()
+        {
+            _cacheLock.ExitWriteLock();
+        }
+    }
+
     internal class MemCache : IMemCache 
     {
         private readonly ConcurrentDictionary<string, CacheEntry> _cache = new ConcurrentDictionary<string, CacheEntry>();
         private readonly IEvictionStrategy _evictionStrategy;
         private readonly ICacheObserver _cacheObserver;
+        private ReplaySubject<ICacheNotification> _notifications;
 
         public MemCache(int capacity)
         {
             Capacity = capacity;
+            _notifications = new ReplaySubject<ICacheNotification>();
             //_evictionStrategy = new RandomEvictionStrategy(this); // TODO: inject
             var lruStrategy = new LRUEvictionStrategy(this);
             _evictionStrategy = lruStrategy;
@@ -154,7 +190,8 @@ namespace Nemcache.Service
 
         public bool Add(string key, ulong flags, DateTime exptime, byte[] data)
         {
-            _cacheObserver.Use(key); 
+            _cacheObserver.Use(key);
+            _notifications.OnNext(new Store { Key = key, Data = data, Expiry = exptime, Flags = flags, Operation = StoreOperation.Add });
             MakeSpaceForNewEntry(data.Length); // In the case of replace this could be offset by the existing value
 
             var entry = new CacheEntry
@@ -215,7 +252,19 @@ namespace Nemcache.Service
 
         public IObservable<ICacheNotification> Notifications
         {
-            get { throw new NotImplementedException(); }
+            get { return _notifications; }
+        }
+
+        public class CacheState
+        {
+            int Version { get; set; }
+            IEnumerable<KeyValuePair<string, CacheEntry>> State { get; set; }
+        }
+
+        internal CacheState GetCurrentState()
+        {
+            // TODO: atomically get the entire state!
+            throw new NotImplementedException();
         }
     }
 }
