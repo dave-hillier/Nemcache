@@ -10,48 +10,31 @@ using System.Threading;
 
 namespace Nemcache.Service
 {
-    class ReaderLock : IDisposable
-    {
-        private ReaderWriterLockSlim _cacheLock;
-
-        public ReaderLock(ReaderWriterLockSlim cacheLock)
-        {
-            _cacheLock = cacheLock;
-            _cacheLock.EnterReadLock();
-        }
-        public void Dispose()
-        {
-            _cacheLock.ExitReadLock();
-        }
-    }
-
-    class WriterLock : IDisposable
-    {
-        private ReaderWriterLockSlim _cacheLock;
-
-        public ReaderLock(ReaderWriterLockSlim cacheLock)
-        {
-            _cacheLock = cacheLock;
-            _cacheLock.EnterWriteLock();
-        }
-        public void Dispose()
-        {
-            _cacheLock.ExitWriteLock();
-        }
-    }
-
+    // TODO: stamp all operations with a version
+    // TODO: when publishing, push the history buffer subscribed then the last value.
     internal class MemCache : IMemCache 
     {
         private readonly ConcurrentDictionary<string, CacheEntry> _cache = new ConcurrentDictionary<string, CacheEntry>();
         private readonly IEvictionStrategy _evictionStrategy;
         private readonly ICacheObserver _cacheObserver;
-        private ReplaySubject<ICacheNotification> _notifications;
+        private IObservable<ICacheNotification> _notificationsAndHistory;
+        private Subject<ICacheNotification> _notifications;
 
         public MemCache(int capacity)
         {
             Capacity = capacity;
-            _notifications = new ReplaySubject<ICacheNotification>();
-            //_evictionStrategy = new RandomEvictionStrategy(this); // TODO: inject
+            _notifications = new Subject<ICacheNotification>();
+
+            _notificationsAndHistory = Observable.Defer(() => _cache.ToArray().Select(e =>
+                new Store
+                {
+                    Key = e.Key,
+                    Data = e.Value.Data,
+                    Expiry = e.Value.Expiry,
+                    Flags = e.Value.Flags,
+                    Operation = StoreOperation.Add,
+                }).ToObservable()).Concat(_notifications);
+
             var lruStrategy = new LRUEvictionStrategy(this);
             _evictionStrategy = lruStrategy;
             _cacheObserver = lruStrategy;
@@ -190,8 +173,6 @@ namespace Nemcache.Service
 
         public bool Add(string key, ulong flags, DateTime exptime, byte[] data)
         {
-            _cacheObserver.Use(key);
-            _notifications.OnNext(new Store { Key = key, Data = data, Expiry = exptime, Flags = flags, Operation = StoreOperation.Add });
             MakeSpaceForNewEntry(data.Length); // In the case of replace this could be offset by the existing value
 
             var entry = new CacheEntry
@@ -201,7 +182,14 @@ namespace Nemcache.Service
                 Expiry = exptime,
                 Flags = flags
             };
-            return _cache.TryAdd(key, entry);
+            bool result = _cache.TryAdd(key, entry);
+
+            if (result)
+            {
+                _cacheObserver.Use(key);
+                _notifications.OnNext(new Store { Key = key, Data = data, Expiry = exptime, Flags = flags, Operation = StoreOperation.Add });
+            }
+            return result;
         }
 
         public bool Append(string key, ulong flags, DateTime exptime, byte[] data, bool prepend)
@@ -227,6 +215,7 @@ namespace Nemcache.Service
                 Data = data, 
                 Expiry = exptime, 
                 Flags = flags };
+            _notifications.OnNext(new Store { Key = key, Data = data, Expiry = exptime, Flags = flags, Operation = StoreOperation.Store });
             return true;
         }
 
@@ -234,7 +223,10 @@ namespace Nemcache.Service
         {
             _cacheObserver.Remove(key);
             CacheEntry entry;
-            return _cache.TryRemove(key, out entry);
+            bool removed = _cache.TryRemove(key, out entry);
+            if (removed)
+                _notifications.OnNext(new Remove { Key = key });
+            return removed;
         }
 
         public IEnumerable<KeyValuePair<string, CacheEntry>> Retrieve(IEnumerable<string> keys)
@@ -252,7 +244,7 @@ namespace Nemcache.Service
 
         public IObservable<ICacheNotification> Notifications
         {
-            get { return _notifications; }
+            get { return _notificationsAndHistory; }
         }
 
         public class CacheState

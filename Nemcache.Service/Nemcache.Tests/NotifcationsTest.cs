@@ -24,7 +24,7 @@ namespace Nemcache.Tests
         }
 
         [TestMethod]
-        public void EnsureStoreNotification()
+        public void EnsureAddStoreNotification()
         {
             _cache.Add("key", 123, new DateTime(1999, 1, 1), Encoding.ASCII.GetBytes("TestData"));
 
@@ -38,20 +38,60 @@ namespace Nemcache.Tests
             Assert.AreEqual(new DateTime(1999, 1, 1), store.Expiry);
         }
 
-        // TODO: don't replay values with more up-to-date contents
+        [TestMethod]
+        public void EnsureRemoveNotification()
+        {
+            _cache.Store("key1", 123, new DateTime(1999, 1, 1), Encoding.ASCII.GetBytes("TestData"));
+            _cache.Store("key2", 123, new DateTime(1999, 1, 1), Encoding.ASCII.GetBytes("TestData"));
+
+            _cache.Remove("key2");
+
+            _subject = new ReplaySubject<ICacheNotification>();
+            _cache.Notifications.Subscribe(_subject);
+
+            var notification = _subject.First();
+            var store = notification as Store;
+            Assert.AreEqual("key1", store.Key);
+            Assert.AreEqual("TestData", Encoding.ASCII.GetString(store.Data));
+            Assert.AreEqual((ulong)123, store.Flags);
+            Assert.AreEqual(StoreOperation.Add, store.Operation);
+            Assert.AreEqual(new DateTime(1999, 1, 1), store.Expiry);
+        }
+
+        // TODO: gets add and remove when subscribed..
+        // TODO: add and replace when subscribed...
+
+        [TestMethod]
+        public void EnsureStoreNotification()
+        {
+            _cache.Store("key", 123, new DateTime(1999, 1, 1), Encoding.ASCII.GetBytes("TestData"));
+
+            var notification = _subject.First();
+
+            var store = notification as Store;
+            Assert.AreEqual("key", store.Key);
+            Assert.AreEqual("TestData", Encoding.ASCII.GetString(store.Data));
+            Assert.AreEqual((ulong)123, store.Flags);
+            Assert.AreEqual(StoreOperation.Store, store.Operation);
+            Assert.AreEqual(new DateTime(1999, 1, 1), store.Expiry);
+        }
+
+        // TODO: don't notify if it wasnt added, as that has no effect.
         [TestMethod]
         public void DontReplayEntireHistory()
         {
             _cache.Add("key", 123, new DateTime(1999, 1, 1), Encoding.ASCII.GetBytes("TestData"));
-            _cache.Add("key", 123, new DateTime(1999, 1, 1), Encoding.ASCII.GetBytes("TestData2"));
+            _cache.Store("key", 123, new DateTime(1999, 1, 1), Encoding.ASCII.GetBytes("TestData2"));
+
             _subject = new ReplaySubject<ICacheNotification>();
             _cache.Notifications.Subscribe(_subject);
 
-            var notification = _subject.Single();
-
+            var notification = _subject.First();
             var store = notification as Store;
-
             Assert.AreEqual("TestData2", Encoding.ASCII.GetString(store.Data));
+            Assert.AreEqual(StoreOperation.Add, store.Operation);
         }
+
+        
     }
 }
