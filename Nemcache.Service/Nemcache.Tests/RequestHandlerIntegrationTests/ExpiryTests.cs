@@ -28,8 +28,6 @@ namespace Nemcache.Tests
             Scheduler.Current = _testScheduler = new TestScheduler();
         }
 
-        #region expiry
-        // TODO: Remove time sensitive element
         [TestMethod]
         public void SetExpiryThenGet()
         {
@@ -43,7 +41,6 @@ namespace Nemcache.Tests
             Assert.AreEqual("VALUE key 0 5\r\nvalue\r\nEND\r\n", response.ToAsciiString());
         }
 
-        // TODO: Remove time sensitive element
         [TestMethod]
         public void SetExpiryThenGetGone()
         {
@@ -58,7 +55,24 @@ namespace Nemcache.Tests
             var response = Dispatch(getBuilder.ToAsciiRequest());
             Assert.AreEqual("END\r\n", response.ToAsciiString());
         }
-        #endregion
 
+        [TestMethod]
+        public void DayLongExpiry()
+        {
+            var storageBuilder = new StoreRequestBuilder("set", "key", "value");
+
+            TimeSpan span = (new DateTime(1970, 6, 1) - new DateTime(1970, 1, 1));
+            int unixTime = (int)span.TotalSeconds;
+
+            storageBuilder.WithExpiry(unixTime);
+
+            Dispatch(storageBuilder.ToAsciiRequest());
+
+            _testScheduler.AdvanceBy(TimeSpan.FromDays(200));
+
+            var getBuilder = new GetRequestBuilder("get", "key");
+            var response = Dispatch(getBuilder.ToAsciiRequest());
+            Assert.AreEqual("END\r\n", response.ToAsciiString());
+        }
     }
 }

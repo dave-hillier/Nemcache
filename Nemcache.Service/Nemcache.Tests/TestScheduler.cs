@@ -9,7 +9,7 @@ namespace Nemcache.Tests
 {
     class TestScheduler : IScheduler
     {
-        private DateTime _clock = new DateTime();
+        private DateTime _clock = new DateTime(1970, 1, 1);
         private List<Tuple<DateTime, Action>> _timers = new List<Tuple<DateTime, Action>>();
         public void AdvanceBy(TimeSpan timespan)
         {

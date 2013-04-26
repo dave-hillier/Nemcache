@@ -60,8 +60,10 @@
     <Compile Include="CacheCopy.cs" />
     <Compile Include="ConcurrentDictionaryExtensions.cs" />
     <Compile Include="IMemCache.cs" />
+    <Compile Include="Eviction\LRUEvictionStrategy.cs" />
     <Compile Include="MemCache.cs" />
-    <Compile Include="RandomEvictionStrategy.cs" />
+    <Compile Include="Eviction\NullEvictionStrategy.cs" />
+    <Compile Include="Eviction\RandomEvictionStrategy.cs" />
     <Compile Include="RequestHandler.cs" />
     <Compile Include="RequestResponseTcpServer.cs" />
     <Compile Include="Program.cs" />
