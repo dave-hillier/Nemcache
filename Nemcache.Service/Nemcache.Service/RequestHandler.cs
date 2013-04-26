@@ -45,7 +45,9 @@ namespace Nemcache.Service
             // up to 60*60*24*30 seconds or unix time
             if (expirySeconds == 0)
                 return DateTime.MaxValue;
-            var start = expirySeconds < 60 * 60 * 24 * 30 ? Scheduler.Current.Now : UnixTimeEpoc;
+            var start = expirySeconds < 60 * 60 * 24 * 30 ? 
+                Scheduler.Current.Now : 
+                UnixTimeEpoc;
             return start + TimeSpan.FromSeconds(expirySeconds);
         }
 
@@ -80,7 +82,7 @@ namespace Nemcache.Service
             }
             catch (Exception ex)
             {
-                return Encoding.ASCII.GetBytes(string.Format("SERVER_ERROR {0}\r\n", ex.Message));
+                return Encoding.ASCII.GetBytes(string.Format("SERVER ERROR {0}\r\n", ex.Message));
             }
         }
 
@@ -116,6 +118,8 @@ namespace Nemcache.Service
                 case "version":
                     return Encoding.ASCII.GetBytes("Nemcache " + 
                         GetType().Assembly.GetName().Version + "\r\n");
+                case "exception":
+                    throw new Exception("test exception");
                 default:
                     return Encoding.ASCII.GetBytes("ERROR\r\n");
             }

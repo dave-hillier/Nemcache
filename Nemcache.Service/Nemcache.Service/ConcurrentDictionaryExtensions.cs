@@ -32,15 +32,5 @@ namespace Nemcache.Service
             }
             return false;
         }
-
-        public static bool TryUpdateOptimisitic<TKey, TValue>(this ConcurrentDictionary<TKey, TValue> dict,
-            TKey key, Func<TValue, TValue> updateFactory)
-        {
-            TValue curValue;
-            if (!dict.TryGetValue(key, out curValue))
-                return false;
-            dict.TryUpdate(key, updateFactory(curValue), curValue);
-            return true;
-        }
     }
 }

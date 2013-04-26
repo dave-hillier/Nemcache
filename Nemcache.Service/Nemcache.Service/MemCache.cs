@@ -10,8 +10,6 @@ using System.Threading;
 
 namespace Nemcache.Service
 {
-    // TODO: stamp all operations with a version
-    // TODO: when publishing, push the history buffer subscribed then the last value.
     internal class MemCache : IMemCache 
     {
         private readonly ConcurrentDictionary<string, CacheEntry> _cache = new ConcurrentDictionary<string, CacheEntry>();
@@ -50,6 +48,9 @@ namespace Nemcache.Service
                         SequenceId = e.Value.SequenceId
                     });
 
+
+                // TODO: this can go wrong if we get an update to a key before the initial value arrives. 
+                // Perhaps send notifications through a queue to ensure ordering.
                 var d = _notificationsSubject.
                     Where(n => n.SequenceId > maxCurrentCachedId).
                     Subscribe(obs);
@@ -316,22 +317,9 @@ namespace Nemcache.Service
                    select KeyValuePair.Create(key, _cache[key]);
         }
 
-
         public IObservable<ICacheNotification> Notifications
         {
             get { return _notificationsAndHistory; }
-        }
-
-        public class CacheState
-        {
-            int Version { get; set; }
-            IEnumerable<KeyValuePair<string, CacheEntry>> State { get; set; }
-        }
-
-        internal CacheState GetCurrentState()
-        {
-            // TODO: atomically get the entire state!
-            throw new NotImplementedException();
         }
     }
 }

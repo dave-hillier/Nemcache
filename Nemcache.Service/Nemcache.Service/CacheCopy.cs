@@ -7,12 +7,12 @@ using System.Reactive.Linq;
 
 namespace Nemcache.Tests
 {
-    class CacheClone : IMemCache 
+    class CacheCopy : IMemCache 
     {
         private IMemCache _innerCache;
         // TODO: needs a cache client
 
-        public CacheClone(IMemCache innerCache, IObservable<ICacheNotification> observableCache)
+        public CacheCopy(IMemCache innerCache, IObservable<ICacheNotification> observableCache)
         {
             _innerCache = innerCache;
 

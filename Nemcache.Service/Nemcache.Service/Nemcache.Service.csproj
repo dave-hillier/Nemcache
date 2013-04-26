@@ -57,6 +57,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CacheCopy.cs" />
     <Compile Include="ConcurrentDictionaryExtensions.cs" />
     <Compile Include="IMemCache.cs" />
     <Compile Include="MemCache.cs" />

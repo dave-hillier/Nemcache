@@ -1,6 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Nemcache.Client.Builders;
 using Nemcache.Service;
+using System.Text;
 
 namespace Nemcache.Tests
 {
@@ -32,6 +33,28 @@ namespace Nemcache.Tests
             var response = Dispatch(setBuilder.ToAsciiRequest());
 
             Assert.AreEqual("STORED\r\n", response.ToAsciiString());
+        }
+
+        [TestMethod]
+        public void StoreCasInCapacity()
+        {
+            _requestHandler = new RequestHandler(10);
+            var setBuilder = new StoreRequestBuilder("set", "s", "12345");
+            Dispatch(setBuilder.ToAsciiRequest());
+
+            var builder = new CasRequestBuilder("key", "12345");
+            builder.WithCasUnique(123);
+            var response = Dispatch(builder.ToAsciiRequest());
+
+            var getBuilder = new GetRequestBuilder("get", "key");
+            var getResponse = Dispatch(getBuilder.ToAsciiRequest());
+            var r = Encoding.ASCII.GetString(getResponse);
+
+            var builder2 = new CasRequestBuilder("key", "123456");
+            builder2.WithCasUnique(123);
+            var response2 = Dispatch(builder2.ToAsciiRequest());
+
+            Assert.AreEqual("STORED\r\n", response2.ToAsciiString());
         }
 
         [TestMethod]

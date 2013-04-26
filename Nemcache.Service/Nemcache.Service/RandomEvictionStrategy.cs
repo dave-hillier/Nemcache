@@ -19,7 +19,6 @@ namespace Nemcache.Service
 
     internal class NullEvictionStrategy : IEvictionStrategy
     {
-
         public void EvictEntry()
         {
         }
@@ -33,19 +32,6 @@ namespace Nemcache.Service
         public LRUEvictionStrategy(MemCache cache)
         {
             _cache = cache;
-        }
-
-        public void MakeSpaceForNewEntry(int length)
-        {
-            while (!HasAvailableSpace(length))
-            {
-                EvictEntry();
-            }
-        }
-
-        private bool HasAvailableSpace(int length)
-        {
-            return _cache.Capacity >= _cache.Used + length;
         }
 
         public void EvictEntry()

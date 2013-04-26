@@ -17,7 +17,7 @@ namespace Nemcache.Tests
         public void Setup()
         {
             _cache = new MemCache(1000);
-            _cacheCopy = new CacheClone(new MemCache(1000), _cache.Notifications);
+            _cacheCopy = new CacheCopy(new MemCache(1000), _cache.Notifications);
         }
 
         [TestMethod]
@@ -34,8 +34,7 @@ namespace Nemcache.Tests
         public void LateSubscribe()
         {
             _cache.Add("key1", 0, DateTime.MaxValue, Encoding.ASCII.GetBytes("Test1"));
-
-            _cacheCopy = new CacheClone(new MemCache(1000), _cache.Notifications);
+            _cacheCopy = new CacheCopy(new MemCache(1000), _cache.Notifications);
 
             _cache.Add("key2", 0, DateTime.MaxValue, Encoding.ASCII.GetBytes("Test2"));
 
