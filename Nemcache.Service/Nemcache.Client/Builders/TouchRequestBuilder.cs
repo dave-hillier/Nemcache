@@ -1,17 +1,23 @@
-﻿using System.Linq;
-using System.Text;
+﻿using System.Text;
 
 namespace Nemcache.Client.Builders
 {
-    class TouchRequestBuilder : IRequestBuilder
+    internal class TouchRequestBuilder : IRequestBuilder
     {
         private readonly string _key;
-        private int _time;
         private bool _noReply;
+        private int _time;
 
         public TouchRequestBuilder(string key)
         {
             _key = key;
+        }
+
+        public byte[] ToAsciiRequest()
+        {
+            var format = string.Format("touch {0} {1}{2}\r\n",
+                                       _key, _time, _noReply ? " noreply" : "");
+            return Encoding.ASCII.GetBytes(format);
         }
 
         public TouchRequestBuilder WithExpiry(int time)
@@ -24,13 +30,6 @@ namespace Nemcache.Client.Builders
         {
             _noReply = true;
             return this;
-        }
-
-        public byte[] ToAsciiRequest()
-        {
-            var format = string.Format("touch {0} {1}{2}\r\n",
-                                       _key, _time, _noReply ? " noreply" : "");
-            return Encoding.ASCII.GetBytes(format);
         }
     }
 }

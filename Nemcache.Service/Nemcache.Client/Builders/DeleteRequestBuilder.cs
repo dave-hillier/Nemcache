@@ -1,9 +1,8 @@
-﻿using System.Linq;
-using System.Text;
+﻿using System.Text;
 
 namespace Nemcache.Client.Builders
 {
-    class DeleteRequestBuilder
+    internal class DeleteRequestBuilder
     {
         private readonly string _key;
         private bool _noReply;

@@ -1,14 +1,11 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Nemcache.Service
 {
     // Hides the generics
-    class KeyValuePair
+    internal class KeyValuePair
     {
         public static KeyValuePair<TKey, TValue> Create<TKey, TValue>(TKey key, TValue value)
         {
@@ -17,10 +14,10 @@ namespace Nemcache.Service
     }
 
 
-    static class ConcurrentDictionaryExtensions
+    internal static class ConcurrentDictionaryExtensions
     {
         public static bool TryUpdate<TKey, TValue>(this ConcurrentDictionary<TKey, TValue> dict,
-            TKey key, Func<TValue, TValue> updateFactory)
+                                                   TKey key, Func<TValue, TValue> updateFactory)
         {
             TValue curValue;
             while (dict.TryGetValue(key, out curValue))

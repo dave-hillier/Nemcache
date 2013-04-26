@@ -1,20 +1,14 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Nemcache.Service;
-using System.Threading;
 using Nemcache.Client.Builders;
+using Nemcache.Service;
 
 namespace Nemcache.Tests
 {
     [TestClass]
     public class MutateTests
     {
-        RequestHandler _requestHandler;
-        TestScheduler _testScheduler;
+        private RequestHandler _requestHandler;
+        private TestScheduler _testScheduler;
 
         private byte[] Dispatch(byte[] p)
         {
@@ -36,6 +30,7 @@ namespace Nemcache.Tests
 
             Assert.AreEqual("NOT_FOUND\r\n", response.ToAsciiString());
         }
+
         [TestMethod]
         public void DecrNotFound()
         {
@@ -66,6 +61,5 @@ namespace Nemcache.Tests
         }
 
         // TODO: incr/decr max and overflow, non-int start value
-
     }
 }

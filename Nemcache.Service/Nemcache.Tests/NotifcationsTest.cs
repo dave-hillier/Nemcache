@@ -1,12 +1,10 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Nemcache.Service;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System;
+using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Text;
-using System.Threading.Tasks;
-using System.Reactive.Linq;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Nemcache.Service;
+using Nemcache.Service.Notifications;
 
 namespace Nemcache.Tests
 {
@@ -15,6 +13,7 @@ namespace Nemcache.Tests
     {
         private MemCache _cache;
         private ReplaySubject<ICacheNotification> _subject;
+
         [TestInitialize]
         public void Setup()
         {
@@ -33,7 +32,7 @@ namespace Nemcache.Tests
             var store = notification as Store;
             Assert.AreEqual("key", store.Key);
             Assert.AreEqual("TestData", Encoding.ASCII.GetString(store.Data));
-            Assert.AreEqual((ulong)123, store.Flags);
+            Assert.AreEqual((ulong) 123, store.Flags);
             Assert.AreEqual(StoreOperation.Add, store.Operation);
             Assert.AreEqual(new DateTime(1999, 1, 1), store.Expiry);
         }
@@ -53,7 +52,7 @@ namespace Nemcache.Tests
             var store = notification as Store;
             Assert.AreEqual("key1", store.Key);
             Assert.AreEqual("TestData", Encoding.ASCII.GetString(store.Data));
-            Assert.AreEqual((ulong)123, store.Flags);
+            Assert.AreEqual((ulong) 123, store.Flags);
             Assert.AreEqual(StoreOperation.Add, store.Operation);
             Assert.AreEqual(new DateTime(1999, 1, 1), store.Expiry);
         }
@@ -71,7 +70,7 @@ namespace Nemcache.Tests
             var store = notification as Store;
             Assert.AreEqual("key", store.Key);
             Assert.AreEqual("TestData", Encoding.ASCII.GetString(store.Data));
-            Assert.AreEqual((ulong)123, store.Flags);
+            Assert.AreEqual((ulong) 123, store.Flags);
             Assert.AreEqual(StoreOperation.Store, store.Operation);
             Assert.AreEqual(new DateTime(1999, 1, 1), store.Expiry);
         }
@@ -91,7 +90,5 @@ namespace Nemcache.Tests
             Assert.AreEqual("TestData2", Encoding.ASCII.GetString(store.Data));
             Assert.AreEqual(StoreOperation.Add, store.Operation);
         }
-
-        
     }
 }

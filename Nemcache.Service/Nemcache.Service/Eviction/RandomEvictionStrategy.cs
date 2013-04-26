@@ -1,26 +1,12 @@
 ﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
-namespace Nemcache.Service
+namespace Nemcache.Service.Eviction
 {
-    interface IEvictionStrategy
-    {
-        void EvictEntry();
-    }
-
-    interface ICacheObserver
-    {
-        void Use(string key);
-        void Remove(string key);
-    }
-
     internal class RandomEvictionStrategy : IEvictionStrategy
     {
+        private readonly MemCache _cache;
         private readonly Random _rng = new Random();
-        private MemCache _cache;
 
         public RandomEvictionStrategy(MemCache cache)
         {

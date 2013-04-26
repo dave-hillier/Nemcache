@@ -1,15 +1,14 @@
-﻿using Nemcache.Service;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Reactive.Linq;
+using Nemcache.Service.Notifications;
 
-namespace Nemcache.Tests
+namespace Nemcache.Service
 {
-    class CacheCopy : IMemCache 
+    // TODO: This probably doesnt need to exist... delete it
+    internal class CacheCopy : IMemCache
     {
-        private IMemCache _innerCache;
+        private readonly IMemCache _innerCache;
         // TODO: needs a cache client
 
         public CacheCopy(IMemCache innerCache, IObservable<ICacheNotification> observableCache)
@@ -17,7 +16,11 @@ namespace Nemcache.Tests
             _innerCache = innerCache;
 
             observableCache.OfType<Store>().Subscribe(add => _innerCache.Add(add.Key, 0, DateTime.MaxValue, add.Data));
-            
+        }
+
+        public IEnumerable<string> Keys
+        {
+            get { throw new NotImplementedException(); }
         }
 
         public bool Add(string key, ulong flags, DateTime exptime, byte[] data)
@@ -32,14 +35,8 @@ namespace Nemcache.Tests
 
         public int Capacity
         {
-            get
-            {
-                throw new NotImplementedException();
-            }
-            set
-            {
-                throw new NotImplementedException();
-            }
+            get { throw new NotImplementedException(); }
+            set { throw new NotImplementedException(); }
         }
 
         public bool Cas(string key, ulong flags, DateTime exptime, ulong casUnique, byte[] newData)
@@ -50,11 +47,6 @@ namespace Nemcache.Tests
         public void Clear()
         {
             throw new NotImplementedException();
-        }
-
-        public IEnumerable<string> Keys
-        {
-            get { throw new NotImplementedException(); }
         }
 
         public bool Mutate(string commandName, string key, ulong incr, out byte[] resultDataOut)

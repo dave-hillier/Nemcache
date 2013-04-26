@@ -1,15 +1,15 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System.Text;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Nemcache.Client.Builders;
 using Nemcache.Service;
-using System.Text;
 
 namespace Nemcache.Tests
 {
     [TestClass]
     public class CapacityTests
     {
-        RequestHandler _requestHandler;
-        TestScheduler _testScheduler;
+        private RequestHandler _requestHandler;
+        private TestScheduler _testScheduler;
 
         [TestInitialize]
         public void Setup()

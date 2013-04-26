@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Nemcache.Client.Builders
+﻿namespace Nemcache.Client.Builders
 {
-    interface IRequestBuilder
+    internal interface IRequestBuilder
     {
         byte[] ToAsciiRequest();
     }

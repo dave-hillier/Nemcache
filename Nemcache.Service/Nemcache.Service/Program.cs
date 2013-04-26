@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Text;
+﻿using System.Net;
 using Topshelf;
 
 namespace Nemcache.Service
@@ -27,14 +22,13 @@ namespace Nemcache.Service
                     hc.SetDisplayName("Nemcache");
                     hc.SetServiceName("Nemcache");
                 });
-
-
         }
-        class Service
+
+        private class Service
         {
             public Service()
             {
-                int capacity = 1024 * 1024 * 100;
+                int capacity = 1024*1024*100;
                 var requestHandler = new RequestHandler(capacity);
                 var server = new RequestResponseTcpServer(IPAddress.Any, 11222, requestHandler.Dispatch);
             }

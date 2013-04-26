@@ -1,20 +1,14 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Nemcache.Service;
-using System.Threading;
 using Nemcache.Client.Builders;
+using Nemcache.Service;
 
 namespace Nemcache.Tests
 {
     [TestClass]
     public class CasTests
     {
-        RequestHandler _requestHandler;
-        TestScheduler _testScheduler;
+        private RequestHandler _requestHandler;
+        private TestScheduler _testScheduler;
 
         private byte[] Dispatch(byte[] p)
         {
@@ -86,6 +80,7 @@ namespace Nemcache.Tests
             var getResponse = Dispatch(getBuilder.ToAsciiRequest());
             Assert.AreEqual("VALUE key 0 6 789\r\nvalue1\r\nEND\r\n", getResponse.ToAsciiString());
         }
+
         #endregion
     }
 }

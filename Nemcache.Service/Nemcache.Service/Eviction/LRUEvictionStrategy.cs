@@ -1,30 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Nemcache.Service
+namespace Nemcache.Service.Eviction
 {
     internal class LRUEvictionStrategy : IEvictionStrategy, ICacheObserver
     {
-        private List<string> _keys = new List<string>();
-        private MemCache _cache;
+        private readonly MemCache _cache;
+        private readonly List<string> _keys = new List<string>();
 
         public LRUEvictionStrategy(MemCache cache)
         {
             _cache = cache;
-        }
-
-        public void EvictEntry()
-        {
-            lock (_keys)
-            {
-                if (_keys.Any())
-                {
-                    _cache.Remove(_keys[0]);
-                }
-            }
         }
 
         public void Use(string key)
@@ -43,6 +29,16 @@ namespace Nemcache.Service
                 _keys.Remove(key);
             }
         }
-    }
 
+        public void EvictEntry()
+        {
+            lock (_keys)
+            {
+                if (_keys.Any())
+                {
+                    _cache.Remove(_keys[0]);
+                }
+            }
+        }
+    }
 }

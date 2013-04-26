@@ -2,7 +2,7 @@
 
 namespace Nemcache.Client.Builders
 {
-    class MutateRequestBuilder : IRequestBuilder
+    internal class MutateRequestBuilder : IRequestBuilder
     {
         private readonly string _command;
         private readonly string _key;
@@ -16,18 +16,18 @@ namespace Nemcache.Client.Builders
             _value = value;
         }
 
-        public MutateRequestBuilder NoReply()
-        {
-            _noReply = true;
-            return this;
-        }
-
         public byte[] ToAsciiRequest()
         {
             var result = string.Format("{0} {1} {2}", _command, _key, _value);
             if (_noReply)
                 result += " " + _noReply;
             return Encoding.ASCII.GetBytes(result + "\r\n");
+        }
+
+        public MutateRequestBuilder NoReply()
+        {
+            _noReply = true;
+            return this;
         }
     }
 }

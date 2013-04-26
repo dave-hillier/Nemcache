@@ -1,16 +1,26 @@
-﻿using Nemcache.Service;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Nemcache.Service;
 
 namespace Nemcache.Tests
 {
-    class TestScheduler : IScheduler
+    internal class TestScheduler : IScheduler
     {
+        private readonly List<Tuple<DateTime, Action>> _timers = new List<Tuple<DateTime, Action>>();
         private DateTime _clock = new DateTime(1970, 1, 1);
-        private List<Tuple<DateTime, Action>> _timers = new List<Tuple<DateTime, Action>>();
+
+        public DateTime Now
+        {
+            get { return _clock; }
+        }
+
+
+        public IDisposable Schedule(TimeSpan delay, Action action)
+        {
+            _timers.Add(Tuple.Create(_clock + delay, action));
+            return null;
+        }
+
         public void AdvanceBy(TimeSpan timespan)
         {
             _clock += timespan;
@@ -24,18 +34,6 @@ namespace Nemcache.Tests
                     _timers.Remove(timer);
                 }
             }
-        }
-
-        public DateTime Now
-        {
-            get { return _clock; }
-        }
-
-
-        public IDisposable Schedule(TimeSpan delay, Action action)
-        {
-            _timers.Add(Tuple.Create(_clock+delay, action));
-            return null;
         }
     }
 }

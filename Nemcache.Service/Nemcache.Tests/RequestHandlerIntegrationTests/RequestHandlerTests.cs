@@ -1,16 +1,15 @@
-﻿using System;
+﻿using System.Reactive.Disposables;
+using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Nemcache.Service;
-using System.Text;
-using System.Reactive.Disposables;
 
 namespace Nemcache.Tests.RequestHandlerIntegrationTests
 {
     [TestClass]
     public class RequestHandlerTests
     {
-        RequestHandler _requestHandler;
-        TestScheduler _testScheduler;
+        private RequestHandler _requestHandler;
+        private TestScheduler _testScheduler;
 
         [TestInitialize]
         public void Setup()
@@ -42,6 +41,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
 
             Assert.AreEqual("SERVER ERROR test exception\r\n", Encoding.ASCII.GetString(error));
         }
+
         [TestMethod]
         public void Stats()
         {
@@ -60,7 +60,8 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
         public void Quit()
         {
             bool disposed = false;
-            _requestHandler.Dispatch("endpoint", Encoding.ASCII.GetBytes("quit\r\n"), Disposable.Create(() => { disposed = true; }));
+            _requestHandler.Dispatch("endpoint", Encoding.ASCII.GetBytes("quit\r\n"),
+                                     Disposable.Create(() => { disposed = true; }));
             Assert.AreEqual(disposed, true);
         }
     }

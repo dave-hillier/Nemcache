@@ -66,7 +66,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="LRUEvictionTests.cs" />
+    <Compile Include="Eviction\LRUEvictionTests.cs" />
     <Compile Include="NotifcationsTest.cs" />
     <Compile Include="RequestHandlerIntegrationTests\AddTest.cs" />
     <Compile Include="RequestHandlerIntegrationTests\AppendTests.cs" />
@@ -85,6 +85,7 @@
     <Compile Include="RequestHandlerIntegrationTests\TouchTests.cs" />
     <Compile Include="RequestHandlerIntegrationTests\VersionRequestTests.cs" />
     <Compile Include="MirroredCacheTest.cs" />
+    <Compile Include="JournallerTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Nemcache.Client\Nemcache.Client.csproj">

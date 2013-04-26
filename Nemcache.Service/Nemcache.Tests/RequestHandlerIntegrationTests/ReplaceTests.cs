@@ -1,20 +1,14 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Nemcache.Service;
-using System.Threading;
 using Nemcache.Client.Builders;
+using Nemcache.Service;
 
 namespace Nemcache.Tests
 {
     [TestClass]
     public class ReplaceTests
     {
-        RequestHandler _requestHandler;
-        TestScheduler _testScheduler;
+        private RequestHandler _requestHandler;
+        private TestScheduler _testScheduler;
 
         private byte[] Dispatch(byte[] p)
         {
@@ -27,7 +21,6 @@ namespace Nemcache.Tests
             _requestHandler = new RequestHandler(100000);
             Scheduler.Current = _testScheduler = new TestScheduler();
         }
-
 
         #region Replace
 
@@ -78,7 +71,7 @@ namespace Nemcache.Tests
             var response = Dispatch(getBuilder.ToAsciiRequest());
             Assert.AreEqual("VALUE key 0 6\r\nsecond\r\nEND\r\n", response.ToAsciiString());
         }
-        #endregion
 
+        #endregion
     }
 }

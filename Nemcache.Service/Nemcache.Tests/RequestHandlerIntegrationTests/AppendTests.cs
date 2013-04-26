@@ -1,20 +1,14 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Nemcache.Service;
-using System.Threading;
 using Nemcache.Client.Builders;
+using Nemcache.Service;
 
 namespace Nemcache.Tests
 {
     [TestClass]
     public class AppendTests
     {
-        RequestHandler _requestHandler;
-        TestScheduler _testScheduler;
+        private RequestHandler _requestHandler;
+        private TestScheduler _testScheduler;
 
         private byte[] Dispatch(byte[] p)
         {
@@ -88,6 +82,7 @@ namespace Nemcache.Tests
         }
 
         #region prepend
+
         [TestMethod]
         public void PrependToEmpty()
         {
@@ -150,7 +145,7 @@ namespace Nemcache.Tests
             var response = Dispatch(getBuilder.ToAsciiRequest());
             Assert.AreEqual("VALUE key 0 12\r\nsecond first\r\nEND\r\n", response.ToAsciiString());
         }
-        #endregion
 
+        #endregion
     }
 }

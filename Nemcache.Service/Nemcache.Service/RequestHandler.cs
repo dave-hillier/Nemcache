@@ -1,17 +1,14 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Nemcache.Service
 {
     internal class RequestHandler
     {
-        private readonly byte[] EndOfLine = new byte[] { 13, 10 }; // Ascii for "\r\n"
+        private static readonly DateTime UnixTimeEpoc = new DateTime(1970, 1, 1, 0, 0, 0, 0);
+        private readonly byte[] EndOfLine = new byte[] {13, 10}; // Ascii for "\r\n"
         private readonly MemCache _cache;
 
         public RequestHandler(int capacity)
@@ -37,17 +34,15 @@ namespace Nemcache.Service
                 throw new Exception("New line not found"); // TODO: better exception type.
         }
 
-        static DateTime UnixTimeEpoc = new DateTime(1970, 1, 1, 0, 0, 0, 0);
-
         public DateTime ToExpiry(string expiry)
         {
             var expirySeconds = uint.Parse(expiry);
             // up to 60*60*24*30 seconds or unix time
             if (expirySeconds == 0)
                 return DateTime.MaxValue;
-            var start = expirySeconds < 60 * 60 * 24 * 30 ? 
-                Scheduler.Current.Now : 
-                UnixTimeEpoc;
+            var start = expirySeconds < 60*60*24*30
+                            ? Scheduler.Current.Now
+                            : UnixTimeEpoc;
             return start + TimeSpan.FromSeconds(expirySeconds);
         }
 
@@ -64,7 +59,8 @@ namespace Nemcache.Service
             return ulong.Parse(flags);
         }
 
-        public byte[] Dispatch(string remoteEndpoint, byte[] request, IDisposable clientConnectionHandle) // TODO: an interface for this?
+        public byte[] Dispatch(string remoteEndpoint, byte[] request, IDisposable clientConnectionHandle)
+            // TODO: an interface for this?
         {
             // TODO: Is it possible for the client to send multiple requests in one.
             try
@@ -78,7 +74,7 @@ namespace Nemcache.Service
                 bool noreply = commandParams.LastOrDefault() == "noreply" && !commandName.StartsWith("get");
 
                 var result = DispatchCommand(request, input, commandName, commandParams, clientConnectionHandle);
-                return noreply ? new byte[] { } : result;
+                return noreply ? new byte[] {} : result;
             }
             catch (Exception ex)
             {
@@ -86,7 +82,8 @@ namespace Nemcache.Service
             }
         }
 
-        private byte[] DispatchCommand(byte[] request, byte[] input, string commandName, string[] commandParams, IDisposable clientConnectionHandle)
+        private byte[] DispatchCommand(byte[] request, byte[] input, string commandName, string[] commandParams,
+                                       IDisposable clientConnectionHandle)
         {
             switch (commandName)
             {
@@ -99,25 +96,25 @@ namespace Nemcache.Service
                 case "prepend":
                 case "set": // <command name> <key> <flags> <exptime> <bytes> [noreply]
                     return HandleStore(request, input, commandName, commandParams);
-                case "cas"://cas <key> <flags> <exptime> <bytes> <cas unique> [noreply]\r\n
+                case "cas": //cas <key> <flags> <exptime> <bytes> <cas unique> [noreply]\r\n
                     return HandleCas(request, input, commandParams);
                 case "delete": // delete <key> [noreply]\r\n
                     return HandleDelete(commandParams);
-                case "incr"://incr <key> <value> [noreply]\r\n
+                case "incr": //incr <key> <value> [noreply]\r\n
                 case "decr":
                     return HandleMutate(commandName, commandParams);
-                case "touch"://touch <key> <exptime> [noreply]\r\n
+                case "touch": //touch <key> <exptime> [noreply]\r\n
                     return HandleTouch(commandParams);
-                case "stats":// stats <args>\r\n or stats\r\n
+                case "stats": // stats <args>\r\n or stats\r\n
                     return HandleStats(commandName, commandParams);
                 case "flush_all": // [numeric] [noreply]
                     return HandleFlushAll(commandParams);
                 case "quit": //     quit\r\n
                     clientConnectionHandle.Dispose();
-                    return new byte[] { };
+                    return new byte[] {};
                 case "version":
-                    return Encoding.ASCII.GetBytes("Nemcache " + 
-                        GetType().Assembly.GetName().Version + "\r\n");
+                    return Encoding.ASCII.GetBytes("Nemcache " +
+                                                   GetType().Assembly.GetName().Version + "\r\n");
                 case "exception":
                     throw new Exception("test exception");
                 default:
@@ -150,8 +147,9 @@ namespace Nemcache.Service
                 default:
                     throw new InvalidOperationException(commandName);
             }
-            return stored ? Encoding.ASCII.GetBytes("STORED\r\n") :
-                Encoding.ASCII.GetBytes("NOT_STORED\r\n");
+            return stored
+                       ? Encoding.ASCII.GetBytes("STORED\r\n")
+                       : Encoding.ASCII.GetBytes("NOT_STORED\r\n");
         }
 
 
@@ -164,10 +162,10 @@ namespace Nemcache.Service
             var response = from entry in entries
                            where !entry.Value.IsExpired
                            let valueText = string.Format("VALUE {0} {1} {2}{3}\r\n",
-                               entry.Key,
-                               entry.Value.Flags,
-                               entry.Value.Data.Length,
-                               entry.Value.CasUnique != 0 ? " " + entry.Value.CasUnique : "")
+                                                         entry.Key,
+                                                         entry.Value.Flags,
+                                                         entry.Value.Data.Length,
+                                                         entry.Value.CasUnique != 0 ? " " + entry.Value.CasUnique : "")
                            let asAscii = Encoding.ASCII.GetBytes(valueText)
                            select asAscii.Concat(entry.Value.Data).Concat(EndOfLine);
 
@@ -180,9 +178,9 @@ namespace Nemcache.Service
             var key = ToKey(commandParams[0]);
             var exptime = ToExpiry(commandParams[1]);
             bool success = _cache.Touch(key, exptime);
-            return success ?
-                Encoding.ASCII.GetBytes("OK\r\n") :
-                Encoding.ASCII.GetBytes("NOT_FOUND\r\n");
+            return success
+                       ? Encoding.ASCII.GetBytes("OK\r\n")
+                       : Encoding.ASCII.GetBytes("NOT_FOUND\r\n");
         }
 
         private byte[] HandleMutate(string commandName, string[] commandParams)
@@ -191,9 +189,9 @@ namespace Nemcache.Service
             var incr = ulong.Parse(commandParams[1]);
             byte[] resultData;
             bool result = _cache.Mutate(commandName, key, incr, out resultData);
-            return result && resultData != null ?
-                resultData.Concat(EndOfLine).ToArray()
-                : Encoding.ASCII.GetBytes("NOT_FOUND\r\n");
+            return result && resultData != null
+                       ? resultData.Concat(EndOfLine).ToArray()
+                       : Encoding.ASCII.GetBytes("NOT_FOUND\r\n");
         }
 
         private byte[] HandleFlushAll(string[] commandParams)
@@ -212,16 +210,16 @@ namespace Nemcache.Service
 
         private byte[] HandleStats(string commandName, string[] commandParams)
         {
-            return new byte[] { };
+            return new byte[] {};
         }
 
 
         private byte[] HandleDelete(string[] commandParams)
         {
             var key = ToKey(commandParams[0]);
-            return _cache.Remove(key) ?
-                Encoding.ASCII.GetBytes("DELETED\r\n") :
-                Encoding.ASCII.GetBytes("NOT_FOUND\r\n");
+            return _cache.Remove(key)
+                       ? Encoding.ASCII.GetBytes("DELETED\r\n")
+                       : Encoding.ASCII.GetBytes("NOT_FOUND\r\n");
         }
 
         private byte[] HandleCas(byte[] request, byte[] input, string[] commandParams)
@@ -233,9 +231,9 @@ namespace Nemcache.Service
             var casUnique = ulong.Parse(commandParams[4]);
             byte[] data = request.Take(bytes).ToArray();
 
-            return _cache.Cas(key, flags, exptime, casUnique, data) ? 
-                Encoding.ASCII.GetBytes("STORED\r\n") :
-                Encoding.ASCII.GetBytes("EXISTS\r\n");
+            return _cache.Cas(key, flags, exptime, casUnique, data)
+                       ? Encoding.ASCII.GetBytes("STORED\r\n")
+                       : Encoding.ASCII.GetBytes("EXISTS\r\n");
         }
 
         // TODO: consider wrapping all these parameters in a request type

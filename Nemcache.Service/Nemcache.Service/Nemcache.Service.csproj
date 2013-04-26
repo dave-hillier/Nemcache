@@ -58,12 +58,21 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CacheCopy.cs" />
+    <Compile Include="Eviction\IEvictionStrategy.cs" />
+    <Compile Include="Notifications\Clear.cs" />
+    <Compile Include="Notifications\ICacheNotification.cs" />
+    <Compile Include="ICacheObserver.cs" />
     <Compile Include="ConcurrentDictionaryExtensions.cs" />
     <Compile Include="IMemCache.cs" />
     <Compile Include="Eviction\LRUEvictionStrategy.cs" />
     <Compile Include="MemCache.cs" />
     <Compile Include="Eviction\NullEvictionStrategy.cs" />
     <Compile Include="Eviction\RandomEvictionStrategy.cs" />
+    <Compile Include="Notifications\IKeyCacheNotification.cs" />
+    <Compile Include="Notifications\Remove.cs" />
+    <Compile Include="Notifications\Store.cs" />
+    <Compile Include="Notifications\StoreOperation.cs" />
+    <Compile Include="Notifications\Touch.cs" />
     <Compile Include="RequestHandler.cs" />
     <Compile Include="RequestResponseTcpServer.cs" />
     <Compile Include="Program.cs" />

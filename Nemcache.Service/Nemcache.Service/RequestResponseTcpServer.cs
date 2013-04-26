@@ -10,15 +10,16 @@ using System.Threading.Tasks;
 
 namespace Nemcache.Service
 {
-
+    // TODO: Some tests?
     internal class RequestResponseTcpServer
     {
+        private const int BufferSize = 4096;
+        private readonly Func<string, byte[], IDisposable, byte[]> _callback;
+        private readonly TaskFactory _taskFactory;
         private readonly TcpListener _tcpListener;
         private readonly CancellationTokenSource _tokenSource;
-        private readonly TaskFactory _taskFactory;
-        private readonly Func<string, byte[], IDisposable, byte[]> _callback;
-        private const int BufferSize = 4096;
 
+        // TODO: use an interface for the callback?
         public RequestResponseTcpServer(IPAddress address, int port, Func<string, byte[], IDisposable, byte[]> callback)
         {
             _callback = callback;
@@ -54,18 +55,18 @@ namespace Nemcache.Service
         {
             var readTask = Read(networkStream, BufferSize).
                 ContinueWith(task =>
-                {
-                    var memoryStream = task.Result;
-                    byte[] input = memoryStream.ToArray();
-                    if (input.Length != 0)
                     {
-                        var output = _callback(remoteEndpoint, input, Disposable.Create(networkStream.Close));
-                        WriteResponse(networkStream, output);
-                    }
-                }, TaskContinuationOptions.OnlyOnRanToCompletion);
+                        var memoryStream = task.Result;
+                        byte[] input = memoryStream.ToArray();
+                        if (input.Length != 0)
+                        {
+                            var output = _callback(remoteEndpoint, input, Disposable.Create(networkStream.Close));
+                            WriteResponse(networkStream, output);
+                        }
+                    }, TaskContinuationOptions.OnlyOnRanToCompletion);
 
-            readTask.ContinueWith(t => HandleRequest(remoteEndpoint, networkStream), 
-                TaskContinuationOptions.OnlyOnRanToCompletion);
+            readTask.ContinueWith(t => HandleRequest(remoteEndpoint, networkStream),
+                                  TaskContinuationOptions.OnlyOnRanToCompletion);
         }
 
         private static void WriteResponse(NetworkStream networkStream, byte[] output)
@@ -82,11 +83,11 @@ namespace Nemcache.Service
                 ToObservable().
                 DoWhile(() => networkStream.DataAvailable && networkStream.CanRead).
                 TakeWhile(c => c > 0).
-                Scan(new MemoryStream(), (stream, readCount) => 
-                { 
-                    stream.Write(buffer, 0, readCount);
-                    return stream;
-                });
+                Scan(new MemoryStream(), (stream, readCount) =>
+                    {
+                        stream.Write(buffer, 0, readCount);
+                        return stream;
+                    });
             return read.ToTask(_tokenSource.Token);
         }
     }
