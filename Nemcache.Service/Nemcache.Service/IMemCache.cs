@@ -5,6 +5,7 @@ namespace Nemcache.Service
     interface ICacheNotification 
     {
         // TODO: A sequence Id?
+        int SequenceId { get; set; }
     }
 
     interface IKeyCacheNotification : ICacheNotification
@@ -14,6 +15,7 @@ namespace Nemcache.Service
 
     class Clear : ICacheNotification
     {
+        public int SequenceId { get; set; }
     }
 
     enum StoreOperation
@@ -32,16 +34,20 @@ namespace Nemcache.Service
         public StoreOperation Operation { get; set; }
 
         public ulong Flags { get; set; }
+
+        public int SequenceId { get; set; }
     }
 
     class Touch : IKeyCacheNotification
     {
         public string Key {get; set; }
+        public int SequenceId { get; set; }
     }
 
     class Remove : IKeyCacheNotification
     {
         public string Key {get; set; }
+        public int SequenceId { get; set; }
     }
 
     interface IMemCache

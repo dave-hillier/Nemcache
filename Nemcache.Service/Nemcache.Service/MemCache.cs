@@ -18,35 +18,59 @@ namespace Nemcache.Service
         private readonly IEvictionStrategy _evictionStrategy;
         private readonly ICacheObserver _cacheObserver;
         private IObservable<ICacheNotification> _notificationsAndHistory;
-        private Subject<ICacheNotification> _notifications;
+        private Subject<ICacheNotification> _notificationsSubject;
+        private int _currentSequenceId = 0;
 
         public MemCache(int capacity)
         {
             Capacity = capacity;
-            _notifications = new Subject<ICacheNotification>();
+            _notificationsSubject = new Subject<ICacheNotification>();
 
-            _notificationsAndHistory = Observable.Defer(() => _cache.ToArray().Select(e =>
-                new Store
-                {
-                    Key = e.Key,
-                    Data = e.Value.Data,
-                    Expiry = e.Value.Expiry,
-                    Flags = e.Value.Flags,
-                    Operation = StoreOperation.Add,
-                }).ToObservable()).Concat(_notifications);
+            _notificationsAndHistory = CreateNotifications();
 
             var lruStrategy = new LRUEvictionStrategy(this);
             _evictionStrategy = lruStrategy;
             _cacheObserver = lruStrategy;
         }
 
+        private IObservable<ICacheNotification> CreateNotifications()
+        {
+            return Observable.Create<ICacheNotification>(obs =>
+            {
+                var currentCache = _cache.ToArray();
+                var maxCurrentCachedId = currentCache.Length > 0 ? currentCache.Max(ce => ce.Value.SequenceId) : -1;
+                var addOperations = currentCache.Select(e =>
+                    new Store
+                    {
+                        Key = e.Key,
+                        Data = e.Value.Data,
+                        Expiry = e.Value.Expiry,
+                        Flags = e.Value.Flags,
+                        Operation = StoreOperation.Add,
+                        SequenceId = e.Value.SequenceId
+                    });
+
+                var d = _notificationsSubject.
+                    Where(n => n.SequenceId > maxCurrentCachedId).
+                    Subscribe(obs);
+
+                foreach (var n in addOperations)
+                {
+                    obs.OnNext(n);
+                }
+
+                return d;
+            });
+            
+        }
+
         public struct CacheEntry
         {
             public ulong Flags { get; set; }
-            public DateTime Inserted { get; set; }
             public DateTime Expiry { get; set; }
             public ulong CasUnique { get; set; }
             public byte[] Data { get; set; }
+            public int SequenceId { get; set; }
 
             public bool IsExpired { get { return Expiry < Scheduler.Current.Now; } }
         }
@@ -79,6 +103,7 @@ namespace Nemcache.Service
                 _cacheObserver.Use(key); 
                 _cache.TryUpdate(key, touched, entry); // OK to fail if something else has updated?
                 success = true;
+                // TODO: Notify
             }
             return success;
         }
@@ -99,7 +124,16 @@ namespace Nemcache.Service
                 entry.Data = resultData;
                 return entry;
             });
-            resultDataOut = resultData;
+
+            if (result)
+            {
+                resultDataOut = resultData;
+                // TODO: notify
+            }
+            else
+            {
+                resultDataOut = null;
+            }
             return result;
         }
 
@@ -126,68 +160,90 @@ namespace Nemcache.Service
                     var spaceRequired = Math.Abs(newData.Length - entry.Data.Length);
                     if (spaceRequired > 0)
                         MakeSpaceForNewEntry(spaceRequired);
-                    _cacheObserver.Use(key); 
+                    _cacheObserver.Use(key);
+                    var sequenceId = Interlocked.Increment(ref _currentSequenceId);
                     var newValue = new CacheEntry
                     {
-                        Inserted = Scheduler.Current.Now,
                         CasUnique = casUnique,
                         Data = newData,
                         Expiry = exptime,
-                        Flags = flags
+                        Flags = flags,
+                        SequenceId = sequenceId,
                     };
-                    return _cache.TryUpdate(key, newValue, entry);
+                    var updated = _cache.TryUpdate(key, newValue, entry);
+                    // notify cas update
+                    return updated;
                 }
                 else
                 {
                     return false;
                 }
             }
+            CasStore(key, flags, exptime, casUnique, newData);
+            return true;
+        }
+
+        private void CasStore(string key, ulong flags, DateTime exptime, ulong casUnique, byte[] newData)
+        {
 
             _cacheObserver.Use(key);
+            var sequenceId2 = Interlocked.Increment(ref _currentSequenceId);
             _cache[key] = new CacheEntry
             {
-                Inserted = Scheduler.Current.Now,
                 CasUnique = casUnique,
                 Data = newData,
                 Expiry = exptime,
-                Flags = flags
+                Flags = flags,
+                SequenceId = sequenceId2,
             };
-            return true;
+            // TODO: notfiy
         }
 
         public bool Replace(string key, ulong flags, DateTime exptime, byte[] data)
         {
             _cacheObserver.Use(key);
             MakeSpaceForNewEntry(data.Length); // In the case of replace this could be offset by the existing value
-            return _cache.TryUpdate(key, e =>
+            var replaced = _cache.TryUpdate(key, e =>
             {
+                var sequenceId = Interlocked.Increment(ref _currentSequenceId);                
                 return new CacheEntry
                 {
-                    Inserted = Scheduler.Current.Now,
                     Data = data,
                     Expiry = exptime,
-                    Flags = flags
+                    Flags = flags,
+                    SequenceId = sequenceId
                 };
             });
+            // TODO: Notify if replaced - and how to get the value
+
+            return replaced;
         }
 
         public bool Add(string key, ulong flags, DateTime exptime, byte[] data)
         {
             MakeSpaceForNewEntry(data.Length); // In the case of replace this could be offset by the existing value
-
+            var sequenceId = Interlocked.Increment(ref _currentSequenceId);
             var entry = new CacheEntry
             {
-                Inserted = Scheduler.Current.Now,
                 Data = data,
                 Expiry = exptime,
-                Flags = flags
+                Flags = flags,
+                SequenceId = sequenceId
             };
             bool result = _cache.TryAdd(key, entry);
 
             if (result)
             {
                 _cacheObserver.Use(key);
-                _notifications.OnNext(new Store { Key = key, Data = data, Expiry = exptime, Flags = flags, Operation = StoreOperation.Add });
+                _notificationsSubject.OnNext(new Store 
+                { 
+                    Key = key, 
+                    Data = data, 
+                    Expiry = exptime, 
+                    Flags = flags, 
+                    Operation = StoreOperation.Add, 
+                    SequenceId = sequenceId 
+                });
             }
             return result;
         }
@@ -198,12 +254,18 @@ namespace Nemcache.Service
             MakeSpaceForNewEntry(data.Length); // In the case of replace this could be offset by the existing value
             var exists = _cache.TryUpdate(key, e =>
             {
+                var sequenceId = Interlocked.Increment(ref _currentSequenceId);
                 var newEntry = e;
                 newEntry.Data = prepend ?
                     e.Data.Concat(data).ToArray() :
                     data.Concat(e.Data).ToArray();
+                newEntry.SequenceId = sequenceId;
                 return newEntry;
             });
+            if (exists)
+            {
+                // TODO: notify append
+            }
             return exists || Store(key, flags, exptime, data);
         }
 
@@ -211,11 +273,23 @@ namespace Nemcache.Service
         {
             _cacheObserver.Use(key);
             MakeSpaceForNewEntry(data.Length); // In the case of replace this could be offset by the existing value
-            _cache[key] = new CacheEntry { 
+            var sequenceId = Interlocked.Increment(ref _currentSequenceId);
+            _cache[key] = new CacheEntry
+            { 
                 Data = data, 
                 Expiry = exptime, 
-                Flags = flags };
-            _notifications.OnNext(new Store { Key = key, Data = data, Expiry = exptime, Flags = flags, Operation = StoreOperation.Store });
+                Flags = flags,
+                SequenceId = sequenceId
+            };
+            _notificationsSubject.OnNext(
+                new Store { 
+                    Key = key, 
+                    Data = data, 
+                    Expiry = exptime, 
+                    Flags = flags, 
+                    Operation = StoreOperation.Store, 
+                    SequenceId = sequenceId
+                });
             return true;
         }
 
@@ -223,9 +297,10 @@ namespace Nemcache.Service
         {
             _cacheObserver.Remove(key);
             CacheEntry entry;
+            var sequenceId = Interlocked.Increment(ref _currentSequenceId);
             bool removed = _cache.TryRemove(key, out entry);
             if (removed)
-                _notifications.OnNext(new Remove { Key = key });
+                _notificationsSubject.OnNext(new Remove { Key = key, SequenceId = sequenceId });
             return removed;
         }
 
