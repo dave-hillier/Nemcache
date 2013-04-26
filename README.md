@@ -33,11 +33,9 @@ Eviction works by evicting a random cache entry until the cache can insert the n
 
 TODO List
 =========
-* Run as service support
 * Configuration
 * Add support for the remaining commands:
   * Stats
-* Fix concurrent access
 * UDP Protocol
 * Binary protocol (maybe)
 * Test using [Memcable](http://libmemcached.org/Memcapable.html)
