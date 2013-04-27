@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System.Reactive.Concurrency;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Nemcache.Client.Builders;
 using Nemcache.Service;
 
@@ -8,7 +9,6 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
     public class CasTests
     {
         private RequestHandler _requestHandler;
-        private TestScheduler _testScheduler;
 
         private byte[] Dispatch(byte[] p)
         {
@@ -18,10 +18,8 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
         [TestInitialize]
         public void Setup()
         {
-            _requestHandler = new RequestHandler(100000);
-            Scheduler.Current = _testScheduler = new TestScheduler();
+            _requestHandler = new RequestHandler(100000, Scheduler.Default);
         }
-
         #region Cas
 
         // TODO: cas capacity checks

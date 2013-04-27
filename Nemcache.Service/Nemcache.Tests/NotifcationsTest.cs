@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
 using System.Text;
+using Microsoft.Reactive.Testing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Nemcache.Service;
 using Nemcache.Service.Notifications;
@@ -9,17 +8,19 @@ using Nemcache.Service.Notifications;
 namespace Nemcache.Tests
 {
     [TestClass]
-    public class NotifcationsTest // : ReactiveTest // TODO: get reactive test
+    public class NotifcationsTest : ReactiveTest
     {
         private MemCache _cache;
-        private ReplaySubject<ICacheNotification> _subject;
+        private TestScheduler _testScheduler;
+        private ITestableObserver<ICacheNotification> _testObserver;
 
         [TestInitialize]
         public void Setup()
         {
             _cache = new MemCache(1000);
-            _subject = new ReplaySubject<ICacheNotification>();
-            _cache.Notifications.Subscribe(_subject);
+            _testScheduler = new TestScheduler();
+        
+            CreateObserverAndSubscribe();
         }
 
         [TestMethod]
@@ -27,7 +28,7 @@ namespace Nemcache.Tests
         {
             _cache.Add("key", 123, new DateTime(1999, 1, 1), Encoding.ASCII.GetBytes("TestData"));
 
-            var notification = _subject.First();
+            var notification = GetFirstNotification();
 
             var store = notification as StoreNotification;
             Assert.AreEqual("key", store.Key);
@@ -45,16 +46,21 @@ namespace Nemcache.Tests
 
             _cache.Remove("key2");
 
-            _subject = new ReplaySubject<ICacheNotification>();
-            _cache.Notifications.Subscribe(_subject);
+            CreateObserverAndSubscribe();
 
-            var notification = _subject.First();
+            var notification = GetFirstNotification();
             var store = notification as StoreNotification;
             Assert.AreEqual("key1", store.Key);
             Assert.AreEqual("TestData", Encoding.ASCII.GetString(store.Data));
             Assert.AreEqual((ulong) 123, store.Flags);
             Assert.AreEqual(StoreOperation.Add, store.Operation);
             Assert.AreEqual(new DateTime(1999, 1, 1), store.Expiry);
+        }
+
+        private void CreateObserverAndSubscribe()
+        {
+            _testObserver = _testScheduler.CreateObserver<ICacheNotification>();
+            _cache.Notifications.Subscribe(_testObserver);
         }
 
         // TODO: gets add and remove when subscribed..
@@ -65,8 +71,7 @@ namespace Nemcache.Tests
         {
             _cache.Store("key", 123, new DateTime(1999, 1, 1), Encoding.ASCII.GetBytes("TestData"));
 
-            var notification = _subject.First();
-
+            var notification = GetFirstNotification();
             var store = notification as StoreNotification;
             Assert.AreEqual("key", store.Key);
             Assert.AreEqual("TestData", Encoding.ASCII.GetString(store.Data));
@@ -82,13 +87,18 @@ namespace Nemcache.Tests
             _cache.Add("key", 123, new DateTime(1999, 1, 1), Encoding.ASCII.GetBytes("TestData"));
             _cache.Store("key", 123, new DateTime(1999, 1, 1), Encoding.ASCII.GetBytes("TestData2"));
 
-            _subject = new ReplaySubject<ICacheNotification>();
-            _cache.Notifications.Subscribe(_subject);
+            CreateObserverAndSubscribe();
 
-            var notification = _subject.First();
+            var notification = GetFirstNotification();
             var store = notification as StoreNotification;
             Assert.AreEqual("TestData2", Encoding.ASCII.GetString(store.Data));
             Assert.AreEqual(StoreOperation.Add, store.Operation);
+        }
+
+        private ICacheNotification GetFirstNotification()
+        {
+            var notification = _testObserver.Messages[0].Value.Value;
+            return notification;
         }
     }
 }

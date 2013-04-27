@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using System.Reactive.Concurrency;
 using Topshelf;
 
 namespace Nemcache.Service
@@ -31,7 +32,7 @@ namespace Nemcache.Service
             public Service()
             {
                 const int capacity = 1024*1024*100;
-                var requestHandler = new RequestHandler(capacity);
+                var requestHandler = new RequestHandler(capacity, Scheduler.Default);
                 _server = new RequestResponseTcpServer(IPAddress.Any, 11222, requestHandler.Dispatch);
             }
 

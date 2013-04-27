@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Concurrency;
 using System.Text;
 
 namespace Nemcache.Service
@@ -10,9 +11,11 @@ namespace Nemcache.Service
         private static readonly DateTime UnixTimeEpoc = new DateTime(1970, 1, 1, 0, 0, 0, 0);
         private readonly byte[] _endOfLine = new byte[] {13, 10}; // Ascii for "\r\n"
         private readonly MemCache _cache;
+        private readonly IScheduler _scheduler;
 
-        public RequestHandler(int capacity)
+        public RequestHandler(int capacity, IScheduler scheduler)
         {
+            _scheduler = scheduler;
             _cache = new MemCache(capacity);
         }
 
@@ -30,8 +33,7 @@ namespace Nemcache.Service
             }
             if (endOfLineIndex != -1)
                 return request.Take(endOfLineIndex);
-            else
-                throw new Exception("New line not found"); // TODO: better exception type.
+            throw new Exception("New line not found"); // TODO: better exception type.
         }
 
         public DateTime ToExpiry(string expiry)
@@ -41,7 +43,7 @@ namespace Nemcache.Service
             if (expirySeconds == 0)
                 return DateTime.MaxValue;
             var start = expirySeconds < 60*60*24*30
-                            ? Scheduler.Current.Now
+                            ? _scheduler.Now.DateTime
                             : UnixTimeEpoc;
             return start + TimeSpan.FromSeconds(expirySeconds);
         }
@@ -73,7 +75,7 @@ namespace Nemcache.Service
                 var commandParams = requestTokens.Skip(1).ToArray();
                 bool noreply = commandParams.LastOrDefault() == "noreply" && !commandName.StartsWith("get");
 
-                var result = DispatchCommand(request, input, commandName, commandParams, clientConnectionHandle);
+                var result = DispatchCommand(request, commandName, commandParams, clientConnectionHandle);
                 return noreply ? new byte[] {} : result;
             }
             catch (Exception ex)
@@ -82,7 +84,7 @@ namespace Nemcache.Service
             }
         }
 
-        private byte[] DispatchCommand(byte[] request, byte[] input, string commandName, string[] commandParams,
+        private byte[] DispatchCommand(byte[] request, string commandName, string[] commandParams,
                                        IDisposable clientConnectionHandle)
         {
             switch (commandName)
@@ -153,14 +155,14 @@ namespace Nemcache.Service
         }
 
 
-        private byte[] HandleGet(string[] commandParams)
+        private byte[] HandleGet(IEnumerable<string> commandParams)
         {
             var keys = commandParams.Select(ToKey);
 
             var entries = _cache.Retrieve(keys);
 
             var response = from entry in entries
-                           where !entry.Value.IsExpired
+                           where !entry.Value.IsExpired(_scheduler)
                            let valueText = string.Format("VALUE {0} {1} {2}{3}\r\n",
                                                          entry.Key,
                                                          entry.Value.Flags,
@@ -199,7 +201,7 @@ namespace Nemcache.Service
             if (commandParams.Length > 0)
             {
                 var delay = TimeSpan.FromSeconds(uint.Parse(commandParams[0]));
-                Scheduler.Current.Schedule(delay, () => { _cache.Clear(); });
+                _scheduler.Schedule(delay, () => { _cache.Clear(); });
             }
             else
             {

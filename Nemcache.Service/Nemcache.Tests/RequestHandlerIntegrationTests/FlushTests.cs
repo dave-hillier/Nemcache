@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Reactive.Concurrency;
 using System.Text;
+using Microsoft.Reactive.Testing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Nemcache.Client.Builders;
 using Nemcache.Service;
@@ -20,8 +22,8 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
         [TestInitialize]
         public void Setup()
         {
-            _requestHandler = new RequestHandler(100000);
-            Scheduler.Current = _testScheduler = new TestScheduler();
+            _testScheduler = new TestScheduler();
+            _requestHandler = new RequestHandler(100000, _testScheduler);
         }
 
         #region flush
@@ -89,7 +91,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             var flushRequest = Encoding.ASCII.GetBytes("flush_all 100\r\n");
             _requestHandler.Dispatch("remote", flushRequest, null);
 
-            _testScheduler.AdvanceBy(TimeSpan.FromSeconds(90));
+            _testScheduler.AdvanceBy(TimeSpan.FromSeconds(90).Ticks);
 
             var getBuilder = new GetRequestBuilder("get", "key");
             var response = Dispatch(getBuilder.ToAsciiRequest());
@@ -106,7 +108,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             var flushRequest = Encoding.ASCII.GetBytes("flush_all 100\r\n");
             _requestHandler.Dispatch("remote", flushRequest, null);
 
-            _testScheduler.AdvanceBy(TimeSpan.FromSeconds(200));
+            _testScheduler.AdvanceBy(TimeSpan.FromSeconds(200).Ticks);
 
             var getBuilder = new GetRequestBuilder("get", "key");
             var response = Dispatch(getBuilder.ToAsciiRequest());

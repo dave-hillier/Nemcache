@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.Reactive.Testing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Nemcache.Client.Builders;
 using Nemcache.Service;
@@ -19,8 +20,8 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
         [TestInitialize]
         public void Setup()
         {
-            _requestHandler = new RequestHandler(100000);
-            Scheduler.Current = _testScheduler = new TestScheduler();
+            _testScheduler = new TestScheduler();
+            _requestHandler = new RequestHandler(100000, _testScheduler);
         }
 
         [TestMethod]
@@ -44,7 +45,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
 
             Dispatch(storageBuilder.ToAsciiRequest());
 
-            _testScheduler.AdvanceBy(TimeSpan.FromSeconds(2));
+            _testScheduler.AdvanceBy(TimeSpan.FromSeconds(2).Ticks);
 
             var getBuilder = new GetRequestBuilder("get", "key");
             var response = Dispatch(getBuilder.ToAsciiRequest());
@@ -52,18 +53,19 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
         }
 
         [TestMethod]
-        public void DayLongExpiry()
+        public void AbsoluteLongExpiry()
         {
+            var unixEpoc = new DateTime(1970, 1, 1);
+            _testScheduler.AdvanceBy((unixEpoc - _testScheduler.Now).Ticks); // Advance to the start of unix time
+            TimeSpan span = (new DateTime(1970, 6, 1) - unixEpoc);
+            var unixTime = (int) span.TotalSeconds;
+
             var storageBuilder = new StoreRequestBuilder("set", "key", "value");
-
-            TimeSpan span = (new DateTime(1970, 6, 1) - new DateTime(1970, 1, 1));
-            int unixTime = (int) span.TotalSeconds;
-
             storageBuilder.WithExpiry(unixTime);
 
             Dispatch(storageBuilder.ToAsciiRequest());
 
-            _testScheduler.AdvanceBy(TimeSpan.FromDays(200));
+            _testScheduler.AdvanceBy(TimeSpan.FromDays(200).Ticks);
 
             var getBuilder = new GetRequestBuilder("get", "key");
             var response = Dispatch(getBuilder.ToAsciiRequest());

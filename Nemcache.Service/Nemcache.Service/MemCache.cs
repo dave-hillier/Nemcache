@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Text;
@@ -318,9 +319,9 @@ namespace Nemcache.Service
             public byte[] Data { get; set; }
             public int SequenceId { get; set; }
 
-            public bool IsExpired
+            public bool IsExpired(IScheduler scheduler)
             {
-                get { return Expiry < Scheduler.Current.Now; }
+                return Expiry < scheduler.Now; 
             }
         }
     }

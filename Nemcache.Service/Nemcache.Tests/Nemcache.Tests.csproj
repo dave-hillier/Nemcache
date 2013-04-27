@@ -35,6 +35,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.Reactive.Testing">
+      <HintPath>..\packages\Rx-Testing.2.1.30214.0\lib\Net45-Full\Microsoft.Reactive.Testing.dll</HintPath>
+    </Reference>
     <Reference Include="Moq">
       <HintPath>..\packages\Moq.4.0.10827\lib\NET40\Moq.dll</HintPath>
     </Reference>
@@ -87,7 +90,6 @@
     <Compile Include="RequestHandlerIntegrationTests\CasTests.cs" />
     <Compile Include="RequestHandlerIntegrationTests\RequestHandlerTests.cs" />
     <Compile Include="TestExt.cs" />
-    <Compile Include="TestScheduler.cs" />
     <Compile Include="RequestHandlerIntegrationTests\TouchTests.cs" />
     <Compile Include="RequestHandlerIntegrationTests\VersionRequestTests.cs" />
     <Compile Include="ArchiverTests.cs" />

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Reactive.Concurrency;
+using Microsoft.Reactive.Testing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Nemcache.Client.Builders;
 using Nemcache.Service;
@@ -19,8 +21,8 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
         [TestInitialize]
         public void Setup()
         {
-            _requestHandler = new RequestHandler(100000);
-            Scheduler.Current = _testScheduler = new TestScheduler();
+            _testScheduler = new TestScheduler();
+            _requestHandler = new RequestHandler(100000, _testScheduler);
         }
 
         #region touch
@@ -60,7 +62,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             var touchBuilder = new TouchRequestBuilder("key");
             touchBuilder.WithExpiry(1);
             Dispatch(touchBuilder.ToAsciiRequest());
-            _testScheduler.AdvanceBy(TimeSpan.FromSeconds(2));
+            _testScheduler.AdvanceBy(TimeSpan.FromSeconds(2).Ticks);
 
             var getBuilder = new GetRequestBuilder("get", "key");
             var response = Dispatch(getBuilder.ToAsciiRequest());

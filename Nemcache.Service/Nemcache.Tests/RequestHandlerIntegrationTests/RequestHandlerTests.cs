@@ -1,4 +1,5 @@
-﻿using System.Reactive.Disposables;
+﻿using System.Reactive.Concurrency;
+using System.Reactive.Disposables;
 using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Nemcache.Service;
@@ -9,13 +10,11 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
     public class RequestHandlerTests
     {
         private RequestHandler _requestHandler;
-        private TestScheduler _testScheduler;
 
         [TestInitialize]
         public void Setup()
         {
-            _requestHandler = new RequestHandler(100000);
-            Scheduler.Current = _testScheduler = new TestScheduler();
+            _requestHandler = new RequestHandler(100000, Scheduler.Default);
         }
 
         [TestMethod]
