@@ -31,7 +31,7 @@ Currently only TCP is supported including the noreply mode.
 Flags support up-to 64 bit values, although this is a divergence from the original spec and therefore might not be supported by your client.
 Eviction works by evicting a random cache entry until the cache can insert the new value.
 
-An aim is to keep compatible with Memcached as a drop in replacement. 
+An aim is to keep compatible with Memcached as a drop in replacement and also provide and embeddedable key value store for c#.
 
 
 To-do
