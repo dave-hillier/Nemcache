@@ -124,13 +124,13 @@ namespace Nemcache.Service
             }
         }
 
-        public byte[] Store(string commandName, string key, ulong flags, DateTime exptime, byte[] data)
+        private byte[] Store(string commandName, string key, ulong flags, DateTime exptime, byte[] data)
         {
             if (data.Length > _cache.Capacity)
             {
                 return Encoding.ASCII.GetBytes("ERROR Over capacity\r\n");
             }
-            bool stored;
+            bool stored = false;
             switch (commandName)
             {
                 case "set":
@@ -146,8 +146,6 @@ namespace Nemcache.Service
                 case "prepend":
                     stored = _cache.Append(key, flags, exptime, data, commandName == "append");
                     break;
-                default:
-                    throw new InvalidOperationException(commandName);
             }
             return stored
                        ? Encoding.ASCII.GetBytes("STORED\r\n")
