@@ -38,6 +38,10 @@
     <Reference Include="Moq">
       <HintPath>..\packages\Moq.4.0.10827\lib\NET40\Moq.dll</HintPath>
     </Reference>
+    <Reference Include="protobuf-net, Version=2.0.0.621, Culture=neutral, PublicKeyToken=257b51d87d2e4d67, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\protobuf-net.2.0.0.621\lib\net40\protobuf-net.dll</HintPath>
+    </Reference>
     <Reference Include="System.Reactive.Core">
       <HintPath>..\packages\Rx-Core.2.1.30214.0\lib\Net45\System.Reactive.Core.dll</HintPath>
     </Reference>
@@ -52,6 +56,8 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Runtime.Caching" />
+    <Reference Include="System.XML" />
+    <Reference Include="System.Xml.Serialization" />
   </ItemGroup>
   <Choose>
     <When Condition="('$(VisualStudioVersion)' == '10.0' or '$(VisualStudioVersion)' == '') and '$(TargetFrameworkVersion)' == 'v3.5'">
@@ -84,8 +90,7 @@
     <Compile Include="TestScheduler.cs" />
     <Compile Include="RequestHandlerIntegrationTests\TouchTests.cs" />
     <Compile Include="RequestHandlerIntegrationTests\VersionRequestTests.cs" />
-    <Compile Include="MirroredCacheTest.cs" />
-    <Compile Include="JournallerTest.cs" />
+    <Compile Include="ArchiverTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Nemcache.Client\Nemcache.Client.csproj">

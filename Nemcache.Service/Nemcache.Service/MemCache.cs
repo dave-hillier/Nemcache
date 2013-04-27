@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
@@ -66,18 +67,18 @@ namespace Nemcache.Service
         public bool Mutate(string commandName, string key, ulong incr, out byte[] resultDataOut)
         {
             byte[] resultData = null;
-            bool result = _cache.TryUpdate(key,
-                                           entry =>
-                                               {
-                                                   var value = ulong.Parse(Encoding.ASCII.GetString(entry.Data));
-                                                   if (commandName == "incr")
-                                                       value += incr;
-                                                   else
-                                                       value -= incr;
-                                                   resultData = Encoding.ASCII.GetBytes(value.ToString());
-                                                   entry.Data = resultData;
-                                                   return entry;
-                                               });
+            bool result = _cache.TryUpdate(
+                key, entry =>
+                    {
+                        var value = ulong.Parse(Encoding.ASCII.GetString(entry.Data));
+                        if (commandName == "incr")
+                            value += incr;
+                        else
+                            value -= incr;
+                        resultData = Encoding.ASCII.GetBytes(value.ToString(CultureInfo.InvariantCulture));
+                        entry.Data = resultData;
+                        return entry;
+                    });
 
             if (result)
             {
@@ -115,10 +116,7 @@ namespace Nemcache.Service
                     // notify cas update
                     return updated;
                 }
-                else
-                {
-                    return false;
-                }
+                return false;
             }
             CasStore(key, flags, exptime, casUnique, newData);
             return true;
@@ -160,7 +158,7 @@ namespace Nemcache.Service
             if (result)
             {
                 _cacheObserver.Use(key);
-                _notificationsSubject.OnNext(new Store
+                _notificationsSubject.OnNext(new StoreNotification
                     {
                         Key = key,
                         Data = data,
@@ -207,7 +205,7 @@ namespace Nemcache.Service
                     SequenceId = sequenceId
                 };
             _notificationsSubject.OnNext(
-                new Store
+                new StoreNotification
                     {
                         Key = key,
                         Data = data,
@@ -226,7 +224,7 @@ namespace Nemcache.Service
             var sequenceId = Interlocked.Increment(ref _currentSequenceId);
             bool removed = _cache.TryRemove(key, out entry);
             if (removed)
-                _notificationsSubject.OnNext(new Remove {Key = key, SequenceId = sequenceId});
+                _notificationsSubject.OnNext(new RemoveNotification {Key = key, SequenceId = sequenceId});
             return removed;
         }
 
@@ -254,10 +252,11 @@ namespace Nemcache.Service
         {
             return Observable.Create<ICacheNotification>(obs =>
                 {
+                    // TODO: perhaps instead create an event that contains all items...
                     var currentCache = _cache.ToArray();
                     var maxCurrentCachedId = currentCache.Length > 0 ? currentCache.Max(ce => ce.Value.SequenceId) : -1;
                     var addOperations = currentCache.Select(e =>
-                                                            new Store
+                                                            new StoreNotification
                                                                 {
                                                                     Key = e.Key,
                                                                     Data = e.Value.Data,

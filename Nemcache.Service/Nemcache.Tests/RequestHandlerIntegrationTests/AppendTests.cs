@@ -2,7 +2,7 @@
 using Nemcache.Client.Builders;
 using Nemcache.Service;
 
-namespace Nemcache.Tests
+namespace Nemcache.Tests.RequestHandlerIntegrationTests
 {
     [TestClass]
     public class AppendTests
@@ -81,8 +81,7 @@ namespace Nemcache.Tests
             Assert.AreEqual("VALUE key 0 12\r\nfirst second\r\nEND\r\n", response.ToAsciiString());
         }
 
-        #region prepend
-
+ 
         [TestMethod]
         public void PrependToEmpty()
         {
@@ -145,7 +144,5 @@ namespace Nemcache.Tests
             var response = Dispatch(getBuilder.ToAsciiRequest());
             Assert.AreEqual("VALUE key 0 12\r\nsecond first\r\nEND\r\n", response.ToAsciiString());
         }
-
-        #endregion
     }
 }

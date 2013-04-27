@@ -43,20 +43,6 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
         }
 
         [TestMethod]
-        public void Stats()
-        {
-            // TODO: 
-            _requestHandler.Dispatch("endpoint", Encoding.ASCII.GetBytes("stats\r\n"), null);
-        }
-
-        [TestMethod]
-        public void StatsSettings()
-        {
-            // TODO: 
-            _requestHandler.Dispatch("endpoint", Encoding.ASCII.GetBytes("stats settings\r\n"), null);
-        }
-
-        [TestMethod]
         public void Quit()
         {
             bool disposed = false;
@@ -64,5 +50,20 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
                                      Disposable.Create(() => { disposed = true; }));
             Assert.AreEqual(disposed, true);
         }
+
+        [TestMethod]
+        public void Stats()
+        {
+            // TODO: implement
+            var result = _requestHandler.Dispatch("endpoint", Encoding.ASCII.GetBytes("stats\r\n"), null);
+        }
+
+        [TestMethod]
+        public void StatsSettings()
+        {
+            // TODO: implement
+            var result = _requestHandler.Dispatch("endpoint", Encoding.ASCII.GetBytes("stats settings\r\n"), null);
+        }
+
     }
 }

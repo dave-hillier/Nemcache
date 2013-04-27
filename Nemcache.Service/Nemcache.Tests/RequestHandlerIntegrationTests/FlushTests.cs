@@ -4,7 +4,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Nemcache.Client.Builders;
 using Nemcache.Service;
 
-namespace Nemcache.Tests
+namespace Nemcache.Tests.RequestHandlerIntegrationTests
 {
     [TestClass]
     public class FlushTests

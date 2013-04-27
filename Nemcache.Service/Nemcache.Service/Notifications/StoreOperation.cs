@@ -1,6 +1,6 @@
 ﻿namespace Nemcache.Service.Notifications
 {
-    internal enum StoreOperation
+    public enum StoreOperation
     {
         Add,
         Append,

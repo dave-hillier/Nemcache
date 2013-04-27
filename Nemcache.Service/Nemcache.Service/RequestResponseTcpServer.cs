@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Nemcache.Service
 {
-    // TODO: Some tests?
+    // TODO: Re-write in a TDD way
     internal class RequestResponseTcpServer
     {
         private const int BufferSize = 4096;

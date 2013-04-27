@@ -4,8 +4,6 @@ using Nemcache.Service.Notifications;
 
 namespace Nemcache.Service
 {
-   
-
     internal interface IMemCache
     {
         int Capacity { get; set; }

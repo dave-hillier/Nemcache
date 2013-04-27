@@ -5,7 +5,7 @@ namespace Nemcache.Service
 {
     internal class Program
     {
-        private static void Main(string[] args)
+        private static void Main()
         {
             HostFactory.Run(hc =>
                 {
@@ -26,11 +26,13 @@ namespace Nemcache.Service
 
         private class Service
         {
+            private RequestResponseTcpServer _server;
+
             public Service()
             {
-                int capacity = 1024*1024*100;
+                const int capacity = 1024*1024*100;
                 var requestHandler = new RequestHandler(capacity);
-                var server = new RequestResponseTcpServer(IPAddress.Any, 11222, requestHandler.Dispatch);
+                _server = new RequestResponseTcpServer(IPAddress.Any, 11222, requestHandler.Dispatch);
             }
 
             public void Start()

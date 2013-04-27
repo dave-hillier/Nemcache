@@ -32,6 +32,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="protobuf-net">
+      <HintPath>..\packages\protobuf-net.2.0.0.621\lib\net40\protobuf-net.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Reactive.Core">
@@ -57,23 +60,22 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CacheCopy.cs" />
     <Compile Include="ConcurrentDictionaryExtensions.cs" />
     <Compile Include="Eviction\IEvictionStrategy.cs" />
     <Compile Include="ICacheObserver.cs" />
     <Compile Include="IMemCache.cs" />
     <Compile Include="Eviction\LRUEvictionStrategy.cs" />
-    <Compile Include="Journaller.cs" />
+    <Compile Include="Archiver.cs" />
     <Compile Include="MemCache.cs" />
     <Compile Include="Eviction\NullEvictionStrategy.cs" />
     <Compile Include="Eviction\RandomEvictionStrategy.cs" />
-    <Compile Include="Notifications\Clear.cs" />
+    <Compile Include="Notifications\ClearNotification.cs" />
     <Compile Include="Notifications\ICacheNotification.cs" />
     <Compile Include="Notifications\IKeyCacheNotification.cs" />
-    <Compile Include="Notifications\Remove.cs" />
-    <Compile Include="Notifications\Store.cs" />
+    <Compile Include="Notifications\RemoveNotification.cs" />
+    <Compile Include="Notifications\StoreNotification.cs" />
     <Compile Include="Notifications\StoreOperation.cs" />
-    <Compile Include="Notifications\Touch.cs" />
+    <Compile Include="Notifications\TouchNotification.cs" />
     <Compile Include="RequestHandler.cs" />
     <Compile Include="RequestResponseTcpServer.cs" />
     <Compile Include="Program.cs" />

@@ -8,7 +8,7 @@ namespace Nemcache.Service
     internal class RequestHandler
     {
         private static readonly DateTime UnixTimeEpoc = new DateTime(1970, 1, 1, 0, 0, 0, 0);
-        private readonly byte[] EndOfLine = new byte[] {13, 10}; // Ascii for "\r\n"
+        private readonly byte[] _endOfLine = new byte[] {13, 10}; // Ascii for "\r\n"
         private readonly MemCache _cache;
 
         public RequestHandler(int capacity)
@@ -21,8 +21,8 @@ namespace Nemcache.Service
             int endOfLineIndex = -1;
             for (int i = 0; i < request.Length; ++i)
             {
-                if (request[i + 0] == EndOfLine[0] &&
-                    request[i + 1] == EndOfLine[1])
+                if (request[i + 0] == _endOfLine[0] &&
+                    request[i + 1] == _endOfLine[1])
                 {
                     endOfLineIndex = i;
                     break;
@@ -95,9 +95,9 @@ namespace Nemcache.Service
                 case "append":
                 case "prepend":
                 case "set": // <command name> <key> <flags> <exptime> <bytes> [noreply]
-                    return HandleStore(request, input, commandName, commandParams);
+                    return HandleStore(request, commandName, commandParams);
                 case "cas": //cas <key> <flags> <exptime> <bytes> <cas unique> [noreply]\r\n
-                    return HandleCas(request, input, commandParams);
+                    return HandleCas(request, commandParams);
                 case "delete": // delete <key> [noreply]\r\n
                     return HandleDelete(commandParams);
                 case "incr": //incr <key> <value> [noreply]\r\n
@@ -128,7 +128,7 @@ namespace Nemcache.Service
             {
                 return Encoding.ASCII.GetBytes("ERROR Over capacity\r\n");
             }
-            bool stored = false;
+            bool stored;
             switch (commandName)
             {
                 case "set":
@@ -167,7 +167,7 @@ namespace Nemcache.Service
                                                          entry.Value.Data.Length,
                                                          entry.Value.CasUnique != 0 ? " " + entry.Value.CasUnique : "")
                            let asAscii = Encoding.ASCII.GetBytes(valueText)
-                           select asAscii.Concat(entry.Value.Data).Concat(EndOfLine);
+                           select asAscii.Concat(entry.Value.Data).Concat(_endOfLine);
 
             var endOfMessage = Encoding.ASCII.GetBytes("END\r\n");
             return response.SelectMany(a => a).Concat(endOfMessage).ToArray();
@@ -190,7 +190,7 @@ namespace Nemcache.Service
             byte[] resultData;
             bool result = _cache.Mutate(commandName, key, incr, out resultData);
             return result && resultData != null
-                       ? resultData.Concat(EndOfLine).ToArray()
+                       ? resultData.Concat(_endOfLine).ToArray()
                        : Encoding.ASCII.GetBytes("NOT_FOUND\r\n");
         }
 
@@ -222,7 +222,7 @@ namespace Nemcache.Service
                        : Encoding.ASCII.GetBytes("NOT_FOUND\r\n");
         }
 
-        private byte[] HandleCas(byte[] request, byte[] input, string[] commandParams)
+        private byte[] HandleCas(byte[] request, string[] commandParams)
         {
             var key = ToKey(commandParams[0]);
             var flags = ToFlags(commandParams[1]);
@@ -237,7 +237,7 @@ namespace Nemcache.Service
         }
 
         // TODO: consider wrapping all these parameters in a request type
-        private byte[] HandleStore(byte[] request, byte[] input, string commandName, string[] commandParams)
+        private byte[] HandleStore(byte[] request, string commandName, string[] commandParams)
         {
             var key = ToKey(commandParams[0]);
             var flags = ToFlags(commandParams[1]);

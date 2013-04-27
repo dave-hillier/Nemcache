@@ -29,7 +29,7 @@ namespace Nemcache.Tests
 
             var notification = _subject.First();
 
-            var store = notification as Store;
+            var store = notification as StoreNotification;
             Assert.AreEqual("key", store.Key);
             Assert.AreEqual("TestData", Encoding.ASCII.GetString(store.Data));
             Assert.AreEqual((ulong) 123, store.Flags);
@@ -49,7 +49,7 @@ namespace Nemcache.Tests
             _cache.Notifications.Subscribe(_subject);
 
             var notification = _subject.First();
-            var store = notification as Store;
+            var store = notification as StoreNotification;
             Assert.AreEqual("key1", store.Key);
             Assert.AreEqual("TestData", Encoding.ASCII.GetString(store.Data));
             Assert.AreEqual((ulong) 123, store.Flags);
@@ -67,7 +67,7 @@ namespace Nemcache.Tests
 
             var notification = _subject.First();
 
-            var store = notification as Store;
+            var store = notification as StoreNotification;
             Assert.AreEqual("key", store.Key);
             Assert.AreEqual("TestData", Encoding.ASCII.GetString(store.Data));
             Assert.AreEqual((ulong) 123, store.Flags);
@@ -86,7 +86,7 @@ namespace Nemcache.Tests
             _cache.Notifications.Subscribe(_subject);
 
             var notification = _subject.First();
-            var store = notification as Store;
+            var store = notification as StoreNotification;
             Assert.AreEqual("TestData2", Encoding.ASCII.GetString(store.Data));
             Assert.AreEqual(StoreOperation.Add, store.Operation);
         }

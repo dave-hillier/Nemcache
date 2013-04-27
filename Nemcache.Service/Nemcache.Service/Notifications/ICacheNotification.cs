@@ -1,8 +1,9 @@
-﻿namespace Nemcache.Service.Notifications
+﻿using ProtoBuf;
+
+namespace Nemcache.Service.Notifications
 {
     internal interface ICacheNotification
     {
-        // TODO: A sequence Id?
-        int SequenceId { get; set; }
+        int SequenceId { get; }
     }
 }

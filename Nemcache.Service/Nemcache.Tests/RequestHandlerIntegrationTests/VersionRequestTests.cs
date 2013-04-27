@@ -2,7 +2,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Nemcache.Service;
 
-namespace Nemcache.Tests
+namespace Nemcache.Tests.RequestHandlerIntegrationTests
 {
     [TestClass]
     public class VersionRequestTests
