@@ -10,13 +10,13 @@ namespace Nemcache.Service
     {
         private static readonly DateTime UnixTimeEpoc = new DateTime(1970, 1, 1, 0, 0, 0, 0);
         private readonly byte[] _endOfLine = new byte[] {13, 10}; // Ascii for "\r\n"
-        private readonly MemCache _cache;
+        private readonly IMemCache _cache;
         private readonly IScheduler _scheduler;
 
-        public RequestHandler(int capacity, IScheduler scheduler)
+        public RequestHandler(IScheduler scheduler, IMemCache cache)
         {
             _scheduler = scheduler;
-            _cache = new MemCache(capacity);
+            _cache = cache;
         }
 
         public IEnumerable<byte> TakeFirstLine(byte[] request)

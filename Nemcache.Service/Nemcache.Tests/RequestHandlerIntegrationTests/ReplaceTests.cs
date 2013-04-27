@@ -17,7 +17,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
         [TestInitialize]
         public void Setup()
         {
-            _requestHandler = new RequestHandler(100000, Scheduler.Default);
+            _requestHandler = new RequestHandler(Scheduler.Default, new MemCache(capacity:100));
         }
 
         #region Replace

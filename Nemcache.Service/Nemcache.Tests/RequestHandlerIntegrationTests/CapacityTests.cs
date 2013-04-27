@@ -1,5 +1,4 @@
-﻿using System.Text;
-using Microsoft.Reactive.Testing;
+﻿using Microsoft.Reactive.Testing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Nemcache.Client.Builders;
 using Nemcache.Service;
@@ -14,7 +13,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
         [TestInitialize]
         public void Setup()
         {
-            _requestHandler = new RequestHandler(100000, new TestScheduler());
+            _requestHandler = new RequestHandler(new TestScheduler(), new MemCache(capacity:10));
         }
 
 
@@ -26,7 +25,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
         [TestMethod]
         public void StoreInCapacity()
         {
-            _requestHandler = new RequestHandler(10, new TestScheduler());
+            _requestHandler = new RequestHandler(new TestScheduler(), new MemCache(capacity:10));
             var setBuilder = new StoreRequestBuilder("set", "key", "1234567890");
 
             var response = Dispatch(setBuilder.ToAsciiRequest());
@@ -37,17 +36,16 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
         [TestMethod]
         public void StoreCasInCapacity()
         {
-            _requestHandler = new RequestHandler(10, new TestScheduler());
+            _requestHandler = new RequestHandler(new TestScheduler(), new MemCache(capacity:10));
             var setBuilder = new StoreRequestBuilder("set", "s", "12345");
             Dispatch(setBuilder.ToAsciiRequest());
 
             var builder = new CasRequestBuilder("key", "12345");
             builder.WithCasUnique(123);
-            var response = Dispatch(builder.ToAsciiRequest());
+            Dispatch(builder.ToAsciiRequest());
 
             var getBuilder = new GetRequestBuilder("get", "key");
-            var getResponse = Dispatch(getBuilder.ToAsciiRequest());
-            var r = Encoding.ASCII.GetString(getResponse);
+            Dispatch(getBuilder.ToAsciiRequest());
 
             var builder2 = new CasRequestBuilder("key", "123456");
             builder2.WithCasUnique(123);
@@ -59,7 +57,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
         [TestMethod]
         public void StoreOverCapacity()
         {
-            _requestHandler = new RequestHandler(5, new TestScheduler());
+            _requestHandler = new RequestHandler(new TestScheduler(), new MemCache(capacity:1));
             var setBuilder = new StoreRequestBuilder("set", "key", "1234567890");
 
             var response = Dispatch(setBuilder.ToAsciiRequest());
@@ -71,7 +69,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
         [TestMethod]
         public void StoreEvictOverCapacity()
         {
-            _requestHandler = new RequestHandler(10, new TestScheduler());
+            _requestHandler = new RequestHandler(new TestScheduler(), new MemCache(capacity:10));
             var setBuilder1 = new StoreRequestBuilder("set", "key1", "1234567890");
             var setBuilder2 = new StoreRequestBuilder("set", "key2", "1234567890");
 
@@ -87,7 +85,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
         [TestMethod]
         public void StoreMultipleEvictOverCapacity()
         {
-            _requestHandler = new RequestHandler(10, new TestScheduler());
+            _requestHandler = new RequestHandler(new TestScheduler(), new MemCache(capacity:10));
             var setBuilder1 = new StoreRequestBuilder("set", "key1", "12345");
             var setBuilder2 = new StoreRequestBuilder("set", "key2", "12345");
             var setBuilder3 = new StoreRequestBuilder("set", "key3", "1234567890");

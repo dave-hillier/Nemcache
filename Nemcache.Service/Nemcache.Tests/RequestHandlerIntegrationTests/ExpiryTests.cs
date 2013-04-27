@@ -21,7 +21,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
         public void Setup()
         {
             _testScheduler = new TestScheduler();
-            _requestHandler = new RequestHandler(100000, _testScheduler);
+            _requestHandler = new RequestHandler(_testScheduler, new MemCache(capacity:100));
         }
 
         [TestMethod]

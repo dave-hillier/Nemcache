@@ -32,7 +32,7 @@ namespace Nemcache.Service
             public Service()
             {
                 const int capacity = 1024*1024*100;
-                var requestHandler = new RequestHandler(capacity, Scheduler.Default);
+                var requestHandler = new RequestHandler(Scheduler.Default, new MemCache(capacity));
                 _server = new RequestResponseTcpServer(IPAddress.Any, 11222, requestHandler.Dispatch);
             }
 
