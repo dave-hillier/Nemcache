@@ -31,18 +31,20 @@ Currently only TCP is supported including the noreply mode.
 Flags support up-to 64 bit values, although this is a divergence from the original spec and therefore might not be supported by your client.
 Eviction works by evicting a random cache entry until the cache can insert the new value.
 
-TODO List
-=========
-* Configuration
-* Add support for the remaining commands:
-  * Stats
-* UDP Protocol
-* Binary protocol (maybe)
-* Test using [Memcable](http://libmemcached.org/Memcapable.html)
+An aim is to keep compatible with Memcached as a drop in replacement. 
 
-Future work
-===========
-* Implement a client. The test classes
-* File-backed Persistent cache; to mitigate cold cache problems. 
 
-Aim is to keep compatible with Memcached as a drop in replacement. 
+To-do
+=====
+* Finish persistence
+* Fix archiving thread safety.
+* Performance testing and optimisation
+
+Future
+======
+
+* Write-behind persistence; prevent cold cache. Compacting, 
+* Atomic write-ahead
+* Clustering/distributed stuff
+
+

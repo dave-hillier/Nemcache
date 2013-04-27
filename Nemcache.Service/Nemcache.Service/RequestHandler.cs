@@ -188,7 +188,7 @@ namespace Nemcache.Service
             var key = ToKey(commandParams[0]);
             var incr = ulong.Parse(commandParams[1]);
             byte[] resultData;
-            bool result = _cache.Mutate(commandName, key, incr, out resultData);
+            bool result = _cache.Mutate(key, incr, out resultData, commandName == "incr");
             return result && resultData != null
                        ? resultData.Concat(_endOfLine).ToArray()
                        : Encoding.ASCII.GetBytes("NOT_FOUND\r\n");

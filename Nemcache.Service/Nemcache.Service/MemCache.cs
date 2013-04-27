@@ -64,15 +64,15 @@ namespace Nemcache.Service
             return success;
         }
 
-        // I dont like this method as it assumes a general format.
-        public bool Mutate(string commandName, string key, ulong incr, out byte[] resultDataOut)
+        // I dont like this method as it assumes a format of the data.
+        public bool Mutate(string key, ulong incr, out byte[] resultDataOut, bool positive)
         {
             byte[] resultData = null;
             bool result = _cache.TryUpdate(
                 key, entry =>
                     {
                         var value = ulong.Parse(Encoding.ASCII.GetString(entry.Data));
-                        if (commandName == "incr")
+                        if (positive)
                             value += incr;
                         else
                             value -= incr;

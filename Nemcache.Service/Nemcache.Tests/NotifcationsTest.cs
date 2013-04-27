@@ -23,6 +23,12 @@ namespace Nemcache.Tests
             CreateObserverAndSubscribe();
         }
 
+        private ICacheNotification GetFirstNotification(int index = 0)
+        {
+            var notification = _testObserver.Messages[index].Value.Value;
+            return notification;
+        }
+
         [TestMethod]
         public void EnsureAddStoreNotification()
         {
@@ -31,6 +37,7 @@ namespace Nemcache.Tests
             var notification = GetFirstNotification();
 
             var store = notification as StoreNotification;
+            Assert.IsNotNull(store);
             Assert.AreEqual("key", store.Key);
             Assert.AreEqual("TestData", Encoding.ASCII.GetString(store.Data));
             Assert.AreEqual((ulong) 123, store.Flags);
@@ -50,6 +57,7 @@ namespace Nemcache.Tests
 
             var notification = GetFirstNotification();
             var store = notification as StoreNotification;
+            Assert.IsNotNull(store);
             Assert.AreEqual("key1", store.Key);
             Assert.AreEqual("TestData", Encoding.ASCII.GetString(store.Data));
             Assert.AreEqual((ulong) 123, store.Flags);
@@ -73,6 +81,7 @@ namespace Nemcache.Tests
 
             var notification = GetFirstNotification();
             var store = notification as StoreNotification;
+            Assert.IsNotNull(store);
             Assert.AreEqual("key", store.Key);
             Assert.AreEqual("TestData", Encoding.ASCII.GetString(store.Data));
             Assert.AreEqual((ulong) 123, store.Flags);
@@ -95,10 +104,5 @@ namespace Nemcache.Tests
             Assert.AreEqual(StoreOperation.Add, store.Operation);
         }
 
-        private ICacheNotification GetFirstNotification()
-        {
-            var notification = _testObserver.Messages[0].Value.Value;
-            return notification;
-        }
     }
 }
