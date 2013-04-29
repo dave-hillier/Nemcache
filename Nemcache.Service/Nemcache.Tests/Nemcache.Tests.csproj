@@ -75,6 +75,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="CombineCurrentStateWithUpdatesTests.cs" />
     <Compile Include="Eviction\LRUEvictionTests.cs" />
     <Compile Include="NotifcationsTest.cs" />
     <Compile Include="RequestHandlerIntegrationTests\AddTest.cs" />

@@ -125,7 +125,6 @@ namespace Nemcache.Tests
             Assert.AreEqual(0, _testObserver.Messages.Count);
         }
 
-
         [TestMethod]
         public void Append()
         {
@@ -153,7 +152,6 @@ namespace Nemcache.Tests
             Assert.IsInstanceOfType(storeNotification, typeof(StoreNotification));
         }
 
-
         [TestMethod]
         public void Replace()
         {
@@ -166,7 +164,6 @@ namespace Nemcache.Tests
             var storeNotification2 = GetNotification(1);
             Assert.IsInstanceOfType(storeNotification2, typeof(StoreNotification));
         }
-
 
         [TestMethod]
         public void ReplaceBeforeSubscribe()
@@ -218,7 +215,6 @@ namespace Nemcache.Tests
             Assert.IsInstanceOfType(storeNotification2, typeof(TouchNotification));
         }
 
-
         [TestMethod]
         public void TouchBeforeSubscribe()
         {
@@ -232,5 +228,6 @@ namespace Nemcache.Tests
             Assert.IsInstanceOfType(storeNotification, typeof(StoreNotification));
         }
 
+        // TODO: Cas tests
     }
 }

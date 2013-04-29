@@ -60,6 +60,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CombineCurrentStateWithUpdatesExtension.cs" />
     <Compile Include="ConcurrentDictionaryExtensions.cs" />
     <Compile Include="Eviction\IEvictionStrategy.cs" />
     <Compile Include="ICacheObserver.cs" />

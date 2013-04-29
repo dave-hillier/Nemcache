@@ -20,7 +20,6 @@ namespace Nemcache.Service
 
         private readonly ICacheObserver _cacheObserver;
         private readonly IEvictionStrategy _evictionStrategy;
-        private readonly IObservable<ICacheNotification> _notificationsAndHistory;
         private readonly Subject<ICacheNotification> _notificationsSubject;
         private int _currentSequenceId;
 
@@ -28,8 +27,6 @@ namespace Nemcache.Service
         {
             Capacity = capacity;
             _notificationsSubject = new Subject<ICacheNotification>();
-
-            _notificationsAndHistory = CreateNotifications();
 
             var lruStrategy = new LRUEvictionStrategy(this);
             _evictionStrategy = lruStrategy;
@@ -47,7 +44,7 @@ namespace Nemcache.Service
         {
             var eventId = Interlocked.Increment(ref _currentSequenceId);
             _cache.Clear();
-            _notificationsSubject.OnNext(new ClearNotification() { EventId = eventId });
+            _notificationsSubject.OnNext(new ClearNotification { EventId = eventId });
         }
 
         public bool Touch(string key, DateTime exptime)
@@ -63,15 +60,12 @@ namespace Nemcache.Service
                 _cacheObserver.Use(key);
                 _cache.TryUpdate(key, touched, entry); // OK to fail if something else has updated?
                 success = true;
-                if (success)
-                {
-                    _notificationsSubject.OnNext(new TouchNotification
+                _notificationsSubject.OnNext(new TouchNotification
                     {
                         Key = key,
                         Expiry = exptime,
                         EventId = eventId
                     });
-                }
             }
             return success;
         }
@@ -271,7 +265,7 @@ namespace Nemcache.Service
 
         public IObservable<ICacheNotification> Notifications
         {
-            get { return _notificationsAndHistory; }
+            get { return CreateNotifications(); }
         }
 
         public IEnumerable<string> Keys { get { return _cache.Keys; } }
@@ -279,35 +273,21 @@ namespace Nemcache.Service
 
         private IObservable<ICacheNotification> CreateNotifications()
         {
-            return Observable.Create<ICacheNotification>(obs =>
-                {
-                    // TODO: perhaps instead create an event that contains all items...
-                    var currentCache = _cache.ToArray();
-                    var maxCurrentCachedId = currentCache.Length > 0 ? currentCache.Max(ce => ce.Value.EventId) : -1;
-                    var addOperations = currentCache.Select(e =>
-                                                            new StoreNotification
-                                                                {
-                                                                    Key = e.Key,
-                                                                    Data = e.Value.Data,
-                                                                    Expiry = e.Value.Expiry,
-                                                                    Flags = e.Value.Flags,
-                                                                    Operation = StoreOperation.Add,
-                                                                    EventId = e.Value.EventId
-                                                                });
+            var currentCache = _cache.ToArray();
+            var addOperations = currentCache.Select(e =>
+                                                    new StoreNotification
+                                                        {
+                                                            Key = e.Key,
+                                                            Data = e.Value.Data,
+                                                            Expiry = e.Value.Expiry,
+                                                            Flags = e.Value.Flags,
+                                                            Operation = StoreOperation.Add,
+                                                            EventId = e.Value.EventId
+                                                        });
 
-                    // TODO: this can go wrong if we get an update to a key before the initial value arrives. 
-                    // Perhaps send notifications through a queue to ensure ordering.
-                    var d = _notificationsSubject.
-                        Where(n => n.EventId > maxCurrentCachedId).
-                        Subscribe(obs);
+            return addOperations.ToObservable().Combine(_notificationsSubject);
 
-                    foreach (var n in addOperations)
-                    {
-                        obs.OnNext(n);
-                    }
-
-                    return d;
-                });
+           
         }
 
         public void MakeSpaceForNewEntry(int length)

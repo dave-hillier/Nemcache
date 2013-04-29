@@ -2,7 +2,7 @@
 
 namespace Nemcache.Service.Notifications
 {
-    internal interface ICacheNotification
+    public interface ICacheNotification
     {
         int EventId { get; }
     }
