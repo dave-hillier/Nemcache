@@ -46,5 +46,7 @@ Future
 * Write-behind persistence; prevent cold cache. Compacting, 
 * Atomic write-ahead
 * Clustering/distributed stuff
+* Various other protocols
+
 
 

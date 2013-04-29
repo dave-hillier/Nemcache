@@ -92,7 +92,7 @@
     <Compile Include="TestExt.cs" />
     <Compile Include="RequestHandlerIntegrationTests\TouchTests.cs" />
     <Compile Include="RequestHandlerIntegrationTests\VersionRequestTests.cs" />
-    <Compile Include="ArchiverTests.cs" />
+    <Compile Include="StreamArchiverTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Nemcache.Client\Nemcache.Client.csproj">

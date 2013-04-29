@@ -9,10 +9,10 @@ using ProtoBuf;
 namespace Nemcache.Tests
 {
     [TestClass]
-    public class ArchiverTests
+    public class StreamArchiverTests
     {
         private IMemCache _originalCache;
-        private Archiver _archiver;
+        private StreamArchiver _streamArchiver;
         private MemoryStream _outputStream;
 
         [TestInitialize]
@@ -20,7 +20,7 @@ namespace Nemcache.Tests
         {
             _originalCache = new MemCache(1000);
             _outputStream = new MemoryStream();
-            _archiver = new Archiver(_outputStream, _originalCache.Notifications);
+            _streamArchiver = new StreamArchiver(_outputStream, _originalCache.Notifications);
         }
 
         [TestMethod]
@@ -30,7 +30,7 @@ namespace Nemcache.Tests
 
             var output = _outputStream.ToArray();
 
-            var notification = Serializer.DeserializeWithLengthPrefix<Archiver.ArchiveEntry>(new MemoryStream(output), PrefixStyle.Fixed32);
+            var notification = Serializer.DeserializeWithLengthPrefix<StreamArchiver.ArchiveEntry>(new MemoryStream(output), PrefixStyle.Fixed32);
             Assert.IsNotNull(notification.Store);
             Assert.AreEqual("my_key", notification.Store.Key);
             // TODO: rest of the data
@@ -44,7 +44,7 @@ namespace Nemcache.Tests
             var output = _outputStream.ToArray();
 
             var newCache = new MemCache(1000);
-            Archiver.Restore(new MemoryStream(output), newCache);
+            StreamArchiver.Restore(new MemoryStream(output), newCache);
 
             var cacheEntry = newCache.Retrieve(new [] { "my_key" }).ToArray();
             Assert.AreEqual(1, cacheEntry.Length);
@@ -60,7 +60,7 @@ namespace Nemcache.Tests
             var output = _outputStream.ToArray();
 
             var newCache = new MemCache(1000);
-            Archiver.Restore(new MemoryStream(output), newCache);
+            StreamArchiver.Restore(new MemoryStream(output), newCache);
 
             var cacheEntry = newCache.Retrieve(new [] { "my_key1", "my_key2" }).ToArray();
             Assert.AreEqual(2, cacheEntry.Length);

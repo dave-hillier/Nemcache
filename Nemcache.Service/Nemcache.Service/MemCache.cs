@@ -267,7 +267,6 @@ namespace Nemcache.Service
                                                                     SequenceId = e.Value.SequenceId
                                                                 });
 
-
                     // TODO: this can go wrong if we get an update to a key before the initial value arrives. 
                     // Perhaps send notifications through a queue to ensure ordering.
                     var d = _notificationsSubject.

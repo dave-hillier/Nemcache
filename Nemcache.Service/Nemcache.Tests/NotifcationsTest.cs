@@ -100,6 +100,7 @@ namespace Nemcache.Tests
 
             var notification = GetFirstNotification();
             var store = notification as StoreNotification;
+            Assert.IsNotNull(store);
             Assert.AreEqual("TestData2", Encoding.ASCII.GetString(store.Data));
             Assert.AreEqual(StoreOperation.Add, store.Operation);
         }

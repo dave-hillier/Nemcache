@@ -7,7 +7,7 @@ using System.Reactive.Linq;
 
 namespace Nemcache.Service
 {
-    class Archiver
+    class StreamArchiver
     {
         [ProtoContract]
         public class ArchiveEntry 
@@ -29,7 +29,7 @@ namespace Nemcache.Service
         private readonly Stream _outputStream;
         private readonly CompositeDisposable _disposable = new CompositeDisposable();
 
-        public Archiver(Stream outputStream, IObservable<ICacheNotification> cacheNotifications)
+        public StreamArchiver(Stream outputStream, IObservable<ICacheNotification> cacheNotifications)
         {
             _outputStream = outputStream;
             _disposable.Add(cacheNotifications.
@@ -39,9 +39,10 @@ namespace Nemcache.Service
 
         public static void Restore(Stream stream, IMemCache cache)
         {
+            // TODO: read and then play back backwards, discarding any keys which have entries
             while (stream.Position < stream.Length)
             {
-                var entry = Serializer.DeserializeWithLengthPrefix<ArchiveEntry>(stream, PrefixStyle.Fixed32);
+                var entry = Serializer.DeserializeWithLengthPrefix<ArchiveEntry>(stream, PrefixStyle.Base128);
                 if (entry.Store != null)
                     cache.Add(entry.Store.Key, entry.Store.Flags, entry.Store.Expiry, entry.Store.Data);
             }
@@ -49,7 +50,9 @@ namespace Nemcache.Service
 
         private void OnStoreNotification(ArchiveEntry archiveEntry)
         {
-            Serializer.SerializeWithLengthPrefix(_outputStream, archiveEntry, PrefixStyle.Fixed32);
+            // TODO: compacting
+            Serializer.SerializeWithLengthPrefix(_outputStream, archiveEntry, PrefixStyle.Base128);
+            _outputStream.FlushAsync();
         }
 
         private static ArchiveEntry CreateArchiveEntry(ICacheNotification notification)

@@ -65,7 +65,7 @@
     <Compile Include="ICacheObserver.cs" />
     <Compile Include="IMemCache.cs" />
     <Compile Include="Eviction\LRUEvictionStrategy.cs" />
-    <Compile Include="Archiver.cs" />
+    <Compile Include="StreamArchiver.cs" />
     <Compile Include="MemCache.cs" />
     <Compile Include="Eviction\NullEvictionStrategy.cs" />
     <Compile Include="Eviction\RandomEvictionStrategy.cs" />
