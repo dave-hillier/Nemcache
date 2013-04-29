@@ -180,6 +180,7 @@ namespace Nemcache.Tests
             var storeNotification = GetNotification();
             Assert.IsInstanceOfType(storeNotification, typeof(StoreNotification));
         }
+
         [TestMethod]
         public void Clear()
         {
@@ -192,7 +193,6 @@ namespace Nemcache.Tests
             var clearNotification = GetNotification(1);
             Assert.IsInstanceOfType(clearNotification, typeof(ClearNotification));
         }
-
 
         [TestMethod]
         public void ClearBeforeSubscribe()
@@ -214,8 +214,8 @@ namespace Nemcache.Tests
             Assert.AreEqual(2, _testObserver.Messages.Count);
             var storeNotification1 = GetNotification();
             Assert.IsInstanceOfType(storeNotification1, typeof(StoreNotification));
-            var storeNotification2 = GetNotification();
-            Assert.IsInstanceOfType(storeNotification2, typeof(StoreNotification));
+            var storeNotification2 = GetNotification(1);
+            Assert.IsInstanceOfType(storeNotification2, typeof(TouchNotification));
         }
 
 
