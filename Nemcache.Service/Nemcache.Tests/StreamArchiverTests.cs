@@ -30,7 +30,8 @@ namespace Nemcache.Tests
 
             var output = _outputStream.ToArray();
 
-            var notification = Serializer.DeserializeWithLengthPrefix<StreamArchiver.ArchiveEntry>(new MemoryStream(output), PrefixStyle.Fixed32);
+            var notification = Serializer.DeserializeWithLengthPrefix<StreamArchiver.ArchiveEntry>(
+                new MemoryStream(output), PrefixStyle.Fixed32);
             Assert.IsNotNull(notification.Store);
             Assert.AreEqual("my_key", notification.Store.Key);
             // TODO: rest of the data

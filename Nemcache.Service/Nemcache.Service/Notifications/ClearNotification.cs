@@ -6,6 +6,6 @@ namespace Nemcache.Service.Notifications
     public class ClearNotification : ICacheNotification
     {
         [ProtoMember(1, IsRequired = true)]
-        public int SequenceId { get; set; }
+        public int EventId { get; set; }
     }
 }

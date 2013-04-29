@@ -25,11 +25,19 @@ namespace Nemcache.Service
             _callback = callback;
             _tokenSource = new CancellationTokenSource();
             _taskFactory = new TaskFactory(_tokenSource.Token);
-
             _tcpListener = new TcpListener(address, port);
 
+        }
+
+        public void Start()
+        {
             _tcpListener.Start();
-            AcceptClient(_tcpListener);
+            AcceptClient(_tcpListener);            
+        }
+
+        public void Stop()
+        {
+            _tokenSource.Cancel();
         }
 
         private void AcceptClient(TcpListener tcpListener)

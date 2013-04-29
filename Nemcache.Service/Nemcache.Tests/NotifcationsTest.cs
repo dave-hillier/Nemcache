@@ -19,11 +19,10 @@ namespace Nemcache.Tests
         {
             _cache = new MemCache(1000);
             _testScheduler = new TestScheduler();
-        
             CreateObserverAndSubscribe();
         }
 
-        private ICacheNotification GetFirstNotification(int index = 0)
+        private ICacheNotification GetNotification(int index = 0)
         {
             var notification = _testObserver.Messages[index].Value.Value;
             return notification;
@@ -34,7 +33,7 @@ namespace Nemcache.Tests
         {
             _cache.Add("key", 123, new DateTime(1999, 1, 1), Encoding.ASCII.GetBytes("TestData"));
 
-            var notification = GetFirstNotification();
+            var notification = GetNotification();
 
             var store = notification as StoreNotification;
             Assert.IsNotNull(store);
@@ -55,7 +54,7 @@ namespace Nemcache.Tests
 
             CreateObserverAndSubscribe();
 
-            var notification = GetFirstNotification();
+            var notification = GetNotification();
             var store = notification as StoreNotification;
             Assert.IsNotNull(store);
             Assert.AreEqual("key1", store.Key);
@@ -79,7 +78,7 @@ namespace Nemcache.Tests
         {
             _cache.Store("key", 123, new DateTime(1999, 1, 1), Encoding.ASCII.GetBytes("TestData"));
 
-            var notification = GetFirstNotification();
+            var notification = GetNotification();
             var store = notification as StoreNotification;
             Assert.IsNotNull(store);
             Assert.AreEqual("key", store.Key);
@@ -98,11 +97,139 @@ namespace Nemcache.Tests
 
             CreateObserverAndSubscribe();
 
-            var notification = GetFirstNotification();
+            var notification = GetNotification();
             var store = notification as StoreNotification;
             Assert.IsNotNull(store);
             Assert.AreEqual("TestData2", Encoding.ASCII.GetString(store.Data));
             Assert.AreEqual(StoreOperation.Add, store.Operation);
+        }
+
+        [TestMethod]
+        public void Deleted()
+        {
+            _cache.Store("key", 123, new DateTime(1999, 1, 1), Encoding.ASCII.GetBytes("Some stuff in here..."));
+            _cache.Remove("key");
+
+            var storeNotification = GetNotification();
+            Assert.IsInstanceOfType(storeNotification, typeof(StoreNotification));
+            var removeNotifaction = GetNotification(1);
+            Assert.IsInstanceOfType(removeNotifaction, typeof(RemoveNotification));
+        }
+
+        [TestMethod]
+        public void DeletedBeforeSubscribe()
+        {
+            _cache.Store("key", 123, new DateTime(1999, 1, 1), Encoding.ASCII.GetBytes("Some stuff in here..."));
+            _cache.Remove("key");
+            CreateObserverAndSubscribe();
+            Assert.AreEqual(0, _testObserver.Messages.Count);
+        }
+
+
+        [TestMethod]
+        public void Append()
+        {
+            _cache.Store("key", 123, new DateTime(1999, 1, 1), Encoding.ASCII.GetBytes("12345"));
+            _cache.Append("key", 123, new DateTime(1999, 1, 1), Encoding.ASCII.GetBytes("12345"), false);
+
+            Assert.AreEqual(2, _testObserver.Messages.Count);
+            var storeNotification1 = GetNotification();
+            Assert.IsInstanceOfType(storeNotification1, typeof(StoreNotification));
+            var storeNotification2 = GetNotification();
+            Assert.IsInstanceOfType(storeNotification2, typeof(StoreNotification));
+        }
+
+
+        [TestMethod]
+        public void AppendBeforeSubscribe()
+        {
+            _cache.Store("key", 123, new DateTime(1999, 1, 1), Encoding.ASCII.GetBytes("12345"));
+            _cache.Append("key", 123, new DateTime(1999, 1, 1), Encoding.ASCII.GetBytes("12345"), false);
+
+            CreateObserverAndSubscribe();
+
+            Assert.AreEqual(1, _testObserver.Messages.Count);
+            var storeNotification = GetNotification();
+            Assert.IsInstanceOfType(storeNotification, typeof(StoreNotification));
+        }
+
+
+        [TestMethod]
+        public void Replace()
+        {
+            _cache.Store("key", 123, new DateTime(1999, 1, 1), Encoding.ASCII.GetBytes("12345"));
+            _cache.Replace("key", 123, new DateTime(1999, 1, 1), Encoding.ASCII.GetBytes("12345"));
+
+            Assert.AreEqual(2, _testObserver.Messages.Count);
+            var storeNotification1 = GetNotification();
+            Assert.IsInstanceOfType(storeNotification1, typeof(StoreNotification));
+            var storeNotification2 = GetNotification(1);
+            Assert.IsInstanceOfType(storeNotification2, typeof(StoreNotification));
+        }
+
+
+        [TestMethod]
+        public void ReplaceBeforeSubscribe()
+        {
+            _cache.Store("key", 123, new DateTime(1999, 1, 1), Encoding.ASCII.GetBytes("12345"));
+            _cache.Replace("key", 123, new DateTime(1999, 1, 1), Encoding.ASCII.GetBytes("12345"));
+
+            CreateObserverAndSubscribe();
+
+            Assert.AreEqual(1, _testObserver.Messages.Count);
+            var storeNotification = GetNotification();
+            Assert.IsInstanceOfType(storeNotification, typeof(StoreNotification));
+        }
+        [TestMethod]
+        public void Clear()
+        {
+            _cache.Store("key", 123, new DateTime(1999, 1, 1), Encoding.ASCII.GetBytes("12345"));
+            _cache.Clear();
+
+            Assert.AreEqual(2, _testObserver.Messages.Count);
+            var storeNotification = GetNotification();
+            Assert.IsInstanceOfType(storeNotification, typeof(StoreNotification));
+            var clearNotification = GetNotification(1);
+            Assert.IsInstanceOfType(clearNotification, typeof(ClearNotification));
+        }
+
+
+        [TestMethod]
+        public void ClearBeforeSubscribe()
+        {
+            _cache.Store("key", 123, new DateTime(1999, 1, 1), Encoding.ASCII.GetBytes("12345"));
+            _cache.Clear();
+
+            CreateObserverAndSubscribe();
+
+            Assert.AreEqual(0, _testObserver.Messages.Count);
+        }
+
+        [TestMethod]
+        public void Touch()
+        {
+            _cache.Store("key", 123, new DateTime(1999, 1, 1), Encoding.ASCII.GetBytes("12345"));
+            _cache.Touch("key", new DateTime(1999, 1, 1));
+
+            Assert.AreEqual(2, _testObserver.Messages.Count);
+            var storeNotification1 = GetNotification();
+            Assert.IsInstanceOfType(storeNotification1, typeof(StoreNotification));
+            var storeNotification2 = GetNotification();
+            Assert.IsInstanceOfType(storeNotification2, typeof(StoreNotification));
+        }
+
+
+        [TestMethod]
+        public void TouchBeforeSubscribe()
+        {
+            _cache.Store("key", 123, new DateTime(1999, 1, 1), Encoding.ASCII.GetBytes("12345"));
+            _cache.Touch("key", new DateTime(1999, 1, 1));
+
+            CreateObserverAndSubscribe();
+
+            Assert.AreEqual(1, _testObserver.Messages.Count);
+            var storeNotification = GetNotification();
+            Assert.IsInstanceOfType(storeNotification, typeof(StoreNotification));
         }
 
     }

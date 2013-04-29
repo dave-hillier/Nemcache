@@ -5,7 +5,7 @@ namespace Nemcache.Service.Notifications
     public class RemoveNotification : IKeyCacheNotification
     {
         [ProtoMember(1, IsRequired = true)]
-        public int SequenceId { get; set; }
+        public int EventId { get; set; }
 
         [ProtoMember(2, IsRequired = true)]
         public string Key { get; set; }

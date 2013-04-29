@@ -4,6 +4,6 @@ namespace Nemcache.Service.Notifications
 {
     internal interface ICacheNotification
     {
-        int SequenceId { get; }
+        int EventId { get; }
     }
 }

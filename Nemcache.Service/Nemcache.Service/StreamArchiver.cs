@@ -1,13 +1,14 @@
 ﻿using Nemcache.Service.Notifications;
 using ProtoBuf;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 
 namespace Nemcache.Service
 {
-    class StreamArchiver
+    class StreamArchiver : IDisposable
     {
         [ProtoContract]
         public class ArchiveEntry 
@@ -34,24 +35,35 @@ namespace Nemcache.Service
             _outputStream = outputStream;
             _disposable.Add(cacheNotifications.
                 Select(CreateArchiveEntry).
-                Subscribe(OnStoreNotification));
+                Subscribe(OnNotification));
+        }
+
+        public static IEnumerable<ArchiveEntry> ReadLog(Stream stream)
+        {
+            while (stream.Position < stream.Length)
+            {
+                yield return Serializer.DeserializeWithLengthPrefix<ArchiveEntry>(stream, PrefixStyle.Fixed32);
+            }
         }
 
         public static void Restore(Stream stream, IMemCache cache)
         {
-            // TODO: read and then play back backwards, discarding any keys which have entries
-            while (stream.Position < stream.Length)
+            var log = ReadLog(stream);
+            foreach (var entry in log)
             {
-                var entry = Serializer.DeserializeWithLengthPrefix<ArchiveEntry>(stream, PrefixStyle.Base128);
                 if (entry.Store != null)
                     cache.Add(entry.Store.Key, entry.Store.Flags, entry.Store.Expiry, entry.Store.Data);
             }
         }
 
-        private void OnStoreNotification(ArchiveEntry archiveEntry)
+        public void Dispose()
         {
-            // TODO: compacting
-            Serializer.SerializeWithLengthPrefix(_outputStream, archiveEntry, PrefixStyle.Base128);
+            _outputStream.Dispose();
+        }
+
+        private void OnNotification(ArchiveEntry archiveEntry)
+        {
+            Serializer.SerializeWithLengthPrefix(_outputStream, archiveEntry, PrefixStyle.Fixed32);
             _outputStream.FlushAsync();
         }
 
@@ -67,5 +79,7 @@ namespace Nemcache.Service
                 };
             return archiveEntry;
         }
+
+
     }
 }
