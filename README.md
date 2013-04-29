@@ -38,11 +38,12 @@ To-do
 =====
 * Add compacting to log file/cache persistence.
 * Performance testing and optimisation
+* add a client side API
 
 Future
 ======
 * Clustering/distributed stuff
 * Various other protocols
-
-
+* subscribe to key
+* authentication
 
