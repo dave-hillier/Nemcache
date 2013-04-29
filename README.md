@@ -36,15 +36,11 @@ An aim is to keep compatible with Memcached as a drop in replacement and also pr
 
 To-do
 =====
-* Finish persistence
-* Fix archiving thread safety.
+* Add compacting to log file/cache persistence.
 * Performance testing and optimisation
 
 Future
 ======
-
-* Write-behind persistence; prevent cold cache. Compacting, 
-* Atomic write-ahead
 * Clustering/distributed stuff
 * Various other protocols
 
