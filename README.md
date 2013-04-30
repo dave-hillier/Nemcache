@@ -36,14 +36,16 @@ An aim is to keep compatible with Memcached as a drop in replacement and also pr
 
 To-do
 =====
-* Add compacting to log file/cache persistence.
+* Compacting to cache log.
+* Partitioning of the cache log.
+* Persistence for Cas and mutate commands
 * Performance testing and optimisation
-* add a client side API
+* Client API
 
 Future
 ======
-* Clustering/distributed stuff
-* Various other protocols
-* subscribe to key
-* authentication
+* Proxy client to locally cache specific keys.
+* client permissioning and authentication.
+* Control the mechanism for each key? Maybe allow some keys to be transisent, persistent etc.
+
 
