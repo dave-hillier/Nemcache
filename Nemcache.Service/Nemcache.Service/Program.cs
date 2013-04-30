@@ -67,6 +67,7 @@ namespace Nemcache.Service
 
                 // Subscribing after restore has the effect of compacting the cache.
                 _archiver = new StreamArchiver(File.OpenWrite(_cacheFileName), _memCache.Notifications);
+                
                 _server.Start();
             }
 

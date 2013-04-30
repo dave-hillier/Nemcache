@@ -1,10 +1,10 @@
 ﻿using System.Globalization;
 using Microsoft.Reactive.Testing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Nemcache.Service;
 using Nemcache.Service.Notifications;
 using System.Reactive;
 using System.Reactive.Linq;
+using Nemcache.Service.Reactive;
 
 namespace Nemcache.Tests
 {

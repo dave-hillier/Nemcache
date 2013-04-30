@@ -5,7 +5,7 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using Nemcache.Service.Notifications;
 
-namespace Nemcache.Service
+namespace Nemcache.Service.Reactive
 {
     internal static class CombineCurrentStateWithUpdatesExtension
     {

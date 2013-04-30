@@ -61,12 +61,17 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CombineCurrentStateWithUpdatesExtension.cs" />
+    <Compile Include="Reactive\CombineCurrentStateWithUpdatesExtension.cs" />
     <Compile Include="ConcurrentDictionaryExtensions.cs" />
     <Compile Include="Eviction\IEvictionStrategy.cs" />
+    <Compile Include="FileSystem\FileSystemWrapper.cs" />
+    <Compile Include="FileSystem\FileWrapper.cs" />
     <Compile Include="ICacheObserver.cs" />
+    <Compile Include="FileSystem\IFile.cs" />
+    <Compile Include="FileSystem\IFileSystem.cs" />
     <Compile Include="IMemCache.cs" />
     <Compile Include="Eviction\LRUEvictionStrategy.cs" />
+    <Compile Include="FileSystem\PartitioningFileStream.cs" />
     <Compile Include="StreamArchiver.cs" />
     <Compile Include="MemCache.cs" />
     <Compile Include="Eviction\NullEvictionStrategy.cs" />

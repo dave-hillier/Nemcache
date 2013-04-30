@@ -75,11 +75,13 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="CombineCurrentStateWithUpdatesTests.cs" />
+    <Compile Include="Reactive\CombineCurrentStateWithUpdatesTests.cs" />
     <Compile Include="Eviction\LRUEvictionTests.cs" />
     <Compile Include="Eviction\NullEvictionTests.cs" />
     <Compile Include="Eviction\RandomEvictionTests.cs" />
+    <Compile Include="FileSystem\FakeFileSystem.cs" />
     <Compile Include="NotifcationsTest.cs" />
+    <Compile Include="FileSystem\PartitioningFileStreamTests.cs" />
     <Compile Include="RequestHandlerIntegrationTests\AddTest.cs" />
     <Compile Include="RequestHandlerIntegrationTests\AppendTests.cs" />
     <Compile Include="RequestHandlerIntegrationTests\CapacityTests.cs" />
@@ -110,6 +112,7 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
       <ItemGroup>
