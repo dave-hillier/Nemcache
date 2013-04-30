@@ -13,11 +13,11 @@ namespace Nemcache.Service
             this IObservable<ICacheNotification> historic,
             IObservable<ICacheNotification> live)
         {
-            return CombinePrivate(historic, live).
+            return BufferLiveUntilHistoryCompletes(historic, live).
                 DistinctUntilChanged(n => n.EventId);
         }
 
-        private static IObservable<ICacheNotification> CombinePrivate(
+        private static IObservable<ICacheNotification> BufferLiveUntilHistoryCompletes(
             IObservable<ICacheNotification> historic, 
             IObservable<ICacheNotification> live)
         {

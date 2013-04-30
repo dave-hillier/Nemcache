@@ -68,5 +68,12 @@ namespace Nemcache.Tests
             Assert.AreEqual("Payload1", Encoding.ASCII.GetString(cacheEntry[0].Value.Data));
             Assert.AreEqual("Payload2", Encoding.ASCII.GetString(cacheEntry[1].Value.Data));
         }
+
+        [TestMethod]
+        public void DisposeWillDisposeStream()
+        {
+            _streamArchiver.Dispose();
+            Assert.IsFalse(_outputStream.CanWrite);
+        }
     }
 }
