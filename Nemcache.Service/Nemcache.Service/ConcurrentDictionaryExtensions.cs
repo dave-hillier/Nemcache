@@ -13,7 +13,6 @@ namespace Nemcache.Service
         }
     }
 
-
     internal static class ConcurrentDictionaryExtensions
     {
         public static bool TryUpdate<TKey, TValue>(this ConcurrentDictionary<TKey, TValue> dict,

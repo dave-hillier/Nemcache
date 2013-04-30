@@ -20,7 +20,6 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
         {
             _requestHandler = new RequestHandler(Scheduler.Default, new MemCache(capacity:100));
         }
-        #region Cas
 
         // TODO: cas capacity checks
         [TestMethod]
@@ -33,14 +32,13 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             var response = Dispatch(casBuilder.ToAsciiRequest());
             Assert.AreEqual("STORED\r\n", response.ToAsciiString());
 
-            // TODO: split test
             var getBuilder = new GetRequestBuilder("get", "key");
             var getResponse = Dispatch(getBuilder.ToAsciiRequest());
             Assert.AreEqual("VALUE key 0 5 123\r\nvalue\r\nEND\r\n", getResponse.ToAsciiString());
         }
 
         [TestMethod]
-        public void CasUpdatePrevious()
+        public void CasUpdatePreviousResponse()
         {
             var casBuilder1 = new CasRequestBuilder("key", "value1");
             casBuilder1.WithCasUnique(567);
@@ -52,15 +50,10 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             var response2 = Dispatch(casBuilder2.ToAsciiRequest());
 
             Assert.AreEqual("STORED\r\n", response2.ToAsciiString());
-
-            // TODO: split test
-            var getBuilder = new GetRequestBuilder("get", "key");
-            var getResponse = Dispatch(getBuilder.ToAsciiRequest());
-            Assert.AreEqual("VALUE key 0 6 567\r\nvalue2\r\nEND\r\n", getResponse.ToAsciiString());
         }
 
         [TestMethod]
-        public void CasUpdatePreviousModified()
+        public void CasUpdatePreviousModifiedResponse()
         {
             var casBuilder1 = new CasRequestBuilder("key", "value1");
             casBuilder1.WithCasUnique(789);
@@ -71,14 +64,42 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
 
             var response2 = Dispatch(casBuilder2.ToAsciiRequest());
             Assert.AreEqual("EXISTS\r\n", response2.ToAsciiString());
+        }
 
-            // TODO: and not changed
-            // TODO: split test
+
+        [TestMethod]
+        public void CasUpdatePreviousValue()
+        {
+            var casBuilder1 = new CasRequestBuilder("key", "value1");
+            casBuilder1.WithCasUnique(567);
+            Dispatch(casBuilder1.ToAsciiRequest());
+
+            var casBuilder2 = new CasRequestBuilder("key", "value2");
+            casBuilder2.WithCasUnique(567);
+
+            Dispatch(casBuilder2.ToAsciiRequest());
+
+            var getBuilder = new GetRequestBuilder("get", "key");
+            var getResponse = Dispatch(getBuilder.ToAsciiRequest());
+            Assert.AreEqual("VALUE key 0 6 567\r\nvalue2\r\nEND\r\n", getResponse.ToAsciiString());
+        }
+
+        [TestMethod]
+        public void CasUpdatePreviousModifiedValue()
+        {
+            var casBuilder1 = new CasRequestBuilder("key", "value1");
+            casBuilder1.WithCasUnique(789);
+            Dispatch(casBuilder1.ToAsciiRequest());
+
+            var casBuilder2 = new CasRequestBuilder("key", "value2");
+            casBuilder2.WithCasUnique(567);
+
+            Dispatch(casBuilder2.ToAsciiRequest());
+
             var getBuilder = new GetRequestBuilder("get", "key");
             var getResponse = Dispatch(getBuilder.ToAsciiRequest());
             Assert.AreEqual("VALUE key 0 6 789\r\nvalue1\r\nEND\r\n", getResponse.ToAsciiString());
         }
 
-        #endregion
     }
 }

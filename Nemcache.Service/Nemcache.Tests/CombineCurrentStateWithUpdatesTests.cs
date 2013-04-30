@@ -1,11 +1,10 @@
-﻿using System.Collections.Generic;
-using System.Reactive;
-using System.Reactive.Disposables;
-using System.Reactive.Linq;
+﻿using System.Globalization;
 using Microsoft.Reactive.Testing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Nemcache.Service;
 using Nemcache.Service.Notifications;
+using System.Reactive;
+using System.Reactive.Linq;
 
 namespace Nemcache.Tests
 {
@@ -17,7 +16,7 @@ namespace Nemcache.Tests
             public int EventId { get; set; }
             public override string ToString()
             {
-                return "Notification: " + EventId.ToString();
+                return "Notification: " + EventId.ToString(CultureInfo.InvariantCulture);
             }
         }
 
@@ -27,7 +26,7 @@ namespace Nemcache.Tests
             var ts = new TestScheduler();
 
             var history = ts.CreateColdObservable(
-                OnNext<ICacheNotification>(1, new DummyNotification() { EventId = 1 }));
+                OnNext<ICacheNotification>(1, new DummyNotification { EventId = 1 }));
 
             var observer = ts.CreateObserver<ICacheNotification>();
 
@@ -46,7 +45,7 @@ namespace Nemcache.Tests
             var ts = new TestScheduler();
 
             var history = ts.CreateColdObservable(
-                OnNext<ICacheNotification>(1, new DummyNotification() { EventId = 1 }),
+                OnNext<ICacheNotification>(1, new DummyNotification { EventId = 1 }),
                 OnCompleted<ICacheNotification>(2));
             
             var observer = ts.CreateObserver<ICacheNotification>();
@@ -58,7 +57,7 @@ namespace Nemcache.Tests
             ReactiveAssert.AreElementsEqual(
                 new[]
                     {
-                        OnNext<ICacheNotification>(2, n => n.EventId == 1),
+                        OnNext<ICacheNotification>(2, n => n.EventId == 1)
                     },
                 observer.Messages);
         }
@@ -71,9 +70,9 @@ namespace Nemcache.Tests
             var ts = new TestScheduler();
 
             var history = ts.CreateColdObservable(
-                OnNext<ICacheNotification>(1, new DummyNotification() { EventId = 1 }),
-                OnNext<ICacheNotification>(4, new DummyNotification() { EventId = 2 }),
-                OnNext<ICacheNotification>(9, new DummyNotification() { EventId = 3 }),
+                OnNext<ICacheNotification>(1, new DummyNotification { EventId = 1 }),
+                OnNext<ICacheNotification>(4, new DummyNotification { EventId = 2 }),
+                OnNext<ICacheNotification>(9, new DummyNotification { EventId = 3 }),
                 OnCompleted<ICacheNotification>(10));
 
             var observer = ts.CreateObserver<ICacheNotification>();
@@ -87,7 +86,7 @@ namespace Nemcache.Tests
                     {
                         OnNext<ICacheNotification>(10, n => n.EventId == 1),
                         OnNext<ICacheNotification>(10, n => n.EventId == 2),
-                        OnNext<ICacheNotification>(10, n => n.EventId == 3),
+                        OnNext<ICacheNotification>(10, n => n.EventId == 3)
                     },
                 observer.Messages);
         }
@@ -98,7 +97,7 @@ namespace Nemcache.Tests
             var ts = new TestScheduler();
 
             var live = ts.CreateHotObservable(
-                OnNext<ICacheNotification>(1, new DummyNotification() { EventId = 1 }));
+                OnNext<ICacheNotification>(1, new DummyNotification { EventId = 1 }));
 
             var observer = ts.CreateObserver<ICacheNotification>();
 
@@ -118,7 +117,7 @@ namespace Nemcache.Tests
             var ts = new TestScheduler();
 
             var live = ts.CreateHotObservable(
-                            OnNext<ICacheNotification>(1, new DummyNotification() { EventId = 1 }));
+                            OnNext<ICacheNotification>(1, new DummyNotification { EventId = 1 }));
 
             var observer = ts.CreateObserver<ICacheNotification>();
 
@@ -129,7 +128,7 @@ namespace Nemcache.Tests
             ReactiveAssert.AreElementsEqual(
                 new[]
                     {
-                        OnNext<ICacheNotification>(1, n => n.EventId == 1),
+                        OnNext<ICacheNotification>(1, n => n.EventId == 1)
                     },
                 observer.Messages);
         }
@@ -140,11 +139,11 @@ namespace Nemcache.Tests
             var ts = new TestScheduler();
 
             var history = ts.CreateColdObservable(
-                OnNext<ICacheNotification>(3, new DummyNotification() { EventId = 1 }),
+                OnNext<ICacheNotification>(3, new DummyNotification { EventId = 1 }),
                 OnCompleted<ICacheNotification>(5));
 
             var live = ts.CreateHotObservable(
-                            OnNext<ICacheNotification>(4, new DummyNotification() { EventId = 2 }));
+                            OnNext<ICacheNotification>(4, new DummyNotification { EventId = 2 }));
 
             var observer = ts.CreateObserver<ICacheNotification>();
 
@@ -156,7 +155,7 @@ namespace Nemcache.Tests
                 new[]
                     {
                         OnNext<ICacheNotification>(5, n => n.EventId == 1),
-                        OnNext<ICacheNotification>(5, n => n.EventId == 2),
+                        OnNext<ICacheNotification>(5, n => n.EventId == 2)
                     },
                 observer.Messages);
         }
@@ -183,8 +182,6 @@ namespace Nemcache.Tests
                 OnNext(7L, new DummyNotification { EventId = 9 })
                 );
 
-            
-
             var observer = testScheduler.CreateObserver<ICacheNotification>();
             history.Combine(live).Subscribe(observer);
             
@@ -200,7 +197,7 @@ namespace Nemcache.Tests
                         OnNext<ICacheNotification>(5, n => n.EventId == 5),
                         OnNext<ICacheNotification>(5, n => n.EventId == 6),
                         OnNext<ICacheNotification>(5, n => n.EventId == 7),
-                        OnNext<ICacheNotification>(6, n => n.EventId == 8),
+                        OnNext<ICacheNotification>(6, n => n.EventId == 8)
                     },
                 observer.Messages);
         }

@@ -199,7 +199,7 @@ namespace Nemcache.Service
             if (commandParams.Length > 0)
             {
                 var delay = TimeSpan.FromSeconds(uint.Parse(commandParams[0]));
-                _scheduler.Schedule(delay, () => { _cache.Clear(); });
+                _scheduler.Schedule(delay, () => _cache.Clear());
             }
             else
             {
@@ -210,9 +210,9 @@ namespace Nemcache.Service
 
         private byte[] HandleStats(string commandName, string[] commandParams)
         {
+            // TODO: implement stats
             return new byte[] {};
         }
-
 
         private byte[] HandleDelete(string[] commandParams)
         {
@@ -236,7 +236,6 @@ namespace Nemcache.Service
                        : Encoding.ASCII.GetBytes("EXISTS\r\n");
         }
 
-        // TODO: consider wrapping all these parameters in a request type
         private byte[] HandleStore(byte[] request, string commandName, string[] commandParams)
         {
             var key = ToKey(commandParams[0]);
