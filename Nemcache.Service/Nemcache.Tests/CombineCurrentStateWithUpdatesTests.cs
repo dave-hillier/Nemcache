@@ -21,6 +21,13 @@ namespace Nemcache.Tests
         }
 
         [TestMethod]
+        public void DummyToString()
+        {
+            var s = new DummyNotification() {EventId = 123}.ToString();
+            Assert.AreEqual("Notification: 123", s);
+        }
+
+        [TestMethod]
         public void HistoryDoesNotCompletes()
         {
             var ts = new TestScheduler();

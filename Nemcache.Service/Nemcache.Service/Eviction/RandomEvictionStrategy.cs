@@ -5,18 +5,22 @@ namespace Nemcache.Service.Eviction
 {
     internal class RandomEvictionStrategy : IEvictionStrategy
     {
-        private readonly MemCache _cache;
+        private readonly IMemCache _cache;
         private readonly Random _rng = new Random();
 
-        public RandomEvictionStrategy(MemCache cache)
+        public RandomEvictionStrategy(IMemCache cache)
         {
             _cache = cache;
         }
 
         public void EvictEntry()
         {
-            var keyToEvict = _cache.Keys.ElementAt(_rng.Next(0, _cache.Keys.Count()));
-            _cache.Remove(keyToEvict);
+            var count = _cache.Keys.Count();
+            if (count > 0)
+            {
+                var keyToEvict = _cache.Keys.ElementAt(_rng.Next(0, count));
+                _cache.Remove(keyToEvict);
+            }
         }
     }
 }

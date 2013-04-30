@@ -77,6 +77,8 @@
   <ItemGroup>
     <Compile Include="CombineCurrentStateWithUpdatesTests.cs" />
     <Compile Include="Eviction\LRUEvictionTests.cs" />
+    <Compile Include="Eviction\NullEvictionTests.cs" />
+    <Compile Include="Eviction\RandomEvictionTests.cs" />
     <Compile Include="NotifcationsTest.cs" />
     <Compile Include="RequestHandlerIntegrationTests\AddTest.cs" />
     <Compile Include="RequestHandlerIntegrationTests\AppendTests.cs" />
