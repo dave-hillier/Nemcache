@@ -90,7 +90,7 @@ namespace Nemcache.Service
             if (result)
             {
                 resultDataOut = resultData;
-                // TODO: notify
+                // TODO: notify mutate
             }
             else
             {
@@ -315,7 +315,7 @@ namespace Nemcache.Service
                     Flags = flags,
                     EventId = eventId2,
                 };
-            // TODO: notfiy
+            // TODO: notfiy Cas
         }
 
         public struct CacheEntry

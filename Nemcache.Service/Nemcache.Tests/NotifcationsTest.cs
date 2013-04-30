@@ -70,9 +70,6 @@ namespace Nemcache.Tests
             _cache.Notifications.Subscribe(_testObserver);
         }
 
-        // TODO: gets add and remove when subscribed..
-        // TODO: add and replace when subscribed...
-
         [TestMethod]
         public void EnsureStoreNotification()
         {
@@ -88,7 +85,6 @@ namespace Nemcache.Tests
             Assert.AreEqual(new DateTime(1999, 1, 1), store.Expiry);
         }
 
-        // TODO: don't notify if it wasnt added, as that has no effect.
         [TestMethod]
         public void DontReplayEntireHistory()
         {
@@ -229,5 +225,6 @@ namespace Nemcache.Tests
         }
 
         // TODO: Cas tests
+        // TODO: mutate tests
     }
 }

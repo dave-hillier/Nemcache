@@ -20,12 +20,12 @@ namespace Nemcache.Service
         private readonly CancellationTokenSource _tokenSource;
 
         // TODO: use an interface for the callback?
-        public RequestResponseTcpServer(IPAddress address, int port, Func<string, byte[], IDisposable, byte[]> callback)
+        public RequestResponseTcpServer(IPAddress address, uint port, Func<string, byte[], IDisposable, byte[]> callback)
         {
             _callback = callback;
             _tokenSource = new CancellationTokenSource();
             _taskFactory = new TaskFactory(_tokenSource.Token);
-            _tcpListener = new TcpListener(address, port);
+            _tcpListener = new TcpListener(address, (int)port);
 
         }
 

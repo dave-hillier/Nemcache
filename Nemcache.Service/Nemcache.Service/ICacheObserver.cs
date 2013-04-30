@@ -1,6 +1,6 @@
 ﻿namespace Nemcache.Service
 {
-    // TODO: Is this redundant with the observable?
+    // TODO: add an observable for keys used. use the notifications for when keys are removed.
     internal interface ICacheObserver
     {
         void Use(string key);

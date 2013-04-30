@@ -8,6 +8,8 @@ using System.Reactive.Linq;
 
 namespace Nemcache.Service
 {
+    // TODO: add handling for large streams
+    // TODO: add compacting
     class StreamArchiver : IDisposable
     {
         [ProtoContract]
