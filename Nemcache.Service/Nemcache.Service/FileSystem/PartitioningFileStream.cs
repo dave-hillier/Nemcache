@@ -9,7 +9,7 @@ namespace Nemcache.Service.FileSystem
         private readonly IFileSystem _fileSystem;
         private readonly string _filename;
         private readonly string _ext;
-        private readonly int _partitionLength;
+        private readonly uint _partitionLength;
         private readonly FileAccess _fileAccess;
 
         private int _currentPartition = 0;
@@ -19,7 +19,7 @@ namespace Nemcache.Service.FileSystem
 
 
         public PartitioningFileStream(IFileSystem fileSystem, 
-            string filename, string ext, int partitionLength, FileAccess fileAccess)
+            string filename, string ext, uint partitionLength, FileAccess fileAccess)
         {
             _fileSystem = fileSystem;
             _filename = filename;
@@ -109,7 +109,7 @@ namespace Nemcache.Service.FileSystem
                     written += remaining;
                 }
             }
-            if (written + (int) _position > (int) _length)
+            if (written + _position >  _length)
             {
                 _length += written;
             }
