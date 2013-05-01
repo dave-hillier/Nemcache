@@ -29,7 +29,10 @@ The following commands from the [Memcached specification](https://raw.github.com
 
 Currently only TCP is supported including the noreply mode. 
 Flags support up-to 64 bit values, although this is a divergence from the original spec and therefore might not be supported by your client.
-Eviction works by evicting a random cache entry until the cache can insert the new value.
+Eviction works by evicting a random cache entry until the cache can insert the new value. 
+The cache is persisted to files so state can be maintained across cache restarts.
+
+
 
 An aim is to keep compatible with Memcached as a drop in replacement and also provide and embeddedable key value store for c#.
 
@@ -37,10 +40,10 @@ An aim is to keep compatible with Memcached as a drop in replacement and also pr
 To-do
 =====
 * Compacting to cache log.
-* Partitioning of the cache log.
 * Persistence for Cas and mutate commands
 * Performance testing and optimisation
 * Client API
+* Configuration
 
 Future
 ======
