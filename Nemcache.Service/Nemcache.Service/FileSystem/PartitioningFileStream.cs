@@ -3,6 +3,7 @@ using System.IO;
 
 namespace Nemcache.Service.FileSystem
 {
+    // TODO: is partitioning a good name?
     public class PartitioningFileStream : Stream
     {
         private readonly IFileSystem _fileSystem;
@@ -80,8 +81,8 @@ namespace Nemcache.Service.FileSystem
 
         private void AdvanceToNextFile()
         {
-            // TODO: do we need to flush?
-            //_currentStream.Flush();
+            if (_currentStream != null)
+                _currentStream.Close();
             var path = GetFileName(++_currentPartition);
             _currentStream = _fileSystem.File.Exists(path)
                                  ? _fileSystem.File.Open(path, FileMode.OpenOrCreate, _fileAccess)

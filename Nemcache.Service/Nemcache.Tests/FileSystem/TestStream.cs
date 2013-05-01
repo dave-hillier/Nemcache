@@ -29,12 +29,11 @@ namespace Nemcache.Tests.FileSystem
 
         public override int Read(byte[] buffer, int offset, int count)
         {
-            throw new System.NotImplementedException();
+            return 0;
         }
 
         public override void Write(byte[] buffer, int offset, int count)
         {
-            throw new System.NotImplementedException();
         }
 
         public override bool CanRead

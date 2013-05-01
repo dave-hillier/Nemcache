@@ -142,7 +142,6 @@ namespace Nemcache.Tests.FileSystem
         [TestMethod]
         public void WriteTwoFiles()
         {
-
             var memoryStream1 = new MemoryStream();
             var memoryStream2 = new MemoryStream();
             var fileSystem = new FakeFileSystem(memoryStream1, memoryStream2, null);
@@ -242,7 +241,6 @@ namespace Nemcache.Tests.FileSystem
             Assert.AreEqual(9, partitioningStream.Position);
         }
 
-
         [TestMethod]
         public void PositionAfterReadThenWrite()
         {
@@ -273,7 +271,6 @@ namespace Nemcache.Tests.FileSystem
             Assert.AreEqual(30, partitioningStream.Position);
         }
 
-        // TODO: overwriting length test (and other overwrite tests)
         [TestMethod]
         public void OverwriteDoesntChangeLength()
         {
@@ -285,5 +282,22 @@ namespace Nemcache.Tests.FileSystem
             partitioningStream.Write(new byte[5], 0, 5);
             Assert.AreEqual(20, partitioningStream.Length);
         }
+
+        [TestMethod]
+        public void FilesAreClosed()
+        {
+            var stream1 = new TestStream();
+            var memoryStream2 = new MemoryStream();
+            var fileSystem = new FakeFileSystem(stream1, memoryStream2, null);
+            var partitioningStream = new PartitioningFileStream(fileSystem, "FileName", "ext", 6, FileAccess.Write);
+
+            const string helloWorld = "Hello, World!";
+
+            var buffer = Encoding.ASCII.GetBytes(helloWorld);
+            partitioningStream.Write(buffer, 0, buffer.Length);
+
+            Assert.IsTrue(stream1.HasCalledClose);
+        }
+
     }
 }
