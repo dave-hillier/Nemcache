@@ -11,8 +11,11 @@ namespace Nemcache.Service.FileSystem
         private readonly int _partitionLength;
         private readonly FileAccess _fileAccess;
 
-        private int _currentPartition = 1;
+        private int _currentPartition = 0;
         private Stream _currentStream;
+        private long _length;
+        private long _position = 0;
+
 
         public PartitioningFileStream(IFileSystem fileSystem, 
             string filename, string ext, int partitionLength, FileAccess fileAccess)
@@ -23,8 +26,20 @@ namespace Nemcache.Service.FileSystem
             _partitionLength = partitionLength;
             _fileAccess = fileAccess;
 
-            _currentStream = _fileSystem.File.Open(
-                GetFileName(_currentPartition), FileMode.OpenOrCreate, _fileAccess);
+            AdvanceToNextFile();
+            CalculateLength();
+        }
+
+        private void CalculateLength()
+        {
+            _length = 0;
+            int i = 1;
+            var filename = GetFileName(i);
+            while (_fileSystem.File.Exists(filename))
+            {
+                _length += _fileSystem.File.Size(filename);
+                filename = GetFileName(++i);
+            }
         }
 
         private string GetFileName(int partition)
@@ -45,6 +60,7 @@ namespace Nemcache.Service.FileSystem
 
         public override void SetLength(long value)
         {
+            throw new NotImplementedException();
         }
 
         public override int Read(byte[] buffer, int offset, int count)
@@ -58,17 +74,19 @@ namespace Nemcache.Service.FileSystem
                     AdvanceToNextFile();
                 }
             }
+            _position += read;
             return read;
         }
 
         private void AdvanceToNextFile()
         {
+            // TODO: do we need to flush?
             //_currentStream.Flush();
-            // TODO: flush??
             var path = GetFileName(++_currentPartition);
             _currentStream = _fileSystem.File.Exists(path)
                                  ? _fileSystem.File.Open(path, FileMode.OpenOrCreate, _fileAccess)
                                  : null;
+
         }
 
         public override void Write(byte[] buffer, int offset, int count)
@@ -86,10 +104,15 @@ namespace Nemcache.Service.FileSystem
                 }
                 else
                 {
-                    _currentStream.Write(buffer, offset+written, count);
-                    written += count;
+                    _currentStream.Write(buffer, offset+written, remaining);
+                    written += remaining;
                 }
             }
+            if (written + (int) _position > (int) _length)
+            {
+                _length += written;
+            }
+            _position += written;
         }
 
         public override bool CanRead
@@ -107,22 +130,21 @@ namespace Nemcache.Service.FileSystem
             get { return _currentStream.CanWrite; }
         }
 
-        public override long Length
-        {
-            get { throw new NotImplementedException(); }
-        }
+        public override long Length { get { return _length; } }
 
         public override long Position
         {
-            get
-            {
-                throw new NotImplementedException();
-            }
+            get { return _position; }
 
             set
             {
                 throw new NotImplementedException();
             }
+        }
+        protected override void Dispose(bool disposing)
+        {
+            _currentStream.Dispose();
+            base.Dispose(disposing);
         }
     }
 }

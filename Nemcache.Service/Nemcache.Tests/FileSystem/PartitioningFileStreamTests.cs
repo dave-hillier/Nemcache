@@ -98,57 +98,6 @@ namespace Nemcache.Tests.FileSystem
             Assert.AreEqual("1234567890ab", Encoding.ASCII.GetString(buffer));
         }
 
-        class TestStream : Stream
-        {
-            public bool HasCalledFlush { get; private set; }
-            public override void Flush()
-            {
-                HasCalledFlush = true;
-            }
-
-            public override long Seek(long offset, SeekOrigin origin)
-            {
-                throw new System.NotImplementedException();
-            }
-
-            public override void SetLength(long value)
-            {
-                throw new System.NotImplementedException();
-            }
-
-            public override int Read(byte[] buffer, int offset, int count)
-            {
-                throw new System.NotImplementedException();
-            }
-
-            public override void Write(byte[] buffer, int offset, int count)
-            {
-                throw new System.NotImplementedException();
-            }
-
-            public override bool CanRead
-            {
-                get { throw new System.NotImplementedException(); }
-            }
-
-            public override bool CanSeek
-            {
-                get { throw new System.NotImplementedException(); }
-            }
-
-            public override bool CanWrite
-            {
-                get { throw new System.NotImplementedException(); }
-            }
-
-            public override long Length
-            {
-                get { throw new System.NotImplementedException(); }
-            }
-
-            public override long Position { get; set; }
-        }
-
         [TestMethod]
         public void FlushWillFlushInnerStream()
         {
@@ -161,6 +110,17 @@ namespace Nemcache.Tests.FileSystem
             Assert.IsTrue(stream.HasCalledFlush);
         }
 
+        [TestMethod]
+        public void DisposeWillCloseInnerStream()
+        {
+            var stream = new TestStream();
+            var fileSystem = new FakeFileSystem(stream, null, null);
+            var partitioningStream = new PartitioningFileStream(fileSystem, "FileName", "ext", 100, FileAccess.Read);
+
+            partitioningStream.Dispose();
+
+            Assert.IsTrue(stream.HasCalledClose);
+        }
         // TODO: check the filename for read
 
         [TestMethod]
@@ -197,6 +157,133 @@ namespace Nemcache.Tests.FileSystem
             Assert.AreEqual(helloWorld.Substring(0, 6), Encoding.ASCII.GetString(memoryStream1.ToArray()));
             Assert.AreEqual(helloWorld.Substring(6, 6), Encoding.ASCII.GetString(memoryStream2.ToArray()));
         }
-    
+
+        // TODO: Read then Write
+
+
+        // TODO: position (changes on read or write), length (only changes on write)
+
+        [TestMethod]
+        public void LengthZero()
+        {
+            var fileSystem = new FakeFileSystem(null, null, null);
+            var partitioningStream = new PartitioningFileStream(fileSystem, "FileName", "ext", 6, FileAccess.Write);
+
+            Assert.AreEqual(0, partitioningStream.Length);
+        }
+
+        [TestMethod]
+        public void Length()
+        {
+            var memoryStream1 = new MemoryStream(new byte[10]);
+            var memoryStream2 = new MemoryStream(new byte[10]);
+
+            var fileSystem = new FakeFileSystem(memoryStream1, memoryStream2, null);
+            var partitioningStream = new PartitioningFileStream(fileSystem, "FileName", "ext", 6, FileAccess.Write);
+
+            Assert.AreEqual(20, partitioningStream.Length);
+        }
+
+        [TestMethod]
+        public void ExpandLengthOneFile()
+        {
+            var memoryStream1 = new MemoryStream();
+            var memoryStream2 = new MemoryStream();
+
+            var fileSystem = new FakeFileSystem(memoryStream1, memoryStream2, null);
+            var partitioningStream = new PartitioningFileStream(fileSystem, "FileName", "ext", 10, FileAccess.Write);
+            partitioningStream.Write(new byte[20], 0, 5);
+            Assert.AreEqual(5, partitioningStream.Length);
+        }
+
+        [TestMethod]
+        public void ExpandLengthTwoFiles()
+        {
+            var memoryStream1 = new MemoryStream();
+            var memoryStream2 = new MemoryStream();
+
+            var fileSystem = new FakeFileSystem(memoryStream1, memoryStream2, null);
+            var partitioningStream = new PartitioningFileStream(fileSystem, "FileName", "ext", 10, FileAccess.Write);
+            partitioningStream.Write(new byte[20], 0, 15);
+            Assert.AreEqual(15, partitioningStream.Length);
+        }
+
+        [TestMethod]
+        public void StartPosition()
+        {
+            var fileSystem = new FakeFileSystem(null, null, null);
+            var partitioningStream = new PartitioningFileStream(fileSystem, "FileName", "ext", 6, FileAccess.Write);
+
+            Assert.AreEqual(0, partitioningStream.Position);
+        }
+
+        [TestMethod]
+        public void PositionAfterRead()
+        {
+            var memoryStream1 = new MemoryStream(new byte[10]);
+
+            var fileSystem = new FakeFileSystem(memoryStream1, null, null);
+            var partitioningStream = new PartitioningFileStream(fileSystem, "FileName", "ext", 6, FileAccess.Write);
+            var buffer = new byte[9];
+            partitioningStream.Read(buffer, 0, 9);
+            Assert.AreEqual(9, partitioningStream.Position);
+        }
+
+        [TestMethod]
+        public void PositionAfterWrite()
+        {
+            var memoryStream1 = new MemoryStream();
+
+            var fileSystem = new FakeFileSystem(memoryStream1, null, null);
+            var partitioningStream = new PartitioningFileStream(fileSystem, "FileName", "ext", 10, FileAccess.Write);
+        
+            var buffer = new byte[9];
+            partitioningStream.Write(buffer, 0, 9);
+            Assert.AreEqual(9, partitioningStream.Position);
+        }
+
+
+        [TestMethod]
+        public void PositionAfterReadThenWrite()
+        {
+            var memoryStream1 = new MemoryStream(new byte[20]);
+            var memoryStream2 = new MemoryStream();
+
+            var fileSystem = new FakeFileSystem(memoryStream1, memoryStream2, null);
+            var partitioningStream = new PartitioningFileStream(fileSystem, "FileName", "ext", 20, FileAccess.Write);
+
+            var buffer = new byte[9];
+            partitioningStream.Read(buffer, 0, 4);
+            partitioningStream.Write(buffer, 0, 9);
+            Assert.AreEqual(13, partitioningStream.Position);
+        }
+
+        [TestMethod]
+        public void PositionAfterReadThenWriteIntoSecondFile()
+        {
+            var memoryStream1 = new MemoryStream(new byte[20]);
+            var memoryStream2 = new MemoryStream(new byte[20]);
+
+            var fileSystem = new FakeFileSystem(memoryStream1, memoryStream2, null);
+            var partitioningStream = new PartitioningFileStream(fileSystem, "FileName", "ext", 20, FileAccess.Write);
+
+            var buffer = new byte[40];
+            partitioningStream.Read(buffer, 0, 20);
+            partitioningStream.Write(buffer, 0, 10);
+            Assert.AreEqual(30, partitioningStream.Position);
+        }
+
+        // TODO: overwriting length test (and other overwrite tests)
+        [TestMethod]
+        public void OverwriteDoesntChangeLength()
+        {
+            var memoryStream1 = new MemoryStream(new byte[10]);
+            var memoryStream2 = new MemoryStream(new byte[10]);
+
+            var fileSystem = new FakeFileSystem(memoryStream1, memoryStream2, null);
+            var partitioningStream = new PartitioningFileStream(fileSystem, "FileName", "ext", 6, FileAccess.Write);
+            partitioningStream.Write(new byte[5], 0, 5);
+            Assert.AreEqual(20, partitioningStream.Length);
+        }
     }
 }

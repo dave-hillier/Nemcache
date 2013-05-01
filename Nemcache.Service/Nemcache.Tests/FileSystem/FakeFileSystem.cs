@@ -31,12 +31,19 @@ namespace Nemcache.Tests.FileSystem
                     return _stream1;
                 if (path.Contains(".2."))
                     return _stream2;
-                return _stream3;
+                if (path.Contains(".3."))
+                    return _stream3;
+                return null;
             }
 
             public bool Exists(string path)
             {
                 return Open(path, FileMode.Open, FileAccess.Read) != null;
+            }
+
+            public long Size(string path)
+            {
+                return Open(path, FileMode.Open, FileAccess.Read).Length;
             }
         }
     }

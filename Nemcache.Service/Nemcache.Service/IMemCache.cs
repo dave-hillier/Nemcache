@@ -6,8 +6,8 @@ namespace Nemcache.Service
 {
     internal interface IMemCache
     {
-        int Capacity { get; set; }
-        int Used { get; }
+        ulong Capacity { get; set; }
+        ulong Used { get; }
 
         IEnumerable<string> Keys { get; }
 

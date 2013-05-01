@@ -2,6 +2,7 @@
 using System.IO;
 using System.Net;
 using System.Reactive.Concurrency;
+using Nemcache.Service.FileSystem;
 using Topshelf;
 
 namespace Nemcache.Service
@@ -11,7 +12,7 @@ namespace Nemcache.Service
         private static void Main()
         {
             var capacitySetting = ConfigurationManager.AppSettings["Capacity"];
-            int capacity = capacitySetting != null ? int.Parse(capacitySetting) : 1024 * 1024 * 100;
+            ulong capacity = capacitySetting != null ? ulong.Parse(capacitySetting) : 1024l * 1024l * 1024l * 4; // 4GB
 
             var portSetting = ConfigurationManager.AppSettings["Port"];
             uint port = portSetting != null ? uint.Parse(portSetting) : 11222;
@@ -41,8 +42,9 @@ namespace Nemcache.Service
             private readonly MemCache _memCache;
             private StreamArchiver _archiver;
             private readonly string _cacheFileName;
+            private const int _partitionSize = 512*1024*1024;
 
-            public Service(int capacity, uint port, string cacheFileName)
+            public Service(ulong capacity, uint port, string cacheFileName)
             {
                 _cacheFileName = cacheFileName;
                 _memCache = new MemCache(capacity);
@@ -50,23 +52,18 @@ namespace Nemcache.Service
                 _server = new RequestResponseTcpServer(IPAddress.Any, port, requestHandler.Dispatch); 
             }
 
-            private static void RestoreCache(string cacheFileName, MemCache memCache)
-            {
-                using (var file = File.OpenRead(cacheFileName))
-                {
-                    StreamArchiver.Restore(file, memCache);
-                }
-            }
-
             public void Start()
             {
-                if (File.Exists(_cacheFileName))
-                {
-                    RestoreCache(_cacheFileName, _memCache);
-                }
+                var file = new PartitioningFileStream(
+                    new FileSystemWrapper(),
+                    Path.GetFileNameWithoutExtension(_cacheFileName),
+                    Path.GetExtension(_cacheFileName), _partitionSize, FileAccess.ReadWrite);
 
+                // TODO: Can Read?
+                //StreamArchiver.Restore(file, _memCache);
+                
                 // Subscribing after restore has the effect of compacting the cache.
-                _archiver = new StreamArchiver(File.OpenWrite(_cacheFileName), _memCache.Notifications);
+                _archiver = new StreamArchiver(file, _memCache.Notifications);
                 
                 _server.Start();
             }

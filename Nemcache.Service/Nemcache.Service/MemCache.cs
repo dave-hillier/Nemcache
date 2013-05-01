@@ -24,7 +24,7 @@ namespace Nemcache.Service
         private readonly Subject<ICacheNotification> _notificationsSubject;
         private int _currentSequenceId;
 
-        public MemCache(int capacity)
+        public MemCache(ulong capacity)
         {
             Capacity = capacity;
             _notificationsSubject = new Subject<ICacheNotification>();
@@ -34,11 +34,11 @@ namespace Nemcache.Service
             _cacheObserver = lruStrategy;
         }
 
-        public int Capacity { get; set; }
+        public ulong Capacity { get; set; }
 
-        public int Used
+        public ulong Used
         {
-            get { return _cache.Values.Select(e => e.Data.Length).Sum(); }
+            get { return (ulong)_cache.Values.Select(e => (long)e.Data.Length).Sum(); }
         }
 
         public void Clear()
@@ -293,13 +293,13 @@ namespace Nemcache.Service
 
         public void MakeSpaceForNewEntry(int length)
         {
-            while (!HasAvailableSpace(length))
+            while (!HasAvailableSpace((ulong)length))
             {
                 _evictionStrategy.EvictEntry();
             }
         }
 
-        private bool HasAvailableSpace(int length)
+        private bool HasAvailableSpace(ulong length)
         {
             return Capacity >= Used + length;
         }

@@ -7,5 +7,6 @@ namespace Nemcache.Service.FileSystem
         Stream Open(string path, FileMode mode, FileAccess access);
 
         bool Exists(string path);
+        long Size(string filename);
     }
 }

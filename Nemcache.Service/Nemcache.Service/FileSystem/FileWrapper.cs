@@ -13,5 +13,11 @@ namespace Nemcache.Service.FileSystem
         {
             return File.Exists(path);
         }
+
+        public long Size(string filename)
+        {
+            var info = new FileInfo(filename);
+            return info.Length;
+        }
     }
 }

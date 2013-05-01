@@ -126,7 +126,7 @@ namespace Nemcache.Service
 
         private byte[] Store(string commandName, string key, ulong flags, DateTime exptime, byte[] data)
         {
-            if (data.Length > _cache.Capacity)
+            if ((ulong)data.Length > _cache.Capacity)
             {
                 return Encoding.ASCII.GetBytes("ERROR Over capacity\r\n");
             }
