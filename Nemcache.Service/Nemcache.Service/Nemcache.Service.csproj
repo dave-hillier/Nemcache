@@ -61,20 +61,20 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="FileSystem\LogFileNameGenerator.cs" />
+    <Compile Include="IO\LogFileNameGenerator.cs" />
     <Compile Include="Manager.cs" />
     <Compile Include="Reactive\ObservableRateLimitExtension.cs" />
     <Compile Include="Reactive\CombineCurrentStateWithUpdatesExtension.cs" />
     <Compile Include="ConcurrentDictionaryExtensions.cs" />
     <Compile Include="Eviction\IEvictionStrategy.cs" />
-    <Compile Include="FileSystem\FileSystemWrapper.cs" />
-    <Compile Include="FileSystem\FileWrapper.cs" />
+    <Compile Include="IO\FileSystemWrapper.cs" />
+    <Compile Include="IO\FileWrapper.cs" />
     <Compile Include="ICacheObserver.cs" />
-    <Compile Include="FileSystem\IFile.cs" />
-    <Compile Include="FileSystem\IFileSystem.cs" />
+    <Compile Include="IO\IFile.cs" />
+    <Compile Include="IO\IFileSystem.cs" />
     <Compile Include="IMemCache.cs" />
     <Compile Include="Eviction\LRUEvictionStrategy.cs" />
-    <Compile Include="FileSystem\PartitioningFileStream.cs" />
+    <Compile Include="IO\PartitioningFileStream.cs" />
     <Compile Include="Service.cs" />
     <Compile Include="StreamArchiver.cs" />
     <Compile Include="MemCache.cs" />

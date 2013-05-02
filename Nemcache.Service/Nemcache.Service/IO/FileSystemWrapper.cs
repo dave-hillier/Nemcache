@@ -1,4 +1,4 @@
-﻿namespace Nemcache.Service.FileSystem
+﻿namespace Nemcache.Service.IO
 {
     class FileSystemWrapper : IFileSystem
     {

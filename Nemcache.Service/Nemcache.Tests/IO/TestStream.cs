@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace Nemcache.Tests.FileSystem
+namespace Nemcache.Tests.IO
 {
     class TestStream : Stream
     {

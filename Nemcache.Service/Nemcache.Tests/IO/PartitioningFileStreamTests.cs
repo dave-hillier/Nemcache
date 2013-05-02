@@ -1,9 +1,9 @@
 ﻿using System.IO;
 using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Nemcache.Service.FileSystem;
+using Nemcache.Service.IO;
 
-namespace Nemcache.Tests.FileSystem
+namespace Nemcache.Tests.IO
 {
     [TestClass]
     public class PartitioningFileStreamTests

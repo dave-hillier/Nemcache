@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Nemcache.Service.FileSystem
+namespace Nemcache.Service.IO
 {
     internal class LogFileNameGenerator
     {

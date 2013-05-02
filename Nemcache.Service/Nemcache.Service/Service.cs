@@ -4,7 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
-using Nemcache.Service.FileSystem;
+using Nemcache.Service.IO;
 using Nemcache.Service.Notifications;
 
 namespace Nemcache.Service
@@ -117,7 +117,7 @@ namespace Nemcache.Service
         public void Stop()
         {
             _server.Stop();
-            _archiver.Dispose();
+            DisposeCurrentArchiver();
         }
     }
 }

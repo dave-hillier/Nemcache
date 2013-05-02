@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace Nemcache.Service.FileSystem
+namespace Nemcache.Service.IO
 {
     // TODO: is partitioning a good name?
     public class PartitioningFileStream : Stream

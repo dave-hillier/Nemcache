@@ -1,6 +1,6 @@
 using System.IO;
 using Nemcache.Service;
-using Nemcache.Service.FileSystem;
+using Nemcache.Service.IO;
 
 static internal class Manager
 {

@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace Nemcache.Service.FileSystem
+namespace Nemcache.Service.IO
 {
     public interface IFile
     {

@@ -1,7 +1,7 @@
 ﻿using System.IO;
-using Nemcache.Service.FileSystem;
+using Nemcache.Service.IO;
 
-namespace Nemcache.Tests.FileSystem
+namespace Nemcache.Tests.IO
 {
     public class FakeFileSystem : IFileSystem
     {
