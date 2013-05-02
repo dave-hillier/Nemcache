@@ -75,6 +75,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="CompacterTests.cs" />
     <Compile Include="FileSystem\TestStream.cs" />
     <Compile Include="Reactive\CombineCurrentStateWithUpdatesTests.cs" />
     <Compile Include="Eviction\LRUEvictionTests.cs" />

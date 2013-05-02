@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace Nemcache.Service.FileSystem
 {
@@ -7,23 +9,20 @@ namespace Nemcache.Service.FileSystem
     public class PartitioningFileStream : Stream
     {
         private readonly IFileSystem _fileSystem;
-        private readonly string _filename;
-        private readonly string _ext;
         private readonly uint _partitionLength;
         private readonly FileAccess _fileAccess;
-
-        private int _currentPartition = 0;
         private Stream _currentStream;
         private long _length;
         private long _position = 0;
-
+        private readonly LogFileNameGenerator _logFileNameGenerator;
+        private readonly IEnumerator<string> _enumerator;
 
         public PartitioningFileStream(IFileSystem fileSystem, 
             string filename, string ext, uint partitionLength, FileAccess fileAccess)
         {
             _fileSystem = fileSystem;
-            _filename = filename;
-            _ext = ext;
+            _logFileNameGenerator = new LogFileNameGenerator(filename, ext);
+            _enumerator = _logFileNameGenerator.GetNextFileName().GetEnumerator();
             _partitionLength = partitionLength;
             _fileAccess = fileAccess;
 
@@ -33,19 +32,17 @@ namespace Nemcache.Service.FileSystem
 
         private void CalculateLength()
         {
-            _length = 0;
-            int i = 1;
-            var filename = GetFileName(i);
-            while (_fileSystem.File.Exists(filename))
-            {
-                _length += _fileSystem.File.Size(filename);
-                filename = GetFileName(++i);
-            }
+            _length = ExistingLogFiles.Sum(fn => _fileSystem.File.Size(fn));
         }
 
-        private string GetFileName(int partition)
+        private IEnumerable<string> ExistingLogFiles
         {
-            return string.Format("{0}.{1}.{2}", _filename, partition, _ext);
+            get 
+            { 
+                return _logFileNameGenerator.
+                    GetNextFileName().
+                    TakeWhile(fn => _fileSystem.File.Exists(fn)); 
+            }
         }
 
         public override void Flush()
@@ -56,12 +53,12 @@ namespace Nemcache.Service.FileSystem
 
         public override long Seek(long offset, SeekOrigin origin)
         {
-            throw new NotImplementedException();
+            throw new InvalidOperationException();
         }
 
         public override void SetLength(long value)
         {
-            throw new NotImplementedException();
+            throw new InvalidOperationException();
         }
 
         public override int Read(byte[] buffer, int offset, int count)
@@ -70,7 +67,7 @@ namespace Nemcache.Service.FileSystem
             while (read != count && _currentStream != null)
             {
                 read += _currentStream.Read(buffer, read + offset, count - read);
-                if (_currentStream.Length == _currentStream.Position)
+                if (EndOfCurrentStream)
                 {
                     AdvanceToNextFile();
                 }
@@ -79,15 +76,29 @@ namespace Nemcache.Service.FileSystem
             return read;
         }
 
+        private bool EndOfCurrentStream
+        {
+            get { return _currentStream.Length == _currentStream.Position; }
+        }
+
         private void AdvanceToNextFile()
+        {
+            CloseCurrentStream();
+            var path = GetNextFileName();
+            _currentStream = _fileSystem.File.Open(path, FileMode.OpenOrCreate, _fileAccess);
+
+        }
+
+        private void CloseCurrentStream()
         {
             if (_currentStream != null)
                 _currentStream.Close();
-            var path = GetFileName(++_currentPartition);
-            _currentStream = _fileSystem.File.Exists(path)
-                                 ? _fileSystem.File.Open(path, FileMode.OpenOrCreate, _fileAccess)
-                                 : null;
+        }
 
+        private string GetNextFileName()
+        {
+            _enumerator.MoveNext();
+            return _enumerator.Current;
         }
 
         public override void Write(byte[] buffer, int offset, int count)
@@ -123,7 +134,7 @@ namespace Nemcache.Service.FileSystem
 
         public override bool CanSeek
         {
-            get { throw new NotImplementedException(); }
+            get { return false; }
         }
 
         public override bool CanWrite
@@ -139,12 +150,12 @@ namespace Nemcache.Service.FileSystem
 
             set
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException();
             }
         }
         protected override void Dispose(bool disposing)
         {
-            _currentStream.Dispose();
+            CloseCurrentStream(); 
             base.Dispose(disposing);
         }
     }

@@ -22,7 +22,6 @@ namespace Nemcache.Service
             var partitionSizeSetting = ConfigurationManager.AppSettings["Port"];
             uint partitionSize = partitionSizeSetting != null ? uint.Parse(partitionSizeSetting) : 512 * 1024 * 1024;
 
-            
             HostFactory.Run(hc =>
                 {
                     hc.Service<Service>(s =>
@@ -59,15 +58,24 @@ namespace Nemcache.Service
 
             public void Start()
             {
-                var file = new PartitioningFileStream(
+                // TODO: check for existance?
+                using (var existingLog = new PartitioningFileStream(
                     new FileSystemWrapper(),
                     Path.GetFileNameWithoutExtension(_cacheFileName),
-                    Path.GetExtension(_cacheFileName), _partitionSize, FileAccess.ReadWrite);
+                    Path.GetExtension(_cacheFileName), _partitionSize, FileAccess.Read))
+                {
+                    StreamArchiver.Restore(existingLog, _memCache);                    
+                }
 
-                StreamArchiver.Restore(file, _memCache);
-                
+                // TODO: clean up old files
+
+                var newLog = new PartitioningFileStream(
+                    new FileSystemWrapper(),
+                    Path.GetFileNameWithoutExtension(_cacheFileName),
+                    Path.GetExtension(_cacheFileName), _partitionSize, FileAccess.Read);
+
                 // Subscribing after restore has the effect of compacting the cache.
-                _archiver = new StreamArchiver(file, _memCache.Notifications);
+                _archiver = new StreamArchiver(newLog, _memCache.Notifications);
                 
                 _server.Start();
             }
