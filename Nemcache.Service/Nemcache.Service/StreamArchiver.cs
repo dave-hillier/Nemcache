@@ -10,6 +10,7 @@ namespace Nemcache.Service
 {
     // TODO: add handling for large streams
     // TODO: add compacting
+    // TODO: extract the observer
     class StreamArchiver : IDisposable
     {
         [ProtoContract]

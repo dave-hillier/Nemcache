@@ -23,11 +23,13 @@ namespace Nemcache.Service
         private readonly IEvictionStrategy _evictionStrategy;
         private readonly Subject<ICacheNotification> _notificationsSubject;
         private int _currentSequenceId;
+        private readonly IObservable<ICacheNotification> _combinedNotifications;
 
         public MemCache(ulong capacity)
         {
             Capacity = capacity;
             _notificationsSubject = new Subject<ICacheNotification>();
+            _combinedNotifications = Observable.Defer(CreateNotifications);
 
             var lruStrategy = new LRUEvictionStrategy(this);
             _evictionStrategy = lruStrategy;
@@ -266,7 +268,7 @@ namespace Nemcache.Service
 
         public IObservable<ICacheNotification> Notifications
         {
-            get { return CreateNotifications(); }
+            get { return _combinedNotifications; }
         }
 
         public IEnumerable<string> Keys { get { return _cache.Keys; } }

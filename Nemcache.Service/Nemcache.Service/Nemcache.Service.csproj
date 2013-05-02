@@ -62,6 +62,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="FileSystem\LogFileNameGenerator.cs" />
+    <Compile Include="Manager.cs" />
     <Compile Include="Reactive\CombineCurrentStateWithUpdatesExtension.cs" />
     <Compile Include="ConcurrentDictionaryExtensions.cs" />
     <Compile Include="Eviction\IEvictionStrategy.cs" />
@@ -73,6 +74,7 @@
     <Compile Include="IMemCache.cs" />
     <Compile Include="Eviction\LRUEvictionStrategy.cs" />
     <Compile Include="FileSystem\PartitioningFileStream.cs" />
+    <Compile Include="Service.cs" />
     <Compile Include="StreamArchiver.cs" />
     <Compile Include="MemCache.cs" />
     <Compile Include="Eviction\NullEvictionStrategy.cs" />
