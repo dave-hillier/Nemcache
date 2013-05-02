@@ -45,6 +45,11 @@ namespace Nemcache.Tests.FileSystem
             {
                 return Open(path, FileMode.Open, FileAccess.Read).Length;
             }
+
+            public void Delete(string path)
+            {
+                   
+            }
         }
     }
 }

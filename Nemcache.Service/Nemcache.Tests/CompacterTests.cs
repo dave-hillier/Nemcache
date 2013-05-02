@@ -8,7 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Nemcache.Tests
 {
     [TestClass]
-    class CompacterTests
+    class CompacterTests 
     {
         [TestMethod]
         public void Test()

@@ -8,5 +8,6 @@ namespace Nemcache.Service.FileSystem
 
         bool Exists(string path);
         long Size(string filename);
+        void Delete(string path);
     }
 }

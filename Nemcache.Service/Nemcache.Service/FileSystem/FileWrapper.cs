@@ -19,5 +19,10 @@ namespace Nemcache.Service.FileSystem
             var info = new FileInfo(filename);
             return info.Length;
         }
+
+        public void Delete(string path)
+        {
+            File.Delete(path);
+        }
     }
 }
