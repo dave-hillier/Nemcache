@@ -75,14 +75,13 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="CompacterTests.cs" />
     <Compile Include="FileSystem\TestStream.cs" />
     <Compile Include="Reactive\CombineCurrentStateWithUpdatesTests.cs" />
     <Compile Include="Eviction\LRUEvictionTests.cs" />
     <Compile Include="Eviction\NullEvictionTests.cs" />
     <Compile Include="Eviction\RandomEvictionTests.cs" />
     <Compile Include="FileSystem\FakeFileSystem.cs" />
-    <Compile Include="NotifcationsTest.cs" />
+    <Compile Include="MemcacheNotifcationsTest.cs" />
     <Compile Include="FileSystem\PartitioningFileStreamTests.cs" />
     <Compile Include="RequestHandlerIntegrationTests\AddTest.cs" />
     <Compile Include="RequestHandlerIntegrationTests\AppendTests.cs" />

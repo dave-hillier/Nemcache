@@ -8,7 +8,7 @@ using Nemcache.Service.Notifications;
 namespace Nemcache.Tests
 {
     [TestClass]
-    public class NotifcationsTest : ReactiveTest
+    public class MemcacheNotifcationsTest : ReactiveTest
     {
         private MemCache _cache;
         private TestScheduler _testScheduler;

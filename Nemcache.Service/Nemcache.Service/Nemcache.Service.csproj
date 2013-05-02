@@ -63,6 +63,7 @@
   <ItemGroup>
     <Compile Include="FileSystem\LogFileNameGenerator.cs" />
     <Compile Include="Manager.cs" />
+    <Compile Include="Reactive\ObservableRateLimitExtension.cs" />
     <Compile Include="Reactive\CombineCurrentStateWithUpdatesExtension.cs" />
     <Compile Include="ConcurrentDictionaryExtensions.cs" />
     <Compile Include="Eviction\IEvictionStrategy.cs" />
@@ -90,6 +91,7 @@
     <Compile Include="RequestResponseTcpServer.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Reactive\WriteThresholdNotification.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

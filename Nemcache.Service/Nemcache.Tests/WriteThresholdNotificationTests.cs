@@ -5,53 +5,14 @@ using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using Microsoft.Reactive.Testing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Nemcache.Service;
 
 namespace Nemcache.Tests
 {
-    static class ReactiveExt
-    {
-        public static IObservable<T> MySample<T>(this IObservable<T> observable, TimeSpan minInterval, IScheduler scheduler)
-        {
-            DateTimeOffset lastUpdate = DateTimeOffset.MinValue;
-            return Observable.Create<T>(obs => observable.Subscribe(s =>
-                {
-                    var now = scheduler.Now;
-                    if (now - lastUpdate > minInterval)
-                    {
-                        obs.OnNext(s);
-                        lastUpdate = now;
-                    }
-                }, obs.OnError, obs.OnCompleted));
-        }
-    }
+
     [TestClass]
     public class WriteThresholdNotificationTests : ReactiveTest
     {
-        class WriteThresholdNotification
-        {
-            private readonly long _writeThreshold;
-            private readonly TimeSpan _minInterval;
-
-            public WriteThresholdNotification(long writeThreshold, TimeSpan minInterval)
-            {
-                _writeThreshold = writeThreshold;
-                _minInterval = minInterval;
-            }
-
-            public IObservable<Unit> Create(IObservable<long> logWriteNotifications, IScheduler scheduler)
-            {
-                var writesAccumulatedOverThresholdNotifications = logWriteNotifications.
-                    Scan(0L, (writeAcc, newWrite) => writeAcc + newWrite).
-                    Where(writeAcc => writeAcc > _writeThreshold).
-                    Take(1).
-                    Repeat();
-
-                return writesAccumulatedOverThresholdNotifications.
-                    MySample(_minInterval, scheduler).
-                    Select(_ => new Unit());
-
-            }
-        }
         [TestMethod]
         public void NoWritesNoCompacts()
         {
