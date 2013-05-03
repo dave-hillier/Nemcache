@@ -11,7 +11,7 @@ namespace Nemcache.Service
 
         IEnumerable<string> Keys { get; }
 
-        IEnumerable<KeyValuePair<string, MemCache.CacheEntry>> Retrieve(IEnumerable<string> keys);
+        IEnumerable<KeyValuePair<string, CacheEntry>> Retrieve(IEnumerable<string> keys);
 
         bool Store(string key, ulong flags, DateTime exptime, byte[] data);
 

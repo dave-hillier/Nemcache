@@ -61,6 +61,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CacheEntry.cs" />
     <Compile Include="IO\LogFileNameGenerator.cs" />
     <Compile Include="Manager.cs" />
     <Compile Include="Reactive\ObservableRateLimitExtension.cs" />
@@ -75,6 +76,7 @@
     <Compile Include="IMemCache.cs" />
     <Compile Include="Eviction\LRUEvictionStrategy.cs" />
     <Compile Include="IO\PartitioningFileStream.cs" />
+    <Compile Include="Reactive\ThresholdExtension.cs" />
     <Compile Include="Service.cs" />
     <Compile Include="StreamArchiver.cs" />
     <Compile Include="MemCache.cs" />

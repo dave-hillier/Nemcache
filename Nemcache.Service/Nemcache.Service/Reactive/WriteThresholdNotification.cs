@@ -5,6 +5,7 @@ using System.Reactive.Linq;
 
 namespace Nemcache.Service.Reactive
 {
+
     class WriteThresholdNotification
     {
         private readonly long _writeThreshold;
@@ -18,17 +19,13 @@ namespace Nemcache.Service.Reactive
             _scheduler = scheduler;
         }
 
-        public IObservable<Unit> Create(IObservable<long> logWriteNotifications)
+        public IObservable<Unit> Create(IObservable<long> notifications)
         {
-            var writesAccumulatedOverThresholdNotifications = logWriteNotifications.
-                Scan(0L, (writeAcc, newWrite) => writeAcc + newWrite).
-                Where(writeAcc => writeAcc > _writeThreshold).
-                Take(1).
-                Repeat();
-
-            return writesAccumulatedOverThresholdNotifications.
-                RateLimit(_minInterval, _scheduler).
-                Select(_ => new Unit());
+            return notifications.ThresholdReached(_writeThreshold).
+                                 Repeat().
+                                 RateLimit(_minInterval, _scheduler);
         }
+
+
     }
 }

@@ -21,7 +21,7 @@ namespace Nemcache.Service
         private StreamArchiver _archiver;
         private IDisposable _archiverSubscription;
         private bool _cleanUpDue;
-        private IDisposable _cleanUpSubscription;
+        private readonly IDisposable _cleanUpSubscription;
 
         public Service(ulong capacity, uint port, string cacheFileName, uint partitionSize)
         {
@@ -33,18 +33,18 @@ namespace Nemcache.Service
             _server = new RequestResponseTcpServer(IPAddress.Any, port, requestHandler.Dispatch);
             _fileSystem = new FileSystemWrapper();
 
-            // TODO: not entirely happy with this api- its a bit inconsistent. do I use extensions or Factory or normal methods.
+            // TODO: Should this be an extension method? 
             var writeThresholdNotification = new WriteThresholdNotification(
                 _partitionSize * 10, TimeSpan.FromMinutes(1), Scheduler.Default);
 
+            // TODO: perhaps a cache notifications interface?
             var notifications = _memCache.Notifications.Publish().RefCount();
 
-            var logWriteNotifications = WriteNotifications(notifications);
-            var snapshotCompleted = SnapshotCompleted(notifications);
+            var logWriteNotifications = WriteNotifications(notifications); // TODO: Should probably really subscribe to file writes
+            var snapshotCompleted = SnapshotCompleted(notifications); // TODO: does this need to subscribe to the archiver rather than the cache?
+            _cleanUpSubscription = snapshotCompleted.Where(_ => _cleanUpDue).Subscribe(_ => CleanUpOldLog()); 
 
-            _cleanUpSubscription = snapshotCompleted.Where(_ => _cleanUpDue).Subscribe(_ => CleanUpOldLog());
-            writeThresholdNotification.Create(logWriteNotifications).
-                Subscribe(_ => DoCompact());
+            writeThresholdNotification.Create(logWriteNotifications).Subscribe(_ => DoCompact());
         }
 
         private string LogFileNameExtension
@@ -139,11 +139,11 @@ namespace Nemcache.Service
             _cleanUpDue = false;
         }
 
-
         public void Stop()
         {
             _server.Stop();
             DisposeCurrentArchiver();
+            _cleanUpSubscription.Dispose();
         }
     }
 }

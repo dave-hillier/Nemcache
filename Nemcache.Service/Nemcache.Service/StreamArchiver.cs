@@ -24,7 +24,6 @@ namespace Nemcache.Service
             public RemoveNotification Remove { get; set; }
 
         }
-
         
         private readonly Stream _outputStream;
 
