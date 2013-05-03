@@ -5,7 +5,6 @@ using System.Linq;
 
 namespace Nemcache.Service.IO
 {
-    // TODO: is partitioning a good name?
     public class PartitioningFileStream : Stream
     {
         private readonly IFileSystem _fileSystem;
@@ -13,7 +12,7 @@ namespace Nemcache.Service.IO
         private readonly FileAccess _fileAccess;
         private Stream _currentStream;
         private long _length;
-        private long _position = 0;
+        private long _position;
         private readonly LogFileNameGenerator _logFileNameGenerator;
         private readonly IEnumerator<string> _enumerator;
 
@@ -106,7 +105,7 @@ namespace Nemcache.Service.IO
             int written = 0;
             while (written < count && _currentStream != null)
             {
-                int space = (int)(_partitionLength - _currentStream.Position);
+                var space = (int)(_partitionLength - _currentStream.Position);
                 int remaining = count - written;
                 if (remaining > space)
                 {

@@ -1,13 +1,11 @@
 ﻿using System;
-using System.Linq;
 using System.Reactive;
-using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using Microsoft.Reactive.Testing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Nemcache.Service;
+using Nemcache.Service.Reactive;
 
-namespace Nemcache.Tests
+namespace Nemcache.Tests.Reactive
 {
 
     [TestClass]
@@ -18,9 +16,9 @@ namespace Nemcache.Tests
         {
             var testScheduler = new TestScheduler();
             var results = testScheduler.CreateObserver<Unit>();
-            var factory = new WriteThresholdNotification(1, TimeSpan.FromTicks(100));
+            var factory = new WriteThresholdNotification(1, TimeSpan.FromTicks(100), testScheduler);
 
-            var observable = factory.Create(Observable.Never<long>(), testScheduler);
+            var observable = factory.Create(Observable.Never<long>());
             observable.Subscribe(results);
             testScheduler.AdvanceBy(1000);
 
@@ -34,11 +32,11 @@ namespace Nemcache.Tests
             var results = testScheduler.CreateObserver<Unit>();
 
             var logWriteNotifications = testScheduler.CreateHotObservable(OnNext(1u, 99L));
-            var threshold = 100;
-            var factory = new WriteThresholdNotification(threshold, TimeSpan.FromTicks(100));
+            const long threshold = 100;
+            var factory = new WriteThresholdNotification(threshold, TimeSpan.FromTicks(100), testScheduler);
 
 
-            var observable = factory.Create(logWriteNotifications, testScheduler);
+            var observable = factory.Create(logWriteNotifications);
             observable.Subscribe(results);
             testScheduler.AdvanceBy(1000);
 
@@ -56,11 +54,10 @@ namespace Nemcache.Tests
                 OnNext(101, 101L),
                 OnNext(102, 101L)
                 );
-            var threshold = 200;
-            var factory = new WriteThresholdNotification(threshold, TimeSpan.FromTicks(3));
+            const int threshold = 200;
+            var factory = new WriteThresholdNotification(threshold, TimeSpan.FromTicks(3), testScheduler);
 
-
-            var observable = factory.Create(logWriteNotifications, testScheduler);
+            var observable = factory.Create(logWriteNotifications);
 
             observable.Subscribe(results);
             testScheduler.AdvanceBy(103);
@@ -80,11 +77,11 @@ namespace Nemcache.Tests
                 OnNext(103, 1L),
                 OnNext(104, 1L)
                 );
-            var threshold = 1;
-            var factory = new WriteThresholdNotification(threshold, TimeSpan.FromTicks(8));
+            const int threshold = 1;
+            var factory = new WriteThresholdNotification(threshold, TimeSpan.FromTicks(8), testScheduler);
 
 
-            var observable = factory.Create(logWriteNotifications, testScheduler);
+            var observable = factory.Create(logWriteNotifications);
             observable.Subscribe(results);
             testScheduler.AdvanceTo(1000);
 
@@ -103,10 +100,10 @@ namespace Nemcache.Tests
                 OnNext(301, 1L),
                 OnNext(302, 1L)
                 );
-            var threshold = 1;
-            var factory = new WriteThresholdNotification(threshold, TimeSpan.FromTicks(99));
+            const int threshold = 1;
+            var factory = new WriteThresholdNotification(threshold, TimeSpan.FromTicks(99), testScheduler);
 
-            var observable = factory.Create(logWriteNotifications, testScheduler);
+            var observable = factory.Create(logWriteNotifications);
             observable.Subscribe(results);
             testScheduler.AdvanceBy(500);
 

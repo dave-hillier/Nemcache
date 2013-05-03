@@ -21,9 +21,11 @@ namespace Nemcache.Tests
         [TestInitialize]
         public void Setup()
         {
+            // TODO: test the archiver without a cache
             _originalCache = new MemCache(1000);
             _outputStream = new MemoryStream();
-            _streamArchiver = new StreamArchiver(_outputStream, _originalCache.Notifications);
+            _streamArchiver = new StreamArchiver(_outputStream);
+            _originalCache.Notifications.Subscribe(_streamArchiver);
         }
 
         [TestMethod]

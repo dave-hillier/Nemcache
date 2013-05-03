@@ -3,24 +3,20 @@ using ProtoBuf;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Reactive.Disposables;
-using System.Reactive.Linq;
 
 namespace Nemcache.Service
 {
-    // TODO: add handling for large streams
-    // TODO: extract the observer
-    class StreamArchiver : IDisposable
+    class StreamArchiver : IDisposable, IObserver<ICacheNotification>
     {
         [ProtoContract]
-        public class ArchiveEntry 
+        public class ArchiveEntry
         {
             [ProtoMember(1)]
             public StoreNotification Store { get; set; }
 
             [ProtoMember(2)]
             public ClearNotification Clear { get; set; }
-            
+
             [ProtoMember(3)]
             public TouchNotification Touch { get; set; }
 
@@ -29,15 +25,12 @@ namespace Nemcache.Service
 
         }
 
+        
         private readonly Stream _outputStream;
-        private readonly CompositeDisposable _disposable = new CompositeDisposable();
 
-        public StreamArchiver(Stream outputStream, IObservable<ICacheNotification> cacheNotifications)
+        public StreamArchiver(Stream outputStream)
         {
             _outputStream = outputStream;
-            _disposable.Add(cacheNotifications.
-                Select(CreateArchiveEntry).
-                Subscribe(OnNotification));
         }
 
         public static IEnumerable<ArchiveEntry> ReadLog(Stream stream)
@@ -48,6 +41,7 @@ namespace Nemcache.Service
             }
         }
 
+        // TODO: move to a separate class
         public static void Restore(Stream stream, IMemCache cache)
         {
             var log = ReadLog(stream);
@@ -60,7 +54,6 @@ namespace Nemcache.Service
 
         public void Dispose()
         {
-            _disposable.Dispose();
             _outputStream.Dispose();
         }
 
@@ -72,7 +65,6 @@ namespace Nemcache.Service
 
         private static ArchiveEntry CreateArchiveEntry(ICacheNotification notification)
         {
-            // TODO: don't cast 4 times
             var archiveEntry = new ArchiveEntry
                 {
                     Store = notification as StoreNotification, 
@@ -81,6 +73,24 @@ namespace Nemcache.Service
                     Touch = notification as TouchNotification
                 };
             return archiveEntry;
+        }
+
+        public void OnNext(ICacheNotification value)
+        {
+            var entry = CreateArchiveEntry(value);
+            OnNotification(entry);
+        }
+
+        public void OnError(Exception error)
+        {
+            // Cache emits an error?
+            _outputStream.Dispose();
+        }
+
+        public void OnCompleted()
+        {
+            // Dispose?
+            _outputStream.Dispose();
         }
     }
 }

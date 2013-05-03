@@ -285,7 +285,8 @@ namespace Nemcache.Service
                                                             Expiry = e.Value.Expiry,
                                                             Flags = e.Value.Flags,
                                                             Operation = StoreOperation.Add,
-                                                            EventId = e.Value.EventId
+                                                            EventId = e.Value.EventId,
+                                                            IsSnapshot = true
                                                         });
 
             return addOperations.ToObservable().Combine(_notificationsSubject);

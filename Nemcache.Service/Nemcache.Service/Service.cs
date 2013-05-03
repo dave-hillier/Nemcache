@@ -2,10 +2,12 @@
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Reactive;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using Nemcache.Service.IO;
 using Nemcache.Service.Notifications;
+using Nemcache.Service.Reactive;
 
 namespace Nemcache.Service
 {
@@ -17,6 +19,9 @@ namespace Nemcache.Service
         private readonly uint _partitionSize;
         private readonly FileSystemWrapper _fileSystem;
         private StreamArchiver _archiver;
+        private IDisposable _archiverSubscription;
+        private bool _cleanUpDue;
+        private IDisposable _cleanUpSubscription;
 
         public Service(ulong capacity, uint port, string cacheFileName, uint partitionSize)
         {
@@ -27,9 +32,22 @@ namespace Nemcache.Service
             var requestHandler = new RequestHandler(Scheduler.Default, _memCache);
             _server = new RequestResponseTcpServer(IPAddress.Any, port, requestHandler.Dispatch);
             _fileSystem = new FileSystemWrapper();
+
+            // TODO: not entirely happy with this api- its a bit inconsistent. do I use extensions or Factory or normal methods.
+            var writeThresholdNotification = new WriteThresholdNotification(
+                _partitionSize * 10, TimeSpan.FromMinutes(1), Scheduler.Default);
+
+            var notifications = _memCache.Notifications.Publish().RefCount();
+
+            var logWriteNotifications = WriteNotifications(notifications);
+            var snapshotCompleted = SnapshotCompleted(notifications);
+
+            _cleanUpSubscription = snapshotCompleted.Where(_ => _cleanUpDue).Subscribe(_ => CleanUpOldLog());
+            writeThresholdNotification.Create(logWriteNotifications).
+                Subscribe(_ => DoCompact());
         }
 
-        private string LogFileExtension
+        private string LogFileNameExtension
         {
             get { return Path.GetExtension(_cacheFileName); }
         }
@@ -41,76 +59,84 @@ namespace Nemcache.Service
 
         public void Start()
         {
-            var fileNameWithoutExtension = LogFileNameWithoutExtension;
-            var extension = LogFileExtension;
-
-            RestoreFromLog(_memCache, fileNameWithoutExtension, extension);
-
-            CleanUpOldLog(fileNameWithoutExtension, extension);
+            RestoreFromLog();
 
             _archiver = CreateArchiver();
 
-            // TODO: not entirely happy with this api- its a bit inconsistent. do I use extensions or Factory or normal methods.
-            var writeThresholdNotification = new WriteThresholdNotification(_partitionSize*10, TimeSpan.FromHours(1));
-            var logWriteNotifications = WriteNotifications(_memCache.Notifications);
-            writeThresholdNotification.Create(logWriteNotifications, Scheduler.Default).Subscribe(_=> DoCompact());
-            
+            _archiverSubscription = _memCache.Notifications.Subscribe(_archiver);
+
             _server.Start();
         }
 
         private void DoCompact()
         {
-            CleanUpOldLog(LogFileNameWithoutExtension, LogFileExtension); // TODO: ideally do this after the new archiver has been created/populated.
             DisposeCurrentArchiver();
             _archiver = CreateArchiver();
+            _archiverSubscription = _memCache.Notifications.Subscribe(_archiver);
         }
 
         private StreamArchiver CreateArchiver()
         {
+            _cleanUpDue = true;
             var newLog = new PartitioningFileStream(
                 _fileSystem, 
-                LogFileNameWithoutExtension, LogFileExtension, 
+                LogFileNameWithoutExtension, LogFileNameExtension, 
                 _partitionSize,
                 FileAccess.Write);
 
-            return new StreamArchiver(newLog, _memCache.Notifications);
+            return new StreamArchiver(newLog);
         }
 
         private void DisposeCurrentArchiver()
         {
             if (_archiver != null)
             {
+                _archiverSubscription.Dispose();
                 _archiver.Dispose();
             }
         }
 
         private static IObservable<long> WriteNotifications(IObservable<ICacheNotification> notifications)
         {
-            return notifications.OfType<StoreNotification>().Select(n => (long)n.Data.Length);
+            return notifications.
+                OfType<StoreNotification>().
+                SkipWhile(n => n.IsSnapshot).
+                Select(n => (long)n.Data.Length);
         }
 
-        public void RestoreFromLog(IMemCache memCache, string fileNameWithoutExtension, string extension)
+        private static IObservable<Unit> SnapshotCompleted(IObservable<ICacheNotification> notifications)
         {
-            if (_fileSystem.File.Exists(fileNameWithoutExtension + ".0." + extension))
+            return notifications.
+                OfType<StoreNotification>().
+                SkipWhile(n => n.IsSnapshot).
+                Take(1).
+                Select(_ => new Unit());
+        }
+
+        public void RestoreFromLog()
+        {
+            if (_fileSystem.File.Exists(LogFileNameWithoutExtension + ".0." + LogFileNameExtension))
             {
                 using (var existingLog = new PartitioningFileStream(
-                    _fileSystem, fileNameWithoutExtension, extension, _partitionSize, FileAccess.Read))
+                    _fileSystem, LogFileNameWithoutExtension, LogFileNameExtension,
+                    _partitionSize, FileAccess.Read))
                 {
-                    StreamArchiver.Restore(existingLog, memCache);
+                    StreamArchiver.Restore(existingLog, _memCache);
                 }
             }
         }
 
-        public void CleanUpOldLog(string fileNameWithoutExtension, string extension)
+        // TODO: separate file
+        public void CleanUpOldLog()
         {
-            var generator = new LogFileNameGenerator(fileNameWithoutExtension, extension);
+            var generator = new LogFileNameGenerator(LogFileNameWithoutExtension, LogFileNameExtension);
             var existingFiles = generator.GetNextFileName().TakeWhile(fn => _fileSystem.File.Exists(fn)); // TODO: repetition
 
-            // TODO: should avoid deleting before we have backed up the current state. This means will probably need to know when we're logging live state.
             foreach (var existingFile in existingFiles)
             {
                 _fileSystem.File.Delete(existingFile);
             }
+            _cleanUpDue = false;
         }
 
 

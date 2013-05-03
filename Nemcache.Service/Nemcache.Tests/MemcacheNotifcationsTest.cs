@@ -42,6 +42,7 @@ namespace Nemcache.Tests
             Assert.AreEqual((ulong) 123, store.Flags);
             Assert.AreEqual(StoreOperation.Add, store.Operation);
             Assert.AreEqual(new DateTime(1999, 1, 1), store.Expiry);
+            Assert.IsFalse(store.IsSnapshot);
         }
 
         [TestMethod]
@@ -98,6 +99,7 @@ namespace Nemcache.Tests
             Assert.IsNotNull(store);
             Assert.AreEqual("TestData2", Encoding.ASCII.GetString(store.Data));
             Assert.AreEqual(StoreOperation.Add, store.Operation);
+            Assert.IsTrue(store.IsSnapshot);
         }
 
         [TestMethod]

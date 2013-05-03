@@ -9,6 +9,8 @@ Subscriptions for keys
 * managing interest?
 * Keys are independent - a version might be useful
 
+Mode for keys. Are they proxied? Persistent? Transient?
+
 Authentication
 * how do I control access to keys? Build using same 
 
@@ -24,4 +26,6 @@ Persistence
 Atomic writes?
 * Do a DB like scheme with 
 
-Complex structures?
+Storing Complex structures?
+
+
