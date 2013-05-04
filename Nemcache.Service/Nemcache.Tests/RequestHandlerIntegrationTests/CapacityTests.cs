@@ -8,24 +8,24 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
     [TestClass]
     public class CapacityTests
     {
-        private RequestHandler _requestHandler;
+        private IClient _client;
+
+        private byte[] Dispatch(byte[] p)
+        {
+            return _client.Send(p);
+        }
 
         [TestInitialize]
         public void Setup()
         {
-            _requestHandler = new RequestHandler(new TestScheduler(), new MemCache(capacity:10));
-        }
-
-
-        private byte[] Dispatch(byte[] p)
-        {
-            return _requestHandler.Dispatch("", p, null);
+            var client = new LocalRequestHandlerWithTestScheduler();
+            client.Capacity(10);
+            _client = client;
         }
 
         [TestMethod]
         public void StoreInCapacity()
         {
-            _requestHandler = new RequestHandler(new TestScheduler(), new MemCache(capacity:10));
             var setBuilder = new StoreRequestBuilder("set", "key", "1234567890");
 
             var response = Dispatch(setBuilder.ToAsciiRequest());
@@ -36,7 +36,6 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
         [TestMethod]
         public void StoreCasInCapacity()
         {
-            _requestHandler = new RequestHandler(new TestScheduler(), new MemCache(capacity:10));
             var setBuilder = new StoreRequestBuilder("set", "s", "12345");
             Dispatch(setBuilder.ToAsciiRequest());
 
@@ -57,8 +56,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
         [TestMethod]
         public void StoreOverCapacity()
         {
-            _requestHandler = new RequestHandler(new TestScheduler(), new MemCache(capacity:1));
-            var setBuilder = new StoreRequestBuilder("set", "key", "1234567890");
+            var setBuilder = new StoreRequestBuilder("set", "key", "12345678901");
 
             var response = Dispatch(setBuilder.ToAsciiRequest());
 
@@ -69,7 +67,6 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
         [TestMethod]
         public void StoreEvictOverCapacity()
         {
-            _requestHandler = new RequestHandler(new TestScheduler(), new MemCache(capacity:10));
             var setBuilder1 = new StoreRequestBuilder("set", "key1", "1234567890");
             var setBuilder2 = new StoreRequestBuilder("set", "key2", "1234567890");
 
@@ -85,7 +82,6 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
         [TestMethod]
         public void StoreMultipleEvictOverCapacity()
         {
-            _requestHandler = new RequestHandler(new TestScheduler(), new MemCache(capacity:10));
             var setBuilder1 = new StoreRequestBuilder("set", "key1", "12345");
             var setBuilder2 = new StoreRequestBuilder("set", "key2", "12345");
             var setBuilder3 = new StoreRequestBuilder("set", "key3", "1234567890");

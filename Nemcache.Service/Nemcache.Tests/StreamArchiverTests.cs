@@ -8,9 +8,6 @@ using ProtoBuf;
 
 namespace Nemcache.Tests
 {
-
-
-
     [TestClass]
     public class StreamArchiverTests
     {
@@ -75,9 +72,16 @@ namespace Nemcache.Tests
         }
 
         [TestMethod]
-        public void DisposeWillDisposeStream()
+        public void CompleteWillDisposeStream()
         {
-            _streamArchiver.Dispose();
+            _streamArchiver.OnCompleted();
+            Assert.IsFalse(_outputStream.CanWrite); // TODO: Replace with a test double?
+        }
+
+        [TestMethod]
+        public void ErrorWillDisposeStream()
+        {
+            _streamArchiver.OnError(new Exception());
             Assert.IsFalse(_outputStream.CanWrite); // TODO: Replace with a test double?
         }
     }

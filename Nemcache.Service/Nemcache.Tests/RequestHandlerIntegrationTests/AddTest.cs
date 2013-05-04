@@ -5,20 +5,23 @@ using Nemcache.Service;
 
 namespace Nemcache.Tests.RequestHandlerIntegrationTests
 {
+    // TODO: move these integration tests to another project. 
+    // TODO: Allow to be run again a real service or the fake one.
+    // TODO: test against Memcache to ensure I do the right thing...
     [TestClass]
     public class AddTest
     {
-        private RequestHandler _requestHandler;
+        private IClient _client;
 
         private byte[] Dispatch(byte[] p)
         {
-            return _requestHandler.Dispatch("", p, null);
+            return _client.Send(p);
         }
 
         [TestInitialize]
         public void Setup()
         {
-            _requestHandler = new RequestHandler(Scheduler.Default, new MemCache(capacity:100));
+            _client = new LocalRequestHandlerWithTestScheduler();
         }
 
         #region Add

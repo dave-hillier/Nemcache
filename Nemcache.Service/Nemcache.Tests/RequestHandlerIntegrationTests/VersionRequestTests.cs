@@ -16,11 +16,17 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             _requestHandler = new RequestHandler(Scheduler.Default, new MemCache(10));
         }
 
+        private byte[] Dispatch(byte[] p)
+        {
+            return _requestHandler.Dispatch("", p, null);
+        }
+
+
         [TestMethod]
         public void Version()
         {
             var flushRequest = Encoding.ASCII.GetBytes("version\r\n");
-            var response = _requestHandler.Dispatch("remote", flushRequest, null);
+            var response = Dispatch(flushRequest);
             Assert.AreEqual("Nemcache 1.0.0.0\r\n", response.ToAsciiString());
         }
     }

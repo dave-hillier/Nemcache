@@ -1,6 +1,6 @@
 ﻿namespace Nemcache.Client.Builders
 {
-    internal interface IRequestBuilder
+    public interface IRequestBuilder
     {
         byte[] ToAsciiRequest();
     }

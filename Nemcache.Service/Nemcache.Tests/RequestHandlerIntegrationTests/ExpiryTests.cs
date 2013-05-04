@@ -9,19 +9,20 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
     [TestClass]
     public class ExpiryTests
     {
-        private RequestHandler _requestHandler;
+        private IClient _client;
         private TestScheduler _testScheduler;
 
         private byte[] Dispatch(byte[] p)
         {
-            return _requestHandler.Dispatch("", p, null);
+            return _client.Send(p);
         }
 
         [TestInitialize]
         public void Setup()
         {
-            _testScheduler = new TestScheduler();
-            _requestHandler = new RequestHandler(_testScheduler, new MemCache(capacity:100));
+            var client = new LocalRequestHandlerWithTestScheduler();
+            _client = client;
+            _testScheduler = client.TestScheduler;
         }
 
         [TestMethod]

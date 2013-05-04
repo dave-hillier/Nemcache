@@ -8,17 +8,17 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
     [TestClass]
     public class MutateTests
     {
-        private RequestHandler _requestHandler;
+        private IClient _client;
 
         private byte[] Dispatch(byte[] p)
         {
-            return _requestHandler.Dispatch("", p, null);
+            return _client.Send(p);
         }
 
         [TestInitialize]
         public void Setup()
         {
-            _requestHandler = new RequestHandler(new TestScheduler(), new MemCache(capacity:100));
+            _client = new LocalRequestHandlerWithTestScheduler();
         }
 
         [TestMethod]

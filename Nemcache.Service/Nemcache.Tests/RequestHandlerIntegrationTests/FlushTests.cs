@@ -11,19 +11,20 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
     [TestClass]
     public class FlushTests
     {
-        private RequestHandler _requestHandler;
+        private IClient _client;
         private TestScheduler _testScheduler;
 
         private byte[] Dispatch(byte[] p)
         {
-            return _requestHandler.Dispatch("", p, null);
+            return _client.Send(p);
         }
 
         [TestInitialize]
         public void Setup()
         {
-            _testScheduler = new TestScheduler();
-            _requestHandler = new RequestHandler(_testScheduler, new MemCache(capacity:100));
+            var client = new LocalRequestHandlerWithTestScheduler();
+            _client = client;
+            _testScheduler = client.TestScheduler;
         }
 
         #region flush
@@ -35,7 +36,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             Dispatch(storageBuilder.ToAsciiRequest());
 
             var flushRequest = Encoding.ASCII.GetBytes("flush_all\r\n");
-            var response = _requestHandler.Dispatch("remote", flushRequest, null);
+            var response = Dispatch(flushRequest);
 
             Assert.AreEqual("OK\r\n", response.ToAsciiString());
         }
@@ -47,7 +48,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             Dispatch(storageBuilder.ToAsciiRequest());
 
             var flushRequest = Encoding.ASCII.GetBytes("flush_all 123\r\n");
-            var response = _requestHandler.Dispatch("remote", flushRequest, null);
+            var response = Dispatch(flushRequest);
 
             Assert.AreEqual("OK\r\n", response.ToAsciiString());
         }
@@ -59,7 +60,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             Dispatch(storageBuilder.ToAsciiRequest());
 
             var flushRequest = Encoding.ASCII.GetBytes("flush_all\r\n");
-            _requestHandler.Dispatch("remote", flushRequest, null);
+            Dispatch(flushRequest);
 
             var getBuilder = new GetRequestBuilder("get", "key");
             var response = Dispatch(getBuilder.ToAsciiRequest());
@@ -75,7 +76,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             Dispatch(storageBuilder2.ToAsciiRequest());
 
             var flushRequest = Encoding.ASCII.GetBytes("flush_all\r\n");
-            _requestHandler.Dispatch("remote", flushRequest, null);
+            Dispatch(flushRequest);
 
             var getBuilder = new GetRequestBuilder("get", "key");
             var response = Dispatch(getBuilder.ToAsciiRequest());
@@ -89,7 +90,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             Dispatch(storageBuilder.ToAsciiRequest());
 
             var flushRequest = Encoding.ASCII.GetBytes("flush_all 100\r\n");
-            _requestHandler.Dispatch("remote", flushRequest, null);
+            Dispatch(flushRequest);
 
             _testScheduler.AdvanceBy(TimeSpan.FromSeconds(90).Ticks);
 
@@ -106,7 +107,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             Dispatch(storageBuilder.ToAsciiRequest());
 
             var flushRequest = Encoding.ASCII.GetBytes("flush_all 100\r\n");
-            _requestHandler.Dispatch("remote", flushRequest, null);
+            Dispatch(flushRequest);
 
             _testScheduler.AdvanceBy(TimeSpan.FromSeconds(200).Ticks);
 

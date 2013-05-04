@@ -9,18 +9,23 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
     [TestClass]
     public class RequestHandlerTests
     {
-        private RequestHandler _requestHandler;
+        private IClient _client;
+
+        private byte[] Dispatch(byte[] p)
+        {
+            return _client.Send(p);
+        }
 
         [TestInitialize]
         public void Setup()
         {
-            _requestHandler = new RequestHandler(Scheduler.Default, new MemCache(capacity:1000));
+            _client = new LocalRequestHandlerWithTestScheduler();
         }
 
         [TestMethod]
         public void UnknownCommand()
         {
-            var error = _requestHandler.Dispatch("endpoint", Encoding.ASCII.GetBytes("unknown command\r\n"), null);
+            var error = Dispatch(Encoding.ASCII.GetBytes("unknown command\r\n"));
 
             Assert.AreEqual("ERROR\r\n", Encoding.ASCII.GetString(error));
         }
@@ -28,7 +33,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
         [TestMethod]
         public void MalformedCommand()
         {
-            var error = _requestHandler.Dispatch("endpoint", Encoding.ASCII.GetBytes("malformed command"), null);
+            var error = Dispatch(Encoding.ASCII.GetBytes("malformed command"));
 
             Assert.AreEqual("SERVER ERROR New line not found\r\n", Encoding.ASCII.GetString(error));
         }
@@ -36,7 +41,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
         [TestMethod]
         public void TestExceptionCommand()
         {
-            var error = _requestHandler.Dispatch("endpoint", Encoding.ASCII.GetBytes("exception\r\n"), null);
+            var error = Dispatch(Encoding.ASCII.GetBytes("exception\r\n"));
 
             Assert.AreEqual("SERVER ERROR test exception\r\n", Encoding.ASCII.GetString(error));
         }
@@ -44,9 +49,10 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
         [TestMethod]
         public void Quit()
         {
+            // TODO:
             bool disposed = false;
-            _requestHandler.Dispatch("endpoint", Encoding.ASCII.GetBytes("quit\r\n"),
-                                     Disposable.Create(() => { disposed = true; }));
+            _client.OnDisconnect = Disposable.Create(() => { disposed = true; });
+            Dispatch(Encoding.ASCII.GetBytes("quit\r\n"));
             Assert.AreEqual(disposed, true);
         }
 
@@ -54,14 +60,14 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
         public void Stats()
         {
             // TODO: implement
-            var result = _requestHandler.Dispatch("endpoint", Encoding.ASCII.GetBytes("stats\r\n"), null);
+            var result = Dispatch(Encoding.ASCII.GetBytes("stats\r\n"));
         }
 
         [TestMethod]
         public void StatsSettings()
         {
             // TODO: implement
-            var result = _requestHandler.Dispatch("endpoint", Encoding.ASCII.GetBytes("stats settings\r\n"), null);
+            var result = Dispatch(Encoding.ASCII.GetBytes("stats settings\r\n"));
         }
 
     }

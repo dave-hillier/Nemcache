@@ -6,7 +6,7 @@ using System.IO;
 
 namespace Nemcache.Service
 {
-    class StreamArchiver : IDisposable, IObserver<ICacheNotification>
+    class StreamArchiver : IObserver<ICacheNotification>
     {
         [ProtoContract]
         public class ArchiveEntry
@@ -49,11 +49,6 @@ namespace Nemcache.Service
                 if (entry.Store != null)
                     cache.Add(entry.Store.Key, entry.Store.Flags, entry.Store.Expiry, entry.Store.Data);
             }
-        }
-
-        public void Dispose()
-        {
-            _outputStream.Dispose();
         }
 
         private void OnNotification(ArchiveEntry archiveEntry)

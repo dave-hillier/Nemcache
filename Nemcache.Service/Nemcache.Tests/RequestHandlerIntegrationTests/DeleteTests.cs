@@ -8,20 +8,18 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
     [TestClass]
     public class DeleteTests
     {
-        private RequestHandler _requestHandler;
+        private IClient _client;
 
         private byte[] Dispatch(byte[] p)
         {
-            return _requestHandler.Dispatch("", p, null);
+            return _client.Send(p);
         }
 
         [TestInitialize]
         public void Setup()
         {
-            _requestHandler = new RequestHandler(Scheduler.Default, new MemCache(capacity:100));
+            _client = new LocalRequestHandlerWithTestScheduler();
         }
-
-        #region delete
 
         [TestMethod]
         public void DeleteNotFound()
@@ -58,6 +56,5 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             Assert.AreEqual("END\r\n", response.ToAsciiString());
         }
 
-        #endregion
     }
 }

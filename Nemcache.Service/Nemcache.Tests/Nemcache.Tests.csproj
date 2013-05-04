@@ -90,6 +90,8 @@
     <Compile Include="RequestHandlerIntegrationTests\ExpiryTests.cs" />
     <Compile Include="RequestHandlerIntegrationTests\FlushTests.cs" />
     <Compile Include="RequestHandlerIntegrationTests\GetAndSetTests.cs" />
+    <Compile Include="RequestHandlerIntegrationTests\IClient.cs" />
+    <Compile Include="RequestHandlerIntegrationTests\LocalRequestHandlerWithTestScheduler.cs" />
     <Compile Include="RequestHandlerIntegrationTests\MutateTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RequestHandlerIntegrationTests\ReplaceTests.cs" />

@@ -13,6 +13,7 @@ using Nemcache.Service.Reactive;
 
 namespace Nemcache.Service
 {
+    // TODO: remove expired items
     internal class MemCache : IMemCache
     {
         private readonly ConcurrentDictionary<string, CacheEntry> _cache =

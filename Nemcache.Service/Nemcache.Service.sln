@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nemcache.Tests", "Nemcache.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nemcache.Client", "Nemcache.Client\Nemcache.Client.csproj", "{9B7ED86E-5341-4CEA-A1D6-AB6D85393DDD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nemcache.Slap", "Nemcache.Slap\Nemcache.Slap.csproj", "{F99A4B89-FCF5-4D37-A144-EFE0AD897261}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -25,6 +27,10 @@ Global
 		{9B7ED86E-5341-4CEA-A1D6-AB6D85393DDD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9B7ED86E-5341-4CEA-A1D6-AB6D85393DDD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9B7ED86E-5341-4CEA-A1D6-AB6D85393DDD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F99A4B89-FCF5-4D37-A144-EFE0AD897261}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F99A4B89-FCF5-4D37-A144-EFE0AD897261}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F99A4B89-FCF5-4D37-A144-EFE0AD897261}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F99A4B89-FCF5-4D37-A144-EFE0AD897261}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

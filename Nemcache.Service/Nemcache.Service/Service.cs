@@ -44,6 +44,9 @@ namespace Nemcache.Service
             var snapshotCompleted = SnapshotCompleted(notifications); // TODO: does this need to subscribe to the archiver rather than the cache?
             _cleanUpSubscription = snapshotCompleted.Where(_ => _cleanUpDue).Subscribe(_ => CleanUpOldLog()); 
 
+
+
+
             writeThresholdNotification.Create(logWriteNotifications).Subscribe(_ => DoCompact());
         }
 
@@ -92,7 +95,6 @@ namespace Nemcache.Service
             if (_archiver != null)
             {
                 _archiverSubscription.Dispose();
-                _archiver.Dispose();
             }
         }
 
