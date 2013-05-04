@@ -9,7 +9,7 @@ Status
 ======
 
 Nemcached is not yet ready for production use as it, although functionally complete enough to be used, 
-not fully tested and is unoptimised.
+not fully tested and is unoptimised. The sockets code is a bit buggy at the moment.
 
 The following commands from the [Memcached specification](https://raw.github.com/memcached/memcached/master/doc/protocol.txt) are implemented:
 * get (and gets)
