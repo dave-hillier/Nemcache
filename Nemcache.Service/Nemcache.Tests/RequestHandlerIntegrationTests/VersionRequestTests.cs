@@ -8,19 +8,20 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
     [TestClass]
     public class VersionRequestTests
     {
-        private RequestHandler _requestHandler;
+        private IClient _client;
+
+        private byte[] Dispatch(byte[] p)
+        {
+            return _client.Send(p);
+        }
+
+        public IClient Client { get; set; }
 
         [TestInitialize]
         public void Setup()
         {
-            _requestHandler = new RequestHandler(Scheduler.Default, new MemCache(10));
+            _client = Client ?? new LocalRequestHandlerWithTestScheduler();
         }
-
-        private byte[] Dispatch(byte[] p)
-        {
-            return _requestHandler.Dispatch("", p, null);
-        }
-
 
         [TestMethod]
         public void Version()

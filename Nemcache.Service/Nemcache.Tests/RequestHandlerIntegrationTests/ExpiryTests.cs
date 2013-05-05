@@ -17,11 +17,13 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             return _client.Send(p);
         }
 
+        public IClient Client { get; set; }
+
         [TestInitialize]
         public void Setup()
         {
             var client = new LocalRequestHandlerWithTestScheduler();
-            _client = client;
+            _client = Client ?? client;
             _testScheduler = client.TestScheduler;
         }
 

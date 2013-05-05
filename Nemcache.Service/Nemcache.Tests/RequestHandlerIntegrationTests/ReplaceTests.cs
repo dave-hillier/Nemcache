@@ -1,7 +1,5 @@
-﻿using System.Reactive.Concurrency;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Nemcache.Client.Builders;
-using Nemcache.Service;
 
 namespace Nemcache.Tests.RequestHandlerIntegrationTests
 {
@@ -15,13 +13,13 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             return _client.Send(p);
         }
 
+        public IClient Client { get; set; }
+
         [TestInitialize]
         public void Setup()
         {
-            _client = new LocalRequestHandlerWithTestScheduler();
+            _client = Client ?? new LocalRequestHandlerWithTestScheduler();
         }
-
-        #region Replace
 
         [TestMethod]
         public void ReplaceToEmpty()
@@ -71,6 +69,5 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             Assert.AreEqual("VALUE key 0 6\r\nsecond\r\nEND\r\n", response.ToAsciiString());
         }
 
-        #endregion
     }
 }

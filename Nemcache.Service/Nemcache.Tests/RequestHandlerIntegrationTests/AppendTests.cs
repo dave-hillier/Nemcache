@@ -1,7 +1,5 @@
-﻿using System.Reactive.Concurrency;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Nemcache.Client.Builders;
-using Nemcache.Service;
 
 namespace Nemcache.Tests.RequestHandlerIntegrationTests
 {
@@ -15,10 +13,12 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             return _client.Send(p);
         }
 
+        public IClient Client { get; set; }
+
         [TestInitialize]
         public void Setup()
         {
-            _client = new LocalRequestHandlerWithTestScheduler();
+            _client = Client ?? new LocalRequestHandlerWithTestScheduler();
         }
 
         [TestMethod]
@@ -28,7 +28,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
 
             var response = Dispatch(appendBuilder.ToAsciiRequest());
 
-            Assert.AreEqual("STORED\r\n", response.ToAsciiString());
+            Assert.AreEqual("NOT_STORED\r\n", response.ToAsciiString());
         }
 
 
@@ -41,6 +41,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             var response = Dispatch(appendBuilder.ToAsciiRequest());
 
             Assert.AreEqual("", response.ToAsciiString());
+            
         }
 
 
@@ -55,7 +56,8 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             Assert.AreEqual("STORED\r\n", response.ToAsciiString());
         }
 
-        [TestMethod]
+        // TODO: get value of no reply
+        /*[TestMethod]
         public void GetValueOfAppendToEmpty()
         {
             var appendBuilder = new StoreRequestBuilder("append", "key", "value");
@@ -64,7 +66,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             var getBuilder = new GetRequestBuilder("get", "key");
             var response = Dispatch(getBuilder.ToAsciiRequest());
             Assert.AreEqual("VALUE key 0 5\r\nvalue\r\nEND\r\n", response.ToAsciiString());
-        }
+        }*/
 
         [TestMethod]
         public void GetValueOfAppendToExisting()
@@ -88,7 +90,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
 
             var response = Dispatch(prependBuilder.ToAsciiRequest());
 
-            Assert.AreEqual("STORED\r\n", response.ToAsciiString());
+            Assert.AreEqual("NOT_STORED\r\n", response.ToAsciiString());
         }
 
         [TestMethod]
@@ -115,7 +117,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
 
             Assert.AreEqual("STORED\r\n", response.ToAsciiString());
         }
-
+        /*
         [TestMethod]
         public void GetValueOfPrependToEmpty()
         {
@@ -127,7 +129,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             var response = Dispatch(getBuilder.ToAsciiRequest());
             Assert.AreEqual("VALUE key 0 5\r\nvalue\r\nEND\r\n", response.ToAsciiString());
         }
-
+        */
         // TODO: prepend ignores existing flags and exp
 
         [TestMethod]

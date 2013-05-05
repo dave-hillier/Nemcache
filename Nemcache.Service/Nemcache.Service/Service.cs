@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Reactive;
 using System.Reactive.Concurrency;
@@ -26,11 +25,11 @@ namespace Nemcache.Service
         public Service(ulong capacity, uint port, string cacheFileName, uint partitionSize)
         {
             _partitionSize = partitionSize;
-            _cacheFileName = cacheFileName;
+            _cacheFileName = Path.GetRandomFileName() + cacheFileName;
             _memCache = new MemCache(capacity);
 
             var requestHandler = new RequestHandler(Scheduler.Default, _memCache);
-            _server = new RequestResponseTcpServer(IPAddress.Any, port, requestHandler.Dispatch);
+            _server = new RequestResponseTcpServer(IPAddress.Any, (int)port, requestHandler.Dispatch);
             _fileSystem = new FileSystemWrapper();
 
             // TODO: Should this be an extension method? 
@@ -43,16 +42,19 @@ namespace Nemcache.Service
             var logWriteNotifications = WriteNotifications(notifications); // TODO: Should probably really subscribe to file writes
             var snapshotCompleted = SnapshotCompleted(notifications); // TODO: does this need to subscribe to the archiver rather than the cache?
             _cleanUpSubscription = snapshotCompleted.Where(_ => _cleanUpDue).Subscribe(_ => CleanUpOldLog()); 
-
-
-
-
+            
             writeThresholdNotification.Create(logWriteNotifications).Subscribe(_ => DoCompact());
         }
 
         private string LogFileNameExtension
         {
-            get { return Path.GetExtension(_cacheFileName); }
+            get
+            {
+                var extension = Path.GetExtension(_cacheFileName);
+                if (extension != null) 
+                    return extension.TrimStart('.');
+                return "";
+            }
         }
 
         private string LogFileNameWithoutExtension
@@ -62,7 +64,7 @@ namespace Nemcache.Service
 
         public void Start()
         {
-            RestoreFromLog();
+            //RestoreFromLog();
 
             _archiver = CreateArchiver();
 
@@ -131,14 +133,14 @@ namespace Nemcache.Service
         // TODO: separate file
         public void CleanUpOldLog()
         {
-            var generator = new LogFileNameGenerator(LogFileNameWithoutExtension, LogFileNameExtension);
+            /*var generator = new LogFileNameGenerator(LogFileNameWithoutExtension, LogFileNameExtension);
             var existingFiles = generator.GetNextFileName().TakeWhile(fn => _fileSystem.File.Exists(fn)); // TODO: repetition
 
             foreach (var existingFile in existingFiles)
             {
                 _fileSystem.File.Delete(existingFile);
             }
-            _cleanUpDue = false;
+            _cleanUpDue = false;*/
         }
 
         public void Stop()

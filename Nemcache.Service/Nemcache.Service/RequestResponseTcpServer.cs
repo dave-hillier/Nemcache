@@ -3,78 +3,100 @@ using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Reactive.Disposables;
-using System.Reactive.Linq;
-using System.Reactive.Threading.Tasks;
-using System.Threading;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace Nemcache.Service
 {
-    // TODO: Re-write in a TDD way
-    internal class RequestResponseTcpServer
+    class RequestResponseTcpServer
     {
-        private const int BufferSize = 4096;
+        private const int BufferSize = 8112;
+
         private readonly Func<string, byte[], IDisposable, byte[]> _callback;
         private readonly TaskFactory _taskFactory;
-        private readonly TcpListener _tcpListener;
-        private readonly CancellationTokenSource _tokenSource;
 
-        // TODO: use an interface for the callback?
-        public RequestResponseTcpServer(IPAddress address, uint port, Func<string, byte[], IDisposable, byte[]> callback)
+        public IPAddress Address { get; set; }
+        public int Port { get; set; }
+        private readonly SocketState _socket;
+
+        public RequestResponseTcpServer(IPAddress address, int port,
+                              Func<string, byte[], IDisposable, byte[]> callback)
         {
+            _taskFactory = new TaskFactory();
             _callback = callback;
-            _tokenSource = new CancellationTokenSource();
-            _taskFactory = new TaskFactory(_tokenSource.Token);
-            _tcpListener = new TcpListener(address, (int)port);
+            Address = address;
+            Port = port;
+            var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.IP);
+            _socket = new SocketState(socket);
 
         }
 
         public void Start()
         {
-            _tcpListener.Start();
-            AcceptClient(_tcpListener);            
-        }
-
-        public void Stop()
-        {
-            _tokenSource.Cancel();
-        }
-
-        private void AcceptClient(TcpListener tcpListener)
-        {
-            var acceptTcpClientTask = _taskFactory.FromAsync<TcpClient>(
-                tcpListener.BeginAcceptTcpClient,
-                tcpListener.EndAcceptTcpClient,
-                tcpListener);
-
-            acceptTcpClientTask.
-                ContinueWith(task => OnAcceptConnection(task.Result), TaskContinuationOptions.OnlyOnRanToCompletion).
-                ContinueWith(task => AcceptClient(tcpListener), TaskContinuationOptions.OnlyOnRanToCompletion);
-        }
-
-        private void OnAcceptConnection(TcpClient tcpClient)
-        {
-            string remoteEndpoint = tcpClient.Client.RemoteEndPoint.ToString();
-            var networkStream = tcpClient.GetStream();
-            HandleRequest(remoteEndpoint, networkStream);
-        }
-
-        private void HandleRequest(string remoteEndpoint, NetworkStream networkStream)
-        {
-            var readTask = Read(networkStream, BufferSize).
-                ContinueWith(task =>
+            var ipLocal = new IPEndPoint(IPAddress.Any, Port);
+            _socket.Socket.Bind(ipLocal);
+            _socket.Socket.Listen(100); // TODO: what does the backlog mean? Max connections?
+            _taskFactory.StartNew(() => 
+                {
+                    while (true)
                     {
-                        var memoryStream = task.Result;
-                        byte[] input = memoryStream.ToArray();
-                        if (input.Length != 0)
-                        {
-                            var output = _callback(remoteEndpoint, input, Disposable.Create(networkStream.Close));
-                            WriteResponse(networkStream, output);
-                        }
-                    }, TaskContinuationOptions.OnlyOnRanToCompletion);
+                        ListenForClients().Wait();
+                    }
+                });
+        }
 
-            readTask.ContinueWith(t => HandleRequest(remoteEndpoint, networkStream),
-                                  TaskContinuationOptions.OnlyOnRanToCompletion);
+        private async Task ListenForClients()
+        {
+            var client = await _socket.Accept();
+            OnClientConnection(client);
+            await Task.Yield();
+        }
+
+        private void OnClientConnection(SocketState clientSocket)
+        {
+            ReadAndRespond(clientSocket.Stream);
+        }
+
+        private async Task ReadAndRespond(NetworkStream networkStream)
+        {
+            bool clientDisconnect = false;
+            while (!clientDisconnect)
+            {
+                if (networkStream.DataAvailable)
+                {
+                    var request = await ReadRequest(networkStream);
+
+                    if (request.Length > 0)
+                    {
+                        //Console.WriteLine("Request: {0}", Encoding.ASCII.GetString(request));
+                        var response = _callback("", request, Disposable.Create(networkStream.Close));
+                        if (response.Length > 0)
+                        {
+                            WriteResponse(networkStream, response);
+                            //Console.WriteLine("Response: {0}", Encoding.ASCII.GetString(response));
+                        }
+                    }
+                    else
+                    {
+                        clientDisconnect = true;
+                    }
+                }
+                //await Task.Yield();
+            }
+        }
+
+        private static async Task<byte[]> ReadRequest(NetworkStream networkStream)
+        {
+            var memoryStream = new MemoryStream();
+            var buffer = new byte[BufferSize];
+            int count;
+            while (networkStream.CanRead &&
+                   networkStream.DataAvailable &&
+                   (count = await networkStream.ReadAsync(buffer, 0, buffer.Length)) != 0)
+            {
+                await memoryStream.WriteAsync(buffer, 0, count);
+            }
+            return memoryStream.ToArray();
         }
 
         private static void WriteResponse(NetworkStream networkStream, byte[] output)
@@ -83,20 +105,8 @@ namespace Nemcache.Service
             responseStream.CopyTo(networkStream);
         }
 
-        private Task<MemoryStream> Read(NetworkStream networkStream, int bufferSize)
+        public void Stop()
         {
-            var buffer = new byte[bufferSize];
-            var read = networkStream.
-                ReadAsync(buffer, 0, bufferSize).
-                ToObservable().
-                DoWhile(() => networkStream.DataAvailable && networkStream.CanRead).
-                TakeWhile(c => c > 0).
-                Scan(new MemoryStream(), (stream, readCount) =>
-                    {
-                        stream.Write(buffer, 0, readCount);
-                        return stream;
-                    });
-            return read.ToTask(_tokenSource.Token);
         }
     }
 }

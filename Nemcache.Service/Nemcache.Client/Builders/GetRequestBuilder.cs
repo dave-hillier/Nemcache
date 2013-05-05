@@ -3,7 +3,7 @@ using System.Text;
 
 namespace Nemcache.Client.Builders
 {
-    internal class GetRequestBuilder : IRequestBuilder
+    public class GetRequestBuilder : IRequestBuilder
     {
         private readonly string _command;
         private readonly IEnumerable<string> _keys;

@@ -14,12 +14,15 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             return _client.Send(p);
         }
 
+        public IClient Client { get; set; }
+
         [TestInitialize]
         public void Setup()
         {
-            _client = new LocalRequestHandlerWithTestScheduler();
+            _client = Client ?? new LocalRequestHandlerWithTestScheduler();
         }
 
+        
         [TestMethod]
         public void Set()
         {
@@ -80,13 +83,13 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
         public void FlagsMaxValueSetAndGet()
         {
             var storageBuilder = new StoreRequestBuilder("set", "key", "value");
-            storageBuilder.WithFlags(ulong.MaxValue);
+            storageBuilder.WithFlags(ushort.MaxValue);
             Dispatch(storageBuilder.ToAsciiRequest());
 
             var getBuilder = new GetRequestBuilder("get", "key");
 
             var response = Dispatch(getBuilder.ToAsciiRequest());
-            Assert.AreEqual("VALUE key " + ulong.MaxValue.ToString() + " 5\r\nvalue\r\nEND\r\n",
+            Assert.AreEqual("VALUE key " + ushort.MaxValue.ToString() + " 5\r\nvalue\r\nEND\r\n",
                             response.ToAsciiString());
         }
 

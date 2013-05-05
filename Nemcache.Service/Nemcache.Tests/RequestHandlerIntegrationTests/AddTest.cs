@@ -1,7 +1,5 @@
-﻿using System.Reactive.Concurrency;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Nemcache.Client.Builders;
-using Nemcache.Service;
 
 namespace Nemcache.Tests.RequestHandlerIntegrationTests
 {
@@ -18,10 +16,12 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             return _client.Send(p);
         }
 
+        public IClient Client { get; set; }
+
         [TestInitialize]
         public void Setup()
         {
-            _client = new LocalRequestHandlerWithTestScheduler();
+            _client = Client ?? new LocalRequestHandlerWithTestScheduler();
         }
 
         #region Add
@@ -52,7 +52,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
         {
             var setBuilder = new StoreRequestBuilder("set", "key", "value");
 
-            Dispatch(setBuilder.ToAsciiRequest());
+            var response2 = Dispatch(setBuilder.ToAsciiRequest()).ToAsciiString();
 
             var addBuilder = new StoreRequestBuilder("add", "key", "value");
 

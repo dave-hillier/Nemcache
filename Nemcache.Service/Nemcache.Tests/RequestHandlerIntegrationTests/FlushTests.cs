@@ -27,8 +27,6 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             _testScheduler = client.TestScheduler;
         }
 
-        #region flush
-
         [TestMethod]
         public void FlushResponse()
         {
@@ -115,7 +113,5 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             var response = Dispatch(getBuilder.ToAsciiRequest());
             Assert.AreEqual("END\r\n", response.ToAsciiString());
         }
-
-        #endregion
     }
 }

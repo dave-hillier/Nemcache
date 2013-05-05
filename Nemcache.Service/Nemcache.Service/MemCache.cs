@@ -90,15 +90,7 @@ namespace Nemcache.Service
                         return entry;
                     });
 
-            if (result)
-            {
-                resultDataOut = resultData;
-                // TODO: notify mutate
-            }
-            else
-            {
-                resultDataOut = null;
-            }
+            resultDataOut = result ? resultData : null;
             return result;
         }
 
@@ -215,7 +207,7 @@ namespace Nemcache.Service
                         EventId = eventId
                     });
             }
-            return exists || Store(key, flags, exptime, data);
+            return exists;
         }
 
         public bool Store(string key, ulong flags, DateTime exptime, byte[] data)

@@ -2,7 +2,7 @@
 
 namespace Nemcache.Tests.RequestHandlerIntegrationTests
 {
-    interface IClient
+    public interface IClient
     {
         byte[] Send(byte[] p);
 

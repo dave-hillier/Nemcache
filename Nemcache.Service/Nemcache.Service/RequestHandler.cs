@@ -65,18 +65,13 @@ namespace Nemcache.Service
             // TODO: an interface for this?
         {
             // TODO: Is it possible for the client to send multiple requests in one.
+            // Yes if no reply is on!
+
             try
             {
-                var input = TakeFirstLine(request).ToArray();
-                request = request.Skip(input.Length + 2).ToArray();
-                var requestFirstLine = Encoding.ASCII.GetString(input);
-                var requestTokens = requestFirstLine.Split(' ');
-                var commandName = requestTokens.First();
-                var commandParams = requestTokens.Skip(1).ToArray();
-                bool noreply = commandParams.LastOrDefault() == "noreply" && !commandName.StartsWith("get");
+                var result = ProcessRequest(request, clientConnectionHandle);
 
-                var result = DispatchCommand(request, commandName, commandParams, clientConnectionHandle);
-                return noreply ? new byte[] {} : result;
+                return result;
             }
             catch (Exception ex)
             {
@@ -84,9 +79,34 @@ namespace Nemcache.Service
             }
         }
 
-        private byte[] DispatchCommand(byte[] request, string commandName, string[] commandParams,
-                                       IDisposable clientConnectionHandle)
+        private byte[] ProcessRequest(byte[] request, IDisposable clientConnectionHandle)
         {
+            var input = TakeFirstLine(request).ToArray();
+            request = request.Skip(input.Length + 2).ToArray();
+
+            var requestFirstLine = Encoding.ASCII.GetString(input);
+            var requestTokens = requestFirstLine.Split(' ');
+            var commandName = requestTokens.First();
+            var commandParams = requestTokens.Skip(1).ToArray();
+            bool noreply = commandParams.LastOrDefault() == "noreply" && !commandName.StartsWith("get");
+
+            int length;
+            IEnumerable<byte> result = DispatchCommand(request, commandName, commandParams, clientConnectionHandle, out length);
+            result = noreply ? new byte[] {} : result;
+
+            if (length > 0)
+            {
+                request = request.Skip(length + 2).ToArray();
+                if (request.Length > 0)
+                    result = result.Concat(ProcessRequest(request, clientConnectionHandle));
+            }
+            return result.ToArray();
+        }
+
+        private byte[] DispatchCommand(byte[] request, string commandName, string[] commandParams,
+                                       IDisposable clientConnectionHandle, out int length)
+        {
+            length = 0;
             switch (commandName)
             {
                 case "get":
@@ -97,9 +117,9 @@ namespace Nemcache.Service
                 case "append":
                 case "prepend":
                 case "set": // <command name> <key> <flags> <exptime> <bytes> [noreply]
-                    return HandleStore(request, commandName, commandParams);
+                    return HandleStore(request, commandName, commandParams, out length);
                 case "cas": //cas <key> <flags> <exptime> <bytes> <cas unique> [noreply]\r\n
-                    return HandleCas(request, commandParams);
+                    return HandleCas(request, commandParams, out length);
                 case "delete": // delete <key> [noreply]\r\n
                     return HandleDelete(commandParams);
                 case "incr": //incr <key> <value> [noreply]\r\n
@@ -222,7 +242,7 @@ namespace Nemcache.Service
                        : Encoding.ASCII.GetBytes("NOT_FOUND\r\n");
         }
 
-        private byte[] HandleCas(byte[] request, string[] commandParams)
+        private byte[] HandleCas(byte[] request, string[] commandParams, out int length)
         {
             var key = ToKey(commandParams[0]);
             var flags = ToFlags(commandParams[1]);
@@ -230,18 +250,19 @@ namespace Nemcache.Service
             var bytes = int.Parse(commandParams[3]);
             var casUnique = ulong.Parse(commandParams[4]);
             byte[] data = request.Take(bytes).ToArray();
-
+            length = bytes;
             return _cache.Cas(key, flags, exptime, casUnique, data)
                        ? Encoding.ASCII.GetBytes("STORED\r\n")
                        : Encoding.ASCII.GetBytes("EXISTS\r\n");
         }
 
-        private byte[] HandleStore(byte[] request, string commandName, string[] commandParams)
+        private byte[] HandleStore(byte[] request, string commandName, string[] commandParams, out int length)
         {
             var key = ToKey(commandParams[0]);
             var flags = ToFlags(commandParams[1]);
             var exptime = ToExpiry(commandParams[2]);
             var bytes = int.Parse(commandParams[3]);
+            length = bytes;
             byte[] data = request.Take(bytes).ToArray();
 
             return Store(commandName, key, flags, exptime, data);
