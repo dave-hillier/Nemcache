@@ -76,6 +76,7 @@
   </Choose>
   <ItemGroup>
     <Compile Include="IO\TestStream.cs" />
+    <Compile Include="MemcacheTest.cs" />
     <Compile Include="Reactive\CombineCurrentStateWithUpdatesTests.cs" />
     <Compile Include="Eviction\LRUEvictionTests.cs" />
     <Compile Include="Eviction\NullEvictionTests.cs" />

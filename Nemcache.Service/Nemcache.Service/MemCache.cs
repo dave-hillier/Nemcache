@@ -40,6 +40,7 @@ namespace Nemcache.Service
 
         public ulong Used
         {
+            // TODO: this accounted for a few percent of time on profiles. 
             get { return (ulong) _cache.Values.Select(e => (long) e.Data.Length).Sum(); }
         }
 
