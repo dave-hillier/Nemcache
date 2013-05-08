@@ -79,7 +79,6 @@
     <Compile Include="RequestHandlers\ReplaceHandler.cs" />
     <Compile Include="RequestHandlers\SetHandler.cs" />
     <Compile Include="RequestConverters.cs" />
-    <Compile Include="SocketState.cs" />
     <Compile Include="RequestResponseTcpServer.cs" />
     <Compile Include="Reactive\ObservableRateLimitExtension.cs" />
     <Compile Include="Reactive\CombineCurrentStateWithUpdatesExtension.cs" />
