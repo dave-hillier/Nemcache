@@ -12,8 +12,8 @@ namespace Nemcache.Tests
     public class StreamArchiverTests
     {
         private IMemCache _originalCache;
-        private StreamArchiver _streamArchiver;
         private MemoryStream _outputStream;
+        private StreamArchiver _streamArchiver;
 
         [TestInitialize]
         public void Setup()
@@ -49,7 +49,7 @@ namespace Nemcache.Tests
             var newCache = new MemCache(1000);
             StreamArchiver.Restore(new MemoryStream(output), newCache);
 
-            var cacheEntry = newCache.Retrieve(new [] { "my_key" }).ToArray();
+            var cacheEntry = newCache.Retrieve(new[] {"my_key"}).ToArray();
             Assert.AreEqual(1, cacheEntry.Length);
             Assert.AreEqual("Payload", Encoding.ASCII.GetString(cacheEntry[0].Value.Data));
         }
@@ -65,7 +65,7 @@ namespace Nemcache.Tests
             var newCache = new MemCache(1000);
             StreamArchiver.Restore(new MemoryStream(output), newCache);
 
-            var cacheEntry = newCache.Retrieve(new [] { "my_key1", "my_key2" }).ToArray();
+            var cacheEntry = newCache.Retrieve(new[] {"my_key1", "my_key2"}).ToArray();
             Assert.AreEqual(2, cacheEntry.Length);
             Assert.AreEqual("Payload1", Encoding.ASCII.GetString(cacheEntry[0].Value.Data));
             Assert.AreEqual("Payload2", Encoding.ASCII.GetString(cacheEntry[1].Value.Data));

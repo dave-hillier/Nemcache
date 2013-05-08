@@ -2,21 +2,25 @@
 using System.IO;
 using Microsoft.Reactive.Testing;
 using Nemcache.Service;
-using Nemcache.Service.RequestHandlers;
 
 namespace Nemcache.Tests.RequestHandlerIntegrationTests
 {
     public class LocalRequestHandlerWithTestScheduler : IClient
     {
-        private readonly TestScheduler _scheduler;
         private readonly MemCache _cache;
         private readonly RequestDispatcher _requestDispatcher;
+        private readonly TestScheduler _scheduler;
 
         public LocalRequestHandlerWithTestScheduler()
         {
             _scheduler = new TestScheduler();
             _cache = new MemCache(capacity: 100);
             _requestDispatcher = new RequestDispatcher(_scheduler, _cache);
+        }
+
+        public TestScheduler TestScheduler
+        {
+            get { return _scheduler; }
         }
 
         public byte[] Send(byte[] p)
@@ -32,7 +36,5 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
         {
             _cache.Capacity = 10;
         }
-
-        public TestScheduler TestScheduler { get { return _scheduler;  } }
     }
 }

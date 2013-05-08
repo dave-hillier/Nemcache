@@ -48,7 +48,6 @@ namespace Nemcache.Tests.IO
 
             public void Delete(string path)
             {
-                   
             }
         }
     }

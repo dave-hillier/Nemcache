@@ -3,16 +3,15 @@ using System.IO;
 using System.Linq;
 using System.Net.Sockets;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Nemcache.Tests.RequestHandlerIntegrationTests;
 
 namespace Nemcache.IntegrationTestRunner
 {
-    class SyncClient : IClient
+    internal class SyncClient : IClient
     {
-        readonly TcpClient _tcpClient = new TcpClient();
         private readonly NetworkStream _stream;
+        private readonly TcpClient _tcpClient = new TcpClient();
 
         public SyncClient(int port)
         {
@@ -22,7 +21,7 @@ namespace Nemcache.IntegrationTestRunner
 
         public byte[] Send(byte[] request)
         {
-            var memoryStream = new MemoryStream(request); 
+            var memoryStream = new MemoryStream(request);
 
             var requestString = Encoding.ASCII.GetString(request);
             //Console.WriteLine("Requesting: {0}", requestString);
@@ -30,7 +29,7 @@ namespace Nemcache.IntegrationTestRunner
 
             if (requestString.Contains("noreply"))
             {
-                return new byte[]{};
+                return new byte[] {};
             }
             var buffer = new byte[4096];
             int read = _stream.Read(buffer, 0, 4096);
@@ -39,9 +38,10 @@ namespace Nemcache.IntegrationTestRunner
             //Console.WriteLine("  Response: {0}", Encoding.ASCII.GetString(result));
 
             return result;
-
         }
 
+
+        public IDisposable OnDisconnect { get; set; }
 
         public async Task<byte[]> SendAsync(byte[] request)
         {
@@ -53,7 +53,7 @@ namespace Nemcache.IntegrationTestRunner
 
             if (requestString.Contains("noreply"))
             {
-                return new byte[] { };
+                return new byte[] {};
             }
             var buffer = new byte[4096];
             int read = await _stream.ReadAsync(buffer, 0, 4096);
@@ -62,10 +62,6 @@ namespace Nemcache.IntegrationTestRunner
             //Console.WriteLine("  Response: {0}", Encoding.ASCII.GetString(result));
 
             return result;
-
         }
-
-        public IDisposable OnDisconnect { get; set; }
     }
-
 }

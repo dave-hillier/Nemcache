@@ -2,7 +2,7 @@
 
 namespace Nemcache.Service.RequestHandlers
 {
-    class VersionHandler : IRequestHandler
+    internal class VersionHandler : IRequestHandler
     {
         public void HandleRequest(IRequestContext context)
         {

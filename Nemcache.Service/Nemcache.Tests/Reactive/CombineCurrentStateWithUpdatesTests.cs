@@ -1,9 +1,9 @@
 ﻿using System.Globalization;
+using System.Reactive;
+using System.Reactive.Linq;
 using Microsoft.Reactive.Testing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Nemcache.Service.Notifications;
-using System.Reactive;
-using System.Reactive.Linq;
 using Nemcache.Service.Reactive;
 
 namespace Nemcache.Tests
@@ -11,19 +11,10 @@ namespace Nemcache.Tests
     [TestClass]
     public class CombineCurrentStateWithUpdatesTests : ReactiveTest
     {
-        class DummyNotification : ICacheNotification
-        {
-            public int EventId { get; set; }
-            public override string ToString()
-            {
-                return "Notification: " + EventId.ToString(CultureInfo.InvariantCulture);
-            }
-        }
-
         [TestMethod]
         public void DummyToString()
         {
-            var s = new DummyNotification() {EventId = 123}.ToString();
+            var s = new DummyNotification {EventId = 123}.ToString();
             Assert.AreEqual("Notification: 123", s);
         }
 
@@ -33,7 +24,7 @@ namespace Nemcache.Tests
             var ts = new TestScheduler();
 
             var history = ts.CreateColdObservable(
-                OnNext<ICacheNotification>(1, new DummyNotification { EventId = 1 }));
+                OnNext<ICacheNotification>(1, new DummyNotification {EventId = 1}));
 
             var observer = ts.CreateObserver<ICacheNotification>();
 
@@ -42,7 +33,7 @@ namespace Nemcache.Tests
             ts.AdvanceTo(2);
 
             ReactiveAssert.AreElementsEqual(
-                new Recorded<Notification<ICacheNotification>> [] {}, 
+                new Recorded<Notification<ICacheNotification>>[] {},
                 observer.Messages);
         }
 
@@ -52,9 +43,9 @@ namespace Nemcache.Tests
             var ts = new TestScheduler();
 
             var history = ts.CreateColdObservable(
-                OnNext<ICacheNotification>(1, new DummyNotification { EventId = 1 }),
+                OnNext<ICacheNotification>(1, new DummyNotification {EventId = 1}),
                 OnCompleted<ICacheNotification>(2));
-            
+
             var observer = ts.CreateObserver<ICacheNotification>();
 
             history.Combine(Observable.Never<ICacheNotification>()).Subscribe(observer);
@@ -70,16 +61,15 @@ namespace Nemcache.Tests
         }
 
 
-
         [TestMethod]
         public void HistoryMultipleValues()
         {
             var ts = new TestScheduler();
 
             var history = ts.CreateColdObservable(
-                OnNext<ICacheNotification>(1, new DummyNotification { EventId = 1 }),
-                OnNext<ICacheNotification>(4, new DummyNotification { EventId = 2 }),
-                OnNext<ICacheNotification>(9, new DummyNotification { EventId = 3 }),
+                OnNext<ICacheNotification>(1, new DummyNotification {EventId = 1}),
+                OnNext<ICacheNotification>(4, new DummyNotification {EventId = 2}),
+                OnNext<ICacheNotification>(9, new DummyNotification {EventId = 3}),
                 OnCompleted<ICacheNotification>(10));
 
             var observer = ts.CreateObserver<ICacheNotification>();
@@ -104,17 +94,17 @@ namespace Nemcache.Tests
             var ts = new TestScheduler();
 
             var live = ts.CreateHotObservable(
-                OnNext<ICacheNotification>(1, new DummyNotification { EventId = 1 }));
+                OnNext<ICacheNotification>(1, new DummyNotification {EventId = 1}));
 
             var observer = ts.CreateObserver<ICacheNotification>();
 
             Observable.Never<ICacheNotification>().
-                Combine(live).Subscribe(observer);
+                       Combine(live).Subscribe(observer);
 
             ts.AdvanceTo(2);
 
             ReactiveAssert.AreElementsEqual(
-                new Recorded<Notification<ICacheNotification>>[] { },
+                new Recorded<Notification<ICacheNotification>>[] {},
                 observer.Messages);
         }
 
@@ -124,7 +114,7 @@ namespace Nemcache.Tests
             var ts = new TestScheduler();
 
             var live = ts.CreateHotObservable(
-                            OnNext<ICacheNotification>(1, new DummyNotification { EventId = 1 }));
+                OnNext<ICacheNotification>(1, new DummyNotification {EventId = 1}));
 
             var observer = ts.CreateObserver<ICacheNotification>();
 
@@ -146,11 +136,11 @@ namespace Nemcache.Tests
             var ts = new TestScheduler();
 
             var history = ts.CreateColdObservable(
-                OnNext<ICacheNotification>(3, new DummyNotification { EventId = 1 }),
+                OnNext<ICacheNotification>(3, new DummyNotification {EventId = 1}),
                 OnCompleted<ICacheNotification>(5));
 
             var live = ts.CreateHotObservable(
-                            OnNext<ICacheNotification>(4, new DummyNotification { EventId = 2 }));
+                OnNext<ICacheNotification>(4, new DummyNotification {EventId = 2}));
 
             var observer = ts.CreateObserver<ICacheNotification>();
 
@@ -173,25 +163,25 @@ namespace Nemcache.Tests
             var testScheduler = new TestScheduler();
 
             var history = testScheduler.CreateColdObservable(
-                OnNext(1L, new DummyNotification { EventId = 1 }),
-                OnNext(2L, new DummyNotification { EventId = 2 }),
-                OnNext(3L, new DummyNotification { EventId = 3 }),
-                OnNext(4L, new DummyNotification { EventId = 4 }),
+                OnNext(1L, new DummyNotification {EventId = 1}),
+                OnNext(2L, new DummyNotification {EventId = 2}),
+                OnNext(3L, new DummyNotification {EventId = 3}),
+                OnNext(4L, new DummyNotification {EventId = 4}),
                 OnCompleted(new DummyNotification(), 5L));
 
             var live = testScheduler.CreateHotObservable(
-                OnNext(1L, new DummyNotification { EventId = 3 }),
-                OnNext(2L, new DummyNotification { EventId = 4 }),
-                OnNext(3L, new DummyNotification { EventId = 5 }),
-                OnNext(4L, new DummyNotification { EventId = 6 }),
-                OnNext(5L, new DummyNotification { EventId = 7 }),
-                OnNext(6L, new DummyNotification { EventId = 8 }),
-                OnNext(7L, new DummyNotification { EventId = 9 })
+                OnNext(1L, new DummyNotification {EventId = 3}),
+                OnNext(2L, new DummyNotification {EventId = 4}),
+                OnNext(3L, new DummyNotification {EventId = 5}),
+                OnNext(4L, new DummyNotification {EventId = 6}),
+                OnNext(5L, new DummyNotification {EventId = 7}),
+                OnNext(6L, new DummyNotification {EventId = 8}),
+                OnNext(7L, new DummyNotification {EventId = 9})
                 );
 
             var observer = testScheduler.CreateObserver<ICacheNotification>();
             history.Combine(live).Subscribe(observer);
-            
+
             testScheduler.AdvanceTo(6L);
 
             ReactiveAssert.AreElementsEqual(
@@ -207,6 +197,16 @@ namespace Nemcache.Tests
                         OnNext<ICacheNotification>(6, n => n.EventId == 8)
                     },
                 observer.Messages);
+        }
+
+        private class DummyNotification : ICacheNotification
+        {
+            public int EventId { get; set; }
+
+            public override string ToString()
+            {
+                return "Notification: " + EventId.ToString(CultureInfo.InvariantCulture);
+            }
         }
     }
 }

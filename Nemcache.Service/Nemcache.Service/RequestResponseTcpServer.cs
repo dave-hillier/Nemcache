@@ -8,14 +8,12 @@ using System.Threading.Tasks;
 
 namespace Nemcache.Service
 {
-    class RequestResponseTcpServer
+    internal class RequestResponseTcpServer
     {
-        private readonly RequestDispatcher _dispatcher;
-        private readonly TaskFactory _taskFactory;
         private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
-        public IPAddress Address { get; set; }
-        public int Port { get; set; }
+        private readonly RequestDispatcher _dispatcher;
         private readonly TcpListener _listener;
+        private readonly TaskFactory _taskFactory;
 
         public RequestResponseTcpServer(IPAddress address, int port, RequestDispatcher dispatcher)
         {
@@ -25,6 +23,9 @@ namespace Nemcache.Service
             Port = port;
             _listener = new TcpListener(address, port);
         }
+
+        public IPAddress Address { get; set; }
+        public int Port { get; set; }
 
         public void Start()
         {
@@ -53,7 +54,6 @@ namespace Nemcache.Service
                 {
                     while (!disconnected)
                     {
-                        
                         await _dispatcher.Dispatch(stream, stream, "", Disposable.Create(() =>
                             {
                                 disconnected = true;
@@ -62,7 +62,7 @@ namespace Nemcache.Service
                     }
                 }
             }
-            catch(IOException exception)
+            catch (IOException exception)
             {
                 Console.WriteLine("[ERROR] {0}", exception.Message);
             }
@@ -70,6 +70,8 @@ namespace Nemcache.Service
 
         public void Stop()
         {
+            _listener.Stop();
+            _cancellationTokenSource.Cancel();
         }
     }
 }

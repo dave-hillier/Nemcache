@@ -5,9 +5,9 @@ namespace Nemcache.Service
 {
     internal class Service
     {
-        private readonly RequestResponseTcpServer _server;
         private readonly MemCache _memCache;
         private readonly RequestDispatcher _requestDispatcher;
+        private readonly RequestResponseTcpServer _server;
 
         public Service(ulong capacity, uint port)
         {

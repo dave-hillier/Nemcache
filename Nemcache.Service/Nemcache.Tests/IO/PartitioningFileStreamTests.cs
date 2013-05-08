@@ -121,6 +121,7 @@ namespace Nemcache.Tests.IO
 
             Assert.IsTrue(stream.HasCalledClose);
         }
+
         // TODO: check the filename for read
 
         [TestMethod]
@@ -235,7 +236,7 @@ namespace Nemcache.Tests.IO
 
             var fileSystem = new FakeFileSystem(memoryStream1, null, null);
             var partitioningStream = new PartitioningFileStream(fileSystem, "FileName", "ext", 10, FileAccess.Write);
-        
+
             var buffer = new byte[9];
             partitioningStream.Write(buffer, 0, 9);
             Assert.AreEqual(9, partitioningStream.Position);
@@ -298,6 +299,5 @@ namespace Nemcache.Tests.IO
 
             Assert.IsTrue(stream1.HasCalledClose);
         }
-
     }
 }

@@ -5,8 +5,8 @@ namespace Nemcache.Service.RequestHandlers
 {
     internal class DeleteHandler : IRequestHandler
     {
-        private readonly RequestConverters _helpers;
         private readonly IMemCache _cache;
+        private readonly RequestConverters _helpers;
 
         public DeleteHandler(RequestConverters helpers, IMemCache cache)
         {

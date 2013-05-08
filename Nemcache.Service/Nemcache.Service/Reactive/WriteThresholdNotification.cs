@@ -5,12 +5,11 @@ using System.Reactive.Linq;
 
 namespace Nemcache.Service.Reactive
 {
-
-    class WriteThresholdNotification
+    internal class WriteThresholdNotification
     {
-        private readonly long _writeThreshold;
         private readonly TimeSpan _minInterval;
         private readonly IScheduler _scheduler;
+        private readonly long _writeThreshold;
 
         public WriteThresholdNotification(long writeThreshold, TimeSpan minInterval, IScheduler scheduler)
         {
@@ -25,7 +24,5 @@ namespace Nemcache.Service.Reactive
                                  Repeat().
                                  RateLimit(_minInterval, _scheduler);
         }
-
-
     }
 }

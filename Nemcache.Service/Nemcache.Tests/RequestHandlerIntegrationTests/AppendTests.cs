@@ -8,12 +8,12 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
     {
         private IClient _client;
 
+        public IClient Client { get; set; }
+
         private byte[] Dispatch(byte[] p)
         {
             return _client.Send(p);
         }
-
-        public IClient Client { get; set; }
 
         [TestInitialize]
         public void Setup()
@@ -41,7 +41,6 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             var response = Dispatch(appendBuilder.ToAsciiRequest());
 
             Assert.AreEqual("", response.ToAsciiString());
-            
         }
 
 
@@ -82,7 +81,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             Assert.AreEqual("VALUE key 0 12\r\nfirst second\r\nEND\r\n", response.ToAsciiString());
         }
 
- 
+
         [TestMethod]
         public void PrependToEmpty()
         {
@@ -117,6 +116,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
 
             Assert.AreEqual("STORED\r\n", response.ToAsciiString());
         }
+
         /*
         [TestMethod]
         public void GetValueOfPrependToEmpty()

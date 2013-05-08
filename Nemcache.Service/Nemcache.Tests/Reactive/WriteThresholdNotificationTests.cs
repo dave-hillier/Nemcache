@@ -7,7 +7,6 @@ using Nemcache.Service.Reactive;
 
 namespace Nemcache.Tests.Reactive
 {
-
     [TestClass]
     public class WriteThresholdNotificationTests : ReactiveTest
     {
@@ -62,7 +61,7 @@ namespace Nemcache.Tests.Reactive
             observable.Subscribe(results);
             testScheduler.AdvanceBy(103);
 
-            ReactiveAssert.AreElementsEqual(new[] { OnNext<Unit>(102, _ => true) }, results.Messages);
+            ReactiveAssert.AreElementsEqual(new[] {OnNext<Unit>(102, _ => true)}, results.Messages);
         }
 
         [TestMethod]
@@ -85,7 +84,7 @@ namespace Nemcache.Tests.Reactive
             observable.Subscribe(results);
             testScheduler.AdvanceTo(1000);
 
-            ReactiveAssert.AreElementsEqual(new[] { OnNext<Unit>(102, _ => true) }, results.Messages);
+            ReactiveAssert.AreElementsEqual(new[] {OnNext<Unit>(102, _ => true)}, results.Messages);
         }
 
         [TestMethod]

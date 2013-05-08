@@ -25,14 +25,14 @@ namespace Nemcache.Service
                     {"get", getHandler},
                     {"gets", getHandler},
                     {"set", new SetHandler(helpers, cache)},
-                    {"append", new AppendHandler(helpers, cache, scheduler)},
-                    {"prepend", new PrependHandler(helpers, cache, scheduler)},
-                    {"add", new AddHandler(helpers, cache, scheduler)},
-                    {"replace", new ReplaceHandler(helpers, cache, scheduler)},
+                    {"append", new AppendHandler(helpers, cache)},
+                    {"prepend", new PrependHandler(helpers, cache)},
+                    {"add", new AddHandler(helpers, cache)},
+                    {"replace", new ReplaceHandler(helpers, cache)},
                     {"cas", new CasHandler(helpers, cache)},
                     {"stats", new StatsHandler()},
                     {"delete", new DeleteHandler(helpers, cache)},
-                    {"flush_all", new FlushHandler(helpers, cache, scheduler)},
+                    {"flush_all", new FlushHandler(cache, scheduler)},
                     {"quit", new QuitHandler()},
                     {"exception", new ExceptionHandler()},
                     {"version", new VersionHandler()},
@@ -60,8 +60,8 @@ namespace Nemcache.Service
         }
 
         public async Task Dispatch(
-            Stream stream, 
-            Stream outStream, 
+            Stream stream,
+            Stream outStream,
             string remoteEndpoint,
             IDisposable clientConnectionHandle)
         {
@@ -96,7 +96,8 @@ namespace Nemcache.Service
             requestContext.ResponseStream.WriteAsync(response, 0, response.Length);
         }
 
-        private async Task<RequestContext> CreateRequestContext(Stream stream, Stream outStream, IDisposable clientConnectionHandle)
+        private async Task<RequestContext> CreateRequestContext(Stream stream, Stream outStream,
+                                                                IDisposable clientConnectionHandle)
         {
             var requestFirstLine = GetFirstLine(stream);
 

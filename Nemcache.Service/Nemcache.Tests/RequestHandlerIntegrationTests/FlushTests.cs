@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Reactive.Concurrency;
 using System.Text;
 using Microsoft.Reactive.Testing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Nemcache.Client.Builders;
-using Nemcache.Service;
 
 namespace Nemcache.Tests.RequestHandlerIntegrationTests
 {

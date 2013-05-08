@@ -98,6 +98,5 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             var getResponse = Dispatch(getBuilder.ToAsciiRequest());
             Assert.AreEqual("VALUE key 0 6 789\r\nvalue1\r\nEND\r\n", getResponse.ToAsciiString());
         }
-
     }
 }

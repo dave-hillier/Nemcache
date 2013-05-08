@@ -6,16 +6,14 @@ namespace Nemcache.Service.RequestHandlers
 {
     internal class MutateHandler : IRequestHandler
     {
-        private readonly RequestConverters _helpers;
         private readonly IMemCache _cache;
-        private readonly IScheduler _scheduler;
-        private readonly byte[] _endOfLine = new byte[] { 13, 10 }; // Ascii for "\r\n"
+        private readonly byte[] _endOfLine = new byte[] {13, 10}; // Ascii for "\r\n"
+        private readonly RequestConverters _helpers;
 
         public MutateHandler(RequestConverters helpers, IMemCache cache, IScheduler scheduler)
         {
             _helpers = helpers;
             _cache = cache;
-            _scheduler = scheduler;
         }
 
         public void HandleRequest(IRequestContext context)

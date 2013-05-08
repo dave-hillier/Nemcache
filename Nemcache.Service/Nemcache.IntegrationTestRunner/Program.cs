@@ -1,19 +1,21 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
+using System.Linq;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Nemcache.Client.Builders;
 using Nemcache.Tests.RequestHandlerIntegrationTests;
-using System;
-using System.Linq;
-using System.Net.Sockets;
-using System.Threading.Tasks;
 
 namespace Nemcache.IntegrationTestRunner
 {
-    class Program
+    internal class Program
     {
-        static void Main(string[] args)
+        private static int _count;
+
+        private static void Main(string[] args)
         {
             //int port = 11222;
             int port = 11211;
@@ -21,29 +23,29 @@ namespace Nemcache.IntegrationTestRunner
             var client = new SyncClient(port);
             var tests = new object[]
                 {
-                    new AddTest { Client = client },
-                    new AppendTests { Client = client },
-                    new DeleteTests { Client = client },
-                    new GetAndSetTests { Client = client },
-                    new MutateTests { Client = client },
-                    new ReplaceTests { Client = client },
+                    new AddTest {Client = client},
+                    new AppendTests {Client = client},
+                    new DeleteTests {Client = client},
+                    new GetAndSetTests {Client = client},
+                    new MutateTests {Client = client},
+                    new ReplaceTests {Client = client},
                 };
 
             var initializer = from instance in tests
-                          let type = instance.GetType()
-                          from method in type.GetMethods()
-                          where method.GetCustomAttributes(typeof(TestInitializeAttribute), false).Any()
-                          select new Action(() =>
-                              {
-                                  try
+                              let type = instance.GetType()
+                              from method in type.GetMethods()
+                              where method.GetCustomAttributes(typeof (TestInitializeAttribute), false).Any()
+                              select new Action(() =>
                                   {
-                                      method.Invoke(instance, null);
-                                  }
-                                  catch (Exception)
-                                  {
-                                      Console.WriteLine("[ERROR] {0} {1}...", type.Name, method.Name);                                      
-                                  }
-                              });
+                                      try
+                                      {
+                                          method.Invoke(instance, null);
+                                      }
+                                      catch (Exception)
+                                      {
+                                          Console.WriteLine("[ERROR] {0} {1}...", type.Name, method.Name);
+                                      }
+                                  });
 
             foreach (var action in initializer)
             {
@@ -55,16 +57,16 @@ namespace Nemcache.IntegrationTestRunner
                           from method in type.GetMethods()
                           where method.GetCustomAttributes(typeof (TestMethodAttribute), false).Any()
                           select new Action(() =>
-                          {
-                              try
                               {
-                                  method.Invoke(instance, null);
-                              }
-                              catch (Exception ex)
-                              {
-                                  Console.WriteLine("[ERROR] {0} {1} {2}...", type.Name, method.Name, ex.Message);
-                              }
-                          });
+                                  try
+                                  {
+                                      method.Invoke(instance, null);
+                                  }
+                                  catch (Exception ex)
+                                  {
+                                      Console.WriteLine("[ERROR] {0} {1} {2}...", type.Name, method.Name, ex.Message);
+                                  }
+                              });
             client.Send(Encoding.ASCII.GetBytes("flush_all\r\n"));
             foreach (var action in actions)
             {
@@ -88,39 +90,34 @@ namespace Nemcache.IntegrationTestRunner
             for (int i = 0; i < 1; i++)
             {
                 tf.StartNew(
-                () => 
-                {
-                    var client1 = new SyncClient(port);
-                    SimpleBenchmark(client1, string.Format("Key{0}", i), 1000000);
-                });
-
+                    () =>
+                        {
+                            var client1 = new SyncClient(port);
+                            SimpleBenchmark(client1, string.Format("Key{0}", i), 1000000);
+                        });
             }
             tf.StartNew(() =>
-            {
-                while (true)
                 {
-                    Task.Delay(TimeSpan.FromSeconds(10));
-                    if (timeSpan + TimeSpan.FromSeconds(10) < stopWatch.Elapsed)
+                    while (true)
                     {
-
-                        timeSpan = stopWatch.Elapsed;
-                        Console.WriteLine("{0} per second", _count - lastCount);
-                        lastCount = _count;
+                        Task.Delay(TimeSpan.FromSeconds(10));
+                        if (timeSpan + TimeSpan.FromSeconds(10) < stopWatch.Elapsed)
+                        {
+                            timeSpan = stopWatch.Elapsed;
+                            Console.WriteLine("{0} per second", _count - lastCount);
+                            lastCount = _count;
+                        }
                     }
-                }
-            });
+                });
 //            stopWatch.Stop();
             //Console.WriteLine("Took {0}", stopWatch.Elapsed);
- 
+
             //Console.WriteLine("Done!");
             Console.ReadLine();
-
         }
 
-        private static int _count = 0;
         private static async void SimpleBenchmark(SyncClient client, string key = "key", int iterations = 100000)
         {
-
             var stopWatch = new Stopwatch();
             stopWatch.Start();
             for (int i = 0; i < iterations; ++i)

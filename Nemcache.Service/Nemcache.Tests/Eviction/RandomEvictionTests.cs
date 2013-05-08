@@ -22,7 +22,7 @@ namespace Nemcache.Tests.Eviction
         public void EvictSingle()
         {
             var memCache = new MemCache(100); //Consider using mock
-            memCache.Add("mykey", 0, DateTime.MaxValue, new byte[] { });
+            memCache.Add("mykey", 0, DateTime.MaxValue, new byte[] {});
             var strategy = new RandomEvictionStrategy(memCache);
             strategy.EvictEntry();
             Assert.AreEqual(0, memCache.Keys.Count());
@@ -32,8 +32,8 @@ namespace Nemcache.Tests.Eviction
         public void Evict2()
         {
             var memCache = new MemCache(100); //Consider using mock
-            memCache.Add("mykey1", 0, DateTime.MaxValue, new byte[] { });
-            memCache.Add("mykey2", 0, DateTime.MaxValue, new byte[] { });
+            memCache.Add("mykey1", 0, DateTime.MaxValue, new byte[] {});
+            memCache.Add("mykey2", 0, DateTime.MaxValue, new byte[] {});
             var strategy = new RandomEvictionStrategy(memCache);
             strategy.EvictEntry();
             Assert.AreEqual(1, memCache.Keys.Count());

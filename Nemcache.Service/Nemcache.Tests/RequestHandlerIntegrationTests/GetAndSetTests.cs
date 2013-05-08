@@ -1,5 +1,4 @@
-﻿using System.Reactive.Concurrency;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Nemcache.Client.Builders;
 
 namespace Nemcache.Tests.RequestHandlerIntegrationTests
@@ -9,12 +8,12 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
     {
         private IClient _client;
 
+        public IClient Client { get; set; }
+
         private byte[] Dispatch(byte[] p)
         {
             return _client.Send(p);
         }
-
-        public IClient Client { get; set; }
 
         [TestInitialize]
         public void Setup()
@@ -22,7 +21,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             _client = Client ?? new LocalRequestHandlerWithTestScheduler();
         }
 
-        
+
         [TestMethod]
         public void Set()
         {

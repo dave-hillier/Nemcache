@@ -1,6 +1,6 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Reactive.Disposables;
+﻿using System.Reactive.Disposables;
 using System.Text;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Nemcache.Tests.RequestHandlerIntegrationTests
 {
@@ -9,12 +9,12 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
     {
         private IClient _client;
 
+        public IClient Client { get; set; }
+
         private byte[] Dispatch(byte[] p)
         {
             return _client.Send(p);
         }
-
-        public IClient Client { get; set; }
 
         [TestInitialize]
         public void Setup()
@@ -69,6 +69,5 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             // TODO: implement
             var result = Dispatch(Encoding.ASCII.GetBytes("stats settings\r\n"));
         }
-
     }
 }

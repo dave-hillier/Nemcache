@@ -4,8 +4,8 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
 {
     public interface IClient
     {
+        IDisposable OnDisconnect { get; set; }
         byte[] Send(byte[] p);
-
-        IDisposable OnDisconnect { get; set; } // TODO: replace with a proper callback
+        // TODO: replace with a proper callback
     }
 }

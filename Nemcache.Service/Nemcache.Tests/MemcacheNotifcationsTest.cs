@@ -11,8 +11,8 @@ namespace Nemcache.Tests
     public class MemcacheNotifcationsTest : ReactiveTest
     {
         private MemCache _cache;
-        private TestScheduler _testScheduler;
         private ITestableObserver<ICacheNotification> _testObserver;
+        private TestScheduler _testScheduler;
 
         [TestInitialize]
         public void Setup()
@@ -109,9 +109,9 @@ namespace Nemcache.Tests
             _cache.Remove("key");
 
             var storeNotification = GetNotification();
-            Assert.IsInstanceOfType(storeNotification, typeof(StoreNotification));
+            Assert.IsInstanceOfType(storeNotification, typeof (StoreNotification));
             var removeNotifaction = GetNotification(1);
-            Assert.IsInstanceOfType(removeNotifaction, typeof(RemoveNotification));
+            Assert.IsInstanceOfType(removeNotifaction, typeof (RemoveNotification));
         }
 
         [TestMethod]
@@ -131,9 +131,9 @@ namespace Nemcache.Tests
 
             Assert.AreEqual(2, _testObserver.Messages.Count);
             var storeNotification1 = GetNotification();
-            Assert.IsInstanceOfType(storeNotification1, typeof(StoreNotification));
+            Assert.IsInstanceOfType(storeNotification1, typeof (StoreNotification));
             var storeNotification2 = GetNotification();
-            Assert.IsInstanceOfType(storeNotification2, typeof(StoreNotification));
+            Assert.IsInstanceOfType(storeNotification2, typeof (StoreNotification));
         }
 
 
@@ -147,7 +147,7 @@ namespace Nemcache.Tests
 
             Assert.AreEqual(1, _testObserver.Messages.Count);
             var storeNotification = GetNotification();
-            Assert.IsInstanceOfType(storeNotification, typeof(StoreNotification));
+            Assert.IsInstanceOfType(storeNotification, typeof (StoreNotification));
         }
 
         [TestMethod]
@@ -158,9 +158,9 @@ namespace Nemcache.Tests
 
             Assert.AreEqual(2, _testObserver.Messages.Count);
             var storeNotification1 = GetNotification();
-            Assert.IsInstanceOfType(storeNotification1, typeof(StoreNotification));
+            Assert.IsInstanceOfType(storeNotification1, typeof (StoreNotification));
             var storeNotification2 = GetNotification(1);
-            Assert.IsInstanceOfType(storeNotification2, typeof(StoreNotification));
+            Assert.IsInstanceOfType(storeNotification2, typeof (StoreNotification));
         }
 
         [TestMethod]
@@ -173,7 +173,7 @@ namespace Nemcache.Tests
 
             Assert.AreEqual(1, _testObserver.Messages.Count);
             var storeNotification = GetNotification();
-            Assert.IsInstanceOfType(storeNotification, typeof(StoreNotification));
+            Assert.IsInstanceOfType(storeNotification, typeof (StoreNotification));
         }
 
         [TestMethod]
@@ -184,9 +184,9 @@ namespace Nemcache.Tests
 
             Assert.AreEqual(2, _testObserver.Messages.Count);
             var storeNotification = GetNotification();
-            Assert.IsInstanceOfType(storeNotification, typeof(StoreNotification));
+            Assert.IsInstanceOfType(storeNotification, typeof (StoreNotification));
             var clearNotification = GetNotification(1);
-            Assert.IsInstanceOfType(clearNotification, typeof(ClearNotification));
+            Assert.IsInstanceOfType(clearNotification, typeof (ClearNotification));
         }
 
         [TestMethod]
@@ -208,9 +208,9 @@ namespace Nemcache.Tests
 
             Assert.AreEqual(2, _testObserver.Messages.Count);
             var storeNotification1 = GetNotification();
-            Assert.IsInstanceOfType(storeNotification1, typeof(StoreNotification));
+            Assert.IsInstanceOfType(storeNotification1, typeof (StoreNotification));
             var storeNotification2 = GetNotification(1);
-            Assert.IsInstanceOfType(storeNotification2, typeof(TouchNotification));
+            Assert.IsInstanceOfType(storeNotification2, typeof (TouchNotification));
         }
 
         [TestMethod]
@@ -223,7 +223,7 @@ namespace Nemcache.Tests
 
             Assert.AreEqual(1, _testObserver.Messages.Count);
             var storeNotification = GetNotification();
-            Assert.IsInstanceOfType(storeNotification, typeof(StoreNotification));
+            Assert.IsInstanceOfType(storeNotification, typeof (StoreNotification));
         }
 
         // TODO: Cas tests

@@ -1,10 +1,8 @@
-﻿using System.Reactive.Concurrency;
-
-namespace Nemcache.Service.RequestHandlers
+﻿namespace Nemcache.Service.RequestHandlers
 {
     internal class AppendHandler : SetHandler
     {
-        public AppendHandler(RequestConverters helpers, IMemCache cache, IScheduler scheduler) :
+        public AppendHandler(RequestConverters helpers, IMemCache cache) :
             base(helpers, cache)
         {
         }

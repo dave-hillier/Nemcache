@@ -20,10 +20,10 @@ namespace Nemcache.Service
             new ConcurrentDictionary<string, CacheEntry>();
 
         private readonly ICacheObserver _cacheObserver;
+        private readonly IObservable<ICacheNotification> _combinedNotifications;
         private readonly IEvictionStrategy _evictionStrategy;
         private readonly Subject<ICacheNotification> _notificationsSubject;
         private int _currentSequenceId;
-        private readonly IObservable<ICacheNotification> _combinedNotifications;
 
         public MemCache(ulong capacity)
         {
@@ -40,14 +40,14 @@ namespace Nemcache.Service
 
         public ulong Used
         {
-            get { return (ulong)_cache.Values.Select(e => (long)e.Data.Length).Sum(); }
+            get { return (ulong) _cache.Values.Select(e => (long) e.Data.Length).Sum(); }
         }
 
         public void Clear()
         {
             var eventId = Interlocked.Increment(ref _currentSequenceId);
             _cache.Clear();
-            _notificationsSubject.OnNext(new ClearNotification { EventId = eventId });
+            _notificationsSubject.OnNext(new ClearNotification {EventId = eventId});
         }
 
         public bool Touch(string key, DateTime exptime)
@@ -198,14 +198,14 @@ namespace Nemcache.Service
             {
                 _notificationsSubject.OnNext(
                     new StoreNotification
-                    {
-                        Key = key,
-                        Data = data,
-                        Expiry = exptime,
-                        Flags = flags,
-                        Operation = prepend ? StoreOperation.Append : StoreOperation.Prepend,
-                        EventId = eventId
-                    });
+                        {
+                            Key = key,
+                            Data = data,
+                            Expiry = exptime,
+                            Flags = flags,
+                            Operation = prepend ? StoreOperation.Append : StoreOperation.Prepend,
+                            EventId = eventId
+                        });
             }
             return exists;
         }
@@ -263,8 +263,11 @@ namespace Nemcache.Service
             get { return _combinedNotifications; }
         }
 
-        public IEnumerable<string> Keys { get { return _cache.Keys; } }
-      
+        public IEnumerable<string> Keys
+        {
+            get { return _cache.Keys; }
+        }
+
 
         private IObservable<ICacheNotification> CreateNotifications()
         {
@@ -282,13 +285,11 @@ namespace Nemcache.Service
                                                         });
 
             return addOperations.ToObservable().Combine(_notificationsSubject);
-
-           
         }
 
         public void MakeSpaceForNewEntry(int length)
         {
-            while (!HasAvailableSpace((ulong)length))
+            while (!HasAvailableSpace((ulong) length))
             {
                 _evictionStrategy.EvictEntry();
             }

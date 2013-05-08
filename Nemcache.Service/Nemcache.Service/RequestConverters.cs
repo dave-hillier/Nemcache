@@ -3,11 +3,11 @@ using System.Reactive.Concurrency;
 
 namespace Nemcache.Service
 {
-    class RequestConverters
+    internal class RequestConverters
     {
         private static readonly DateTime UnixTimeEpoc = new DateTime(1970, 1, 1, 0, 0, 0, 0);
         private readonly IScheduler _scheduler;
-        
+
         public RequestConverters(IScheduler scheduler)
         {
             _scheduler = scheduler;
@@ -19,7 +19,7 @@ namespace Nemcache.Service
             // up to 60*60*24*30 seconds or unix time
             if (expirySeconds == 0)
                 return DateTime.MaxValue;
-            var start = expirySeconds < 60 * 60 * 24 * 30
+            var start = expirySeconds < 60*60*24*30
                             ? _scheduler.Now.DateTime
                             : UnixTimeEpoc;
             return start + TimeSpan.FromSeconds(expirySeconds);

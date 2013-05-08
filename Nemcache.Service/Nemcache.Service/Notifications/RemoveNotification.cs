@@ -1,4 +1,5 @@
 ﻿using ProtoBuf;
+
 namespace Nemcache.Service.Notifications
 {
     [ProtoContract]

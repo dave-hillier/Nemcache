@@ -3,15 +3,21 @@ using System.Text;
 
 namespace Nemcache.Service.RequestHandlers
 {
-    class TouchHandler : IRequestHandler
+    internal class TouchHandler : IRequestHandler
     {
-        private readonly RequestConverters _converters;
         private readonly IMemCache _cache;
+        private readonly RequestConverters _converters;
 
         public TouchHandler(RequestConverters converters, IMemCache cache)
         {
             _converters = converters;
             _cache = cache;
+        }
+
+        public void HandleRequest(IRequestContext context)
+        {
+            var result = HandleTouch(context.Parameters.ToArray());
+            context.ResponseStream.WriteAsync(result, 0, result.Length);
         }
 
         private byte[] HandleTouch(string[] commandParams)
@@ -22,12 +28,6 @@ namespace Nemcache.Service.RequestHandlers
             return success
                        ? Encoding.ASCII.GetBytes("OK\r\n")
                        : Encoding.ASCII.GetBytes("NOT_FOUND\r\n");
-        }
-
-        public void HandleRequest(IRequestContext context)
-        {
-            var result = HandleTouch(context.Parameters.ToArray());
-            context.ResponseStream.WriteAsync(result, 0, result.Length);
         }
     }
 }

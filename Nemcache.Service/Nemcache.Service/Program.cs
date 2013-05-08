@@ -8,7 +8,7 @@ namespace Nemcache.Service
         private static void Main()
         {
             var capacitySetting = ConfigurationManager.AppSettings["Capacity"];
-            ulong capacity = capacitySetting != null ? ulong.Parse(capacitySetting) : 1024 * 1024 * 1024 * 4L; // 4GB
+            ulong capacity = capacitySetting != null ? ulong.Parse(capacitySetting) : 1024*1024*1024*4L; // 4GB
 
             var portSetting = ConfigurationManager.AppSettings["Port"];
             uint port = portSetting != null ? uint.Parse(portSetting) : 11222;
@@ -16,7 +16,7 @@ namespace Nemcache.Service
             var cacheFileName = ConfigurationManager.AppSettings["CacheFile"] ?? "cache.bin";
 
             var partitionSizeSetting = ConfigurationManager.AppSettings["Port"];
-            uint partitionSize = partitionSizeSetting != null ? uint.Parse(partitionSizeSetting) : 512 * 1024 * 1024;
+            uint partitionSize = partitionSizeSetting != null ? uint.Parse(partitionSizeSetting) : 512*1024*1024;
 
             HostFactory.Run(hc =>
                 {

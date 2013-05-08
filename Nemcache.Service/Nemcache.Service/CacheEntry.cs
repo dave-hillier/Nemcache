@@ -10,7 +10,7 @@ namespace Nemcache.Service
         public ulong CasUnique { get; set; }
         public byte[] Data { get; set; }
         public int EventId { get; set; }
-        
+
         public bool IsExpired(IScheduler scheduler)
         {
             return Expiry < scheduler.Now;

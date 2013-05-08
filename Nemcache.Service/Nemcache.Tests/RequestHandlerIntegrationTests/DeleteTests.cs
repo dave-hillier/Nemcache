@@ -8,12 +8,12 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
     {
         private IClient _client;
 
+        public IClient Client { get; set; }
+
         private byte[] Dispatch(byte[] p)
         {
             return _client.Send(p);
         }
-
-        public IClient Client { get; set; }
 
         [TestInitialize]
         public void Setup()
@@ -21,7 +21,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             _client = Client ?? new LocalRequestHandlerWithTestScheduler();
         }
 
-        
+
         [TestMethod]
         public void DeleteNotFound()
         {
@@ -56,6 +56,5 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             var response = Dispatch(getBuilder.ToAsciiRequest());
             Assert.AreEqual("END\r\n", response.ToAsciiString());
         }
-
     }
 }

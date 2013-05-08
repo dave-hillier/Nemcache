@@ -7,13 +7,11 @@ namespace Nemcache.Service.RequestHandlers
 {
     internal class FlushHandler : IRequestHandler
     {
-        private readonly RequestConverters _helpers;
         private readonly IMemCache _cache;
         private readonly IScheduler _scheduler;
 
-        public FlushHandler(RequestConverters helpers, IMemCache cache, IScheduler scheduler)
+        public FlushHandler(IMemCache cache, IScheduler scheduler)
         {
-            _helpers = helpers;
             _cache = cache;
             _scheduler = scheduler;
         }

@@ -1,6 +1,4 @@
-﻿using ProtoBuf;
-
-namespace Nemcache.Service.Notifications
+﻿namespace Nemcache.Service.Notifications
 {
     public interface ICacheNotification
     {

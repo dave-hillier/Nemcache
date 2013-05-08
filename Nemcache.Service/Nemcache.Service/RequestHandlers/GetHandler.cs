@@ -6,8 +6,8 @@ namespace Nemcache.Service.RequestHandlers
 {
     internal class GetHandler : IRequestHandler
     {
-        private readonly RequestConverters _helpers;
         private readonly IMemCache _cache;
+        private readonly RequestConverters _helpers;
         private readonly IScheduler _scheduler;
 
         public GetHandler(RequestConverters helpers, IMemCache cache, IScheduler scheduler)

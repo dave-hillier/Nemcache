@@ -9,7 +9,7 @@ namespace Nemcache.Service
         IEnumerable<string> Parameters { get; }
         byte[] DataBlock { get; }
 
-        void Close();
         Stream ResponseStream { get; }
+        void Close();
     }
 }

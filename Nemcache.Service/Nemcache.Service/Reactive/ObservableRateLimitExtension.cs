@@ -4,9 +4,10 @@ using System.Reactive.Linq;
 
 namespace Nemcache.Service
 {
-    static class ObservableRateLimitExtension
+    internal static class ObservableRateLimitExtension
     {
-        public static IObservable<T> RateLimit<T>(this IObservable<T> observable, TimeSpan minInterval, IScheduler scheduler)
+        public static IObservable<T> RateLimit<T>(this IObservable<T> observable, TimeSpan minInterval,
+                                                  IScheduler scheduler)
         {
             var lastUpdate = DateTimeOffset.MinValue;
             return Observable.Create<T>(obs => observable.Subscribe(s =>

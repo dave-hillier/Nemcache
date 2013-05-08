@@ -5,9 +5,8 @@ namespace Nemcache.Service.RequestHandlers
 {
     internal class CasHandler : IRequestHandler
     {
-        private readonly RequestConverters _helpers;
         private readonly IMemCache _cache;
-        private readonly RequestDispatcher _requestDispatcher;
+        private readonly RequestConverters _helpers;
 
         public CasHandler(RequestConverters helpers, IMemCache cache)
         {

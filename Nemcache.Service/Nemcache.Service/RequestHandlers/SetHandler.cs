@@ -24,9 +24,10 @@ namespace Nemcache.Service.RequestHandlers
             var response = Store(context.CommandName, key, flags, exptime, context.DataBlock);
             context.ResponseStream.WriteAsync(response, 0, response.Length);
         }
+
         public byte[] Store(string commandName, string key, ulong flags, DateTime exptime, byte[] data)
         {
-            if ((ulong)data.Length > _cache.Capacity)
+            if ((ulong) data.Length > _cache.Capacity)
             {
                 return Encoding.ASCII.GetBytes("ERROR Over capacity\r\n");
             }

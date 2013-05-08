@@ -1,10 +1,9 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using Microsoft.Reactive.Testing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Nemcache.Client.Builders;
 using Nemcache.Service;
-using System;
-using Nemcache.Service.RequestHandlers;
 
 namespace Nemcache.Tests.RequestHandlerIntegrationTests
 {
@@ -17,7 +16,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
         private byte[] Dispatch(byte[] p)
         {
             var memoryStream = new MemoryStream(1024);
-            _requestDispatcher.Dispatch(new MemoryStream(p), memoryStream,  "", null).Wait();
+            _requestDispatcher.Dispatch(new MemoryStream(p), memoryStream, "", null).Wait();
             return memoryStream.ToArray();
         }
 
@@ -25,7 +24,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
         public void Setup()
         {
             _testScheduler = new TestScheduler();
-            _requestDispatcher = new RequestDispatcher(_testScheduler, new MemCache(capacity:100));
+            _requestDispatcher = new RequestDispatcher(_testScheduler, new MemCache(capacity: 100));
         }
 
         #region touch

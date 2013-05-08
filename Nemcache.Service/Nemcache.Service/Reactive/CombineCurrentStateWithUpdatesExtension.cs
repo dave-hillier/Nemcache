@@ -18,7 +18,7 @@ namespace Nemcache.Service.Reactive
         }
 
         private static IObservable<ICacheNotification> BufferLiveUntilHistoryCompletes(
-            IObservable<ICacheNotification> historic, 
+            IObservable<ICacheNotification> historic,
             IObservable<ICacheNotification> live)
         {
             return Observable.Create<ICacheNotification>(obs =>

@@ -1,35 +1,36 @@
-﻿using Nemcache.Service.Notifications;
-using ProtoBuf;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using Nemcache.Service.Notifications;
+using ProtoBuf;
 
 namespace Nemcache.Service
 {
-    class StreamArchiver : IObserver<ICacheNotification>
+    internal class StreamArchiver : IObserver<ICacheNotification>
     {
-        [ProtoContract]
-        public class ArchiveEntry
-        {
-            [ProtoMember(1)]
-            public StoreNotification Store { get; set; }
-
-            [ProtoMember(2)]
-            public ClearNotification Clear { get; set; }
-
-            [ProtoMember(3)]
-            public TouchNotification Touch { get; set; }
-
-            [ProtoMember(4)]
-            public RemoveNotification Remove { get; set; }
-
-        }
-        
         private readonly Stream _outputStream;
 
         public StreamArchiver(Stream outputStream)
         {
             _outputStream = outputStream;
+        }
+
+        public void OnNext(ICacheNotification value)
+        {
+            var entry = CreateArchiveEntry(value);
+            OnNotification(entry);
+        }
+
+        public void OnError(Exception error)
+        {
+            // Cache emits an error?
+            _outputStream.Dispose();
+        }
+
+        public void OnCompleted()
+        {
+            // Dispose?
+            _outputStream.Dispose();
         }
 
         public static IEnumerable<ArchiveEntry> ReadLog(Stream stream)
@@ -61,7 +62,7 @@ namespace Nemcache.Service
         {
             var archiveEntry = new ArchiveEntry
                 {
-                    Store = notification as StoreNotification, 
+                    Store = notification as StoreNotification,
                     Clear = notification as ClearNotification,
                     Remove = notification as RemoveNotification,
                     Touch = notification as TouchNotification
@@ -69,22 +70,20 @@ namespace Nemcache.Service
             return archiveEntry;
         }
 
-        public void OnNext(ICacheNotification value)
+        [ProtoContract]
+        public class ArchiveEntry
         {
-            var entry = CreateArchiveEntry(value);
-            OnNotification(entry);
-        }
+            [ProtoMember(1)]
+            public StoreNotification Store { get; set; }
 
-        public void OnError(Exception error)
-        {
-            // Cache emits an error?
-            _outputStream.Dispose();
-        }
+            [ProtoMember(2)]
+            public ClearNotification Clear { get; set; }
 
-        public void OnCompleted()
-        {
-            // Dispose?
-            _outputStream.Dispose();
+            [ProtoMember(3)]
+            public TouchNotification Touch { get; set; }
+
+            [ProtoMember(4)]
+            public RemoveNotification Remove { get; set; }
         }
     }
 }

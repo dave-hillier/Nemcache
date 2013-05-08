@@ -2,7 +2,7 @@
 
 namespace Nemcache.Service.IO
 {
-    class FileWrapper : IFile
+    internal class FileWrapper : IFile
     {
         public Stream Open(string path, FileMode mode, FileAccess access)
         {

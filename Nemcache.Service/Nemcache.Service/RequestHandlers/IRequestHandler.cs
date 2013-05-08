@@ -1,6 +1,6 @@
 ﻿namespace Nemcache.Service.RequestHandlers
 {
-    interface IRequestHandler
+    internal interface IRequestHandler
     {
         void HandleRequest(IRequestContext context);
     }
