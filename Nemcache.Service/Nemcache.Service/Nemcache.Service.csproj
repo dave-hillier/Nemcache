@@ -61,9 +61,24 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IRequestContext.cs" />
+    <Compile Include="RequestHandlers\IRequestHandler.cs" />
+    <Compile Include="RequestHandlers\MutateHandler.cs" />
+    <Compile Include="RequestHandlers\AddHandler.cs" />
+    <Compile Include="RequestHandlers\AppendHandler.cs" />
     <Compile Include="CacheEntry.cs" />
+    <Compile Include="RequestHandlers\CasHandler.cs" />
+    <Compile Include="RequestHandlers\DeleteHandler.cs" />
+    <Compile Include="RequestHandlers\ExceptionHandler.cs" />
+    <Compile Include="RequestHandlers\FlushHandler.cs" />
+    <Compile Include="RequestHandlers\GetHandler.cs" />
     <Compile Include="IO\LogFileNameGenerator.cs" />
     <Compile Include="Manager.cs" />
+    <Compile Include="RequestHandlers\PrependHandler.cs" />
+    <Compile Include="RequestHandlers\QuitHandler.cs" />
+    <Compile Include="RequestHandlers\ReplaceHandler.cs" />
+    <Compile Include="RequestHandlers\SetHandler.cs" />
+    <Compile Include="RequestConverters.cs" />
     <Compile Include="SocketState.cs" />
     <Compile Include="RequestResponseTcpServer.cs" />
     <Compile Include="Reactive\ObservableRateLimitExtension.cs" />
@@ -80,6 +95,7 @@
     <Compile Include="IO\PartitioningFileStream.cs" />
     <Compile Include="Reactive\ThresholdExtension.cs" />
     <Compile Include="Service.cs" />
+    <Compile Include="RequestHandlers\StatsHandler.cs" />
     <Compile Include="StreamArchiver.cs" />
     <Compile Include="MemCache.cs" />
     <Compile Include="Eviction\NullEvictionStrategy.cs" />
@@ -91,10 +107,12 @@
     <Compile Include="Notifications\StoreNotification.cs" />
     <Compile Include="Notifications\StoreOperation.cs" />
     <Compile Include="Notifications\TouchNotification.cs" />
-    <Compile Include="RequestHandler.cs" />
+    <Compile Include="RequestDispatcher.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Reactive\WriteThresholdNotification.cs" />
+    <Compile Include="RequestHandlers\TouchHandler.cs" />
+    <Compile Include="RequestHandlers\VersionHandler.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

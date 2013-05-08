@@ -7,6 +7,7 @@ using System.Reactive.Linq;
 using Nemcache.Service.IO;
 using Nemcache.Service.Notifications;
 using Nemcache.Service.Reactive;
+using Nemcache.Service.RequestHandlers;
 
 namespace Nemcache.Service
 {
@@ -14,15 +15,14 @@ namespace Nemcache.Service
     {
         private readonly RequestResponseTcpServer _server;
         private readonly MemCache _memCache;
+        private readonly RequestDispatcher _requestDispatcher;
 
         public Service(ulong capacity, uint port)
         {
             _memCache = new MemCache(capacity);
 
-            var requestHandler = new RequestHandler(Scheduler.Default, _memCache);
-            _server = new RequestResponseTcpServer(IPAddress.Any, (int) port, requestHandler.Dispatch);
-            
-
+            _requestDispatcher = new RequestDispatcher(Scheduler.Default, _memCache);
+            _server = new RequestResponseTcpServer(IPAddress.Any, (int) port, _requestDispatcher.Dispatch);
         }
 
         public void Start()
@@ -33,6 +33,7 @@ namespace Nemcache.Service
         public void Stop()
         {
             _server.Stop();
+            _requestDispatcher.Stop(); // 
         }
     }
 }

@@ -4,25 +4,28 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Nemcache.Client.Builders;
 using Nemcache.Service;
 using System;
+using Nemcache.Service.RequestHandlers;
 
 namespace Nemcache.Tests.RequestHandlerIntegrationTests
 {
     [TestClass]
     public class TouchTests
     {
-        private RequestHandler _requestHandler;
+        private RequestDispatcher _requestDispatcher;
         private TestScheduler _testScheduler;
 
         private byte[] Dispatch(byte[] p)
         {
-            return _requestHandler.Dispatch(new MemoryStream(p), "", null).Result;
+            var memoryStream = new MemoryStream(1024);
+            _requestDispatcher.Dispatch(new MemoryStream(p), memoryStream,  "", null).Wait();
+            return memoryStream.ToArray();
         }
 
         [TestInitialize]
         public void Setup()
         {
             _testScheduler = new TestScheduler();
-            _requestHandler = new RequestHandler(_testScheduler, new MemCache(capacity:100));
+            _requestDispatcher = new RequestDispatcher(_testScheduler, new MemCache(capacity:100));
         }
 
         #region touch
