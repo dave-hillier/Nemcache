@@ -11,8 +11,7 @@ namespace Nemcache.Service
 
         public Service(ulong capacity, uint port)
         {
-            _memCache = new MemCache(capacity);
-
+            _memCache = new MemCache(capacity, Scheduler.Default);
             _requestDispatcher = new RequestDispatcher(Scheduler.Default, _memCache);
             _server = new RequestResponseTcpServer(IPAddress.Any, (int) port, _requestDispatcher);
         }

@@ -35,7 +35,7 @@ namespace Nemcache.Service.RequestHandlers
             switch (commandName)
             {
                 case "set":
-                    stored = _cache.Store(key, flags, exptime, data);
+                    stored = _cache.Store(key, flags, data, exptime);
                     break;
                 case "replace":
                     stored = _cache.Replace(key, flags, exptime, data);

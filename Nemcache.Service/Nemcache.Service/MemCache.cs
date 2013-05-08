@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Text;
@@ -18,15 +19,22 @@ namespace Nemcache.Service
     {
         private readonly ConcurrentDictionary<string, CacheEntry> _cache =
             new ConcurrentDictionary<string, CacheEntry>();
-
         private readonly ICacheObserver _cacheObserver;
         private readonly IObservable<ICacheNotification> _combinedNotifications;
         private readonly IEvictionStrategy _evictionStrategy;
+        private readonly IScheduler _scheduler;
         private readonly Subject<ICacheNotification> _notificationsSubject;
         private int _currentSequenceId;
+        private IDisposable _interval;
 
-        public MemCache(ulong capacity)
+        public MemCache(ulong capacity) : this(capacity, Scheduler.Default)
         {
+            
+        }
+
+        public MemCache(ulong capacity, IScheduler scheduler)
+        {
+            _scheduler = scheduler;
             Capacity = capacity;
             _notificationsSubject = new Subject<ICacheNotification>();
             _combinedNotifications = Observable.Defer(CreateNotifications);
@@ -34,6 +42,18 @@ namespace Nemcache.Service
             var lruStrategy = new LRUEvictionStrategy(this);
             _evictionStrategy = lruStrategy;
             _cacheObserver = lruStrategy;
+
+            _interval = Observable.Interval(TimeSpan.FromSeconds(1), _scheduler).Subscribe(_ => RemoveExpired());
+
+        }
+
+        private void RemoveExpired()
+        {
+            var expired = _cache.ToArray().Where(ce => ce.Value.IsExpired(_scheduler));
+            foreach (var kv in expired)
+            {
+                Remove(kv.Key);
+            }
         }
 
         public ulong Capacity { get; set; }
@@ -115,6 +135,7 @@ namespace Nemcache.Service
                             Flags = flags,
                             EventId = eventId,
                         };
+                    
                     var updated = _cache.TryUpdate(key, newValue, entry);
                     // notify cas update
                     return updated;
@@ -211,7 +232,7 @@ namespace Nemcache.Service
             return exists;
         }
 
-        public bool Store(string key, ulong flags, DateTime exptime, byte[] data)
+        public bool Store(string key, ulong flags, byte[] data, DateTime exptime)
         {
             _cacheObserver.Use(key);
             MakeSpaceForNewEntry(data.Length); // In the case of replace this could be offset by the existing value

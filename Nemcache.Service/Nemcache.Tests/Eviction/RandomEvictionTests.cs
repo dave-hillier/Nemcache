@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Reactive.Concurrency;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Nemcache.Service;
 using Nemcache.Service.Eviction;
@@ -12,7 +13,7 @@ namespace Nemcache.Tests.Eviction
         [TestMethod]
         public void EvictEmpty()
         {
-            var memCache = new MemCache(100); //Consider using mock
+            var memCache = new MemCache(100, Scheduler.Default); //Consider using mock
             var strategy = new RandomEvictionStrategy(memCache);
             strategy.EvictEntry();
             Assert.IsFalse(memCache.Keys.Any());

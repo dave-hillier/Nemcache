@@ -48,8 +48,8 @@ namespace Nemcache.Tests
         [TestMethod]
         public void EnsureRemoveNotification()
         {
-            _cache.Store("key1", 123, new DateTime(1999, 1, 1), Encoding.ASCII.GetBytes("TestData"));
-            _cache.Store("key2", 123, new DateTime(1999, 1, 1), Encoding.ASCII.GetBytes("TestData"));
+            _cache.Store("key1", 123, Encoding.ASCII.GetBytes("TestData"), new DateTime(1999, 1, 1));
+            _cache.Store("key2", 123, Encoding.ASCII.GetBytes("TestData"), new DateTime(1999, 1, 1));
 
             _cache.Remove("key2");
 
@@ -74,7 +74,7 @@ namespace Nemcache.Tests
         [TestMethod]
         public void EnsureStoreNotification()
         {
-            _cache.Store("key", 123, new DateTime(1999, 1, 1), Encoding.ASCII.GetBytes("TestData"));
+            _cache.Store("key", 123, Encoding.ASCII.GetBytes("TestData"), new DateTime(1999, 1, 1));
 
             var notification = GetNotification();
             var store = notification as StoreNotification;
@@ -90,7 +90,7 @@ namespace Nemcache.Tests
         public void DontReplayEntireHistory()
         {
             _cache.Add("key", 123, new DateTime(1999, 1, 1), Encoding.ASCII.GetBytes("TestData"));
-            _cache.Store("key", 123, new DateTime(1999, 1, 1), Encoding.ASCII.GetBytes("TestData2"));
+            _cache.Store("key", 123, Encoding.ASCII.GetBytes("TestData2"), new DateTime(1999, 1, 1));
 
             CreateObserverAndSubscribe();
 
@@ -105,7 +105,7 @@ namespace Nemcache.Tests
         [TestMethod]
         public void Deleted()
         {
-            _cache.Store("key", 123, new DateTime(1999, 1, 1), Encoding.ASCII.GetBytes("Some stuff in here..."));
+            _cache.Store("key", 123, Encoding.ASCII.GetBytes("Some stuff in here..."), new DateTime(1999, 1, 1));
             _cache.Remove("key");
 
             var storeNotification = GetNotification();
@@ -117,7 +117,7 @@ namespace Nemcache.Tests
         [TestMethod]
         public void DeletedBeforeSubscribe()
         {
-            _cache.Store("key", 123, new DateTime(1999, 1, 1), Encoding.ASCII.GetBytes("Some stuff in here..."));
+            _cache.Store("key", 123, Encoding.ASCII.GetBytes("Some stuff in here..."), new DateTime(1999, 1, 1));
             _cache.Remove("key");
             CreateObserverAndSubscribe();
             Assert.AreEqual(0, _testObserver.Messages.Count);
@@ -126,7 +126,7 @@ namespace Nemcache.Tests
         [TestMethod]
         public void Append()
         {
-            _cache.Store("key", 123, new DateTime(1999, 1, 1), Encoding.ASCII.GetBytes("12345"));
+            _cache.Store("key", 123, Encoding.ASCII.GetBytes("12345"), new DateTime(1999, 1, 1));
             _cache.Append("key", 123, new DateTime(1999, 1, 1), Encoding.ASCII.GetBytes("12345"), false);
 
             Assert.AreEqual(2, _testObserver.Messages.Count);
@@ -140,7 +140,7 @@ namespace Nemcache.Tests
         [TestMethod]
         public void AppendBeforeSubscribe()
         {
-            _cache.Store("key", 123, new DateTime(1999, 1, 1), Encoding.ASCII.GetBytes("12345"));
+            _cache.Store("key", 123, Encoding.ASCII.GetBytes("12345"), new DateTime(1999, 1, 1));
             _cache.Append("key", 123, new DateTime(1999, 1, 1), Encoding.ASCII.GetBytes("12345"), false);
 
             CreateObserverAndSubscribe();
@@ -153,7 +153,7 @@ namespace Nemcache.Tests
         [TestMethod]
         public void Replace()
         {
-            _cache.Store("key", 123, new DateTime(1999, 1, 1), Encoding.ASCII.GetBytes("12345"));
+            _cache.Store("key", 123, Encoding.ASCII.GetBytes("12345"), new DateTime(1999, 1, 1));
             _cache.Replace("key", 123, new DateTime(1999, 1, 1), Encoding.ASCII.GetBytes("12345"));
 
             Assert.AreEqual(2, _testObserver.Messages.Count);
@@ -166,7 +166,7 @@ namespace Nemcache.Tests
         [TestMethod]
         public void ReplaceBeforeSubscribe()
         {
-            _cache.Store("key", 123, new DateTime(1999, 1, 1), Encoding.ASCII.GetBytes("12345"));
+            _cache.Store("key", 123, Encoding.ASCII.GetBytes("12345"), new DateTime(1999, 1, 1));
             _cache.Replace("key", 123, new DateTime(1999, 1, 1), Encoding.ASCII.GetBytes("12345"));
 
             CreateObserverAndSubscribe();
@@ -179,7 +179,7 @@ namespace Nemcache.Tests
         [TestMethod]
         public void Clear()
         {
-            _cache.Store("key", 123, new DateTime(1999, 1, 1), Encoding.ASCII.GetBytes("12345"));
+            _cache.Store("key", 123, Encoding.ASCII.GetBytes("12345"), new DateTime(1999, 1, 1));
             _cache.Clear();
 
             Assert.AreEqual(2, _testObserver.Messages.Count);
@@ -192,7 +192,7 @@ namespace Nemcache.Tests
         [TestMethod]
         public void ClearBeforeSubscribe()
         {
-            _cache.Store("key", 123, new DateTime(1999, 1, 1), Encoding.ASCII.GetBytes("12345"));
+            _cache.Store("key", 123, Encoding.ASCII.GetBytes("12345"), new DateTime(1999, 1, 1));
             _cache.Clear();
 
             CreateObserverAndSubscribe();
@@ -203,7 +203,7 @@ namespace Nemcache.Tests
         [TestMethod]
         public void Touch()
         {
-            _cache.Store("key", 123, new DateTime(1999, 1, 1), Encoding.ASCII.GetBytes("12345"));
+            _cache.Store("key", 123, Encoding.ASCII.GetBytes("12345"), new DateTime(1999, 1, 1));
             _cache.Touch("key", new DateTime(1999, 1, 1));
 
             Assert.AreEqual(2, _testObserver.Messages.Count);
@@ -216,7 +216,7 @@ namespace Nemcache.Tests
         [TestMethod]
         public void TouchBeforeSubscribe()
         {
-            _cache.Store("key", 123, new DateTime(1999, 1, 1), Encoding.ASCII.GetBytes("12345"));
+            _cache.Store("key", 123, Encoding.ASCII.GetBytes("12345"), new DateTime(1999, 1, 1));
             _cache.Touch("key", new DateTime(1999, 1, 1));
 
             CreateObserverAndSubscribe();

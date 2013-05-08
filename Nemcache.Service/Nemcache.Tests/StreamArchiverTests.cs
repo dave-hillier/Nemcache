@@ -28,7 +28,7 @@ namespace Nemcache.Tests
         [TestMethod]
         public void EnsureStoreWritesToJournal()
         {
-            _originalCache.Store("my_key", 911, new DateTime(2013, 04, 26), Encoding.ASCII.GetBytes("Payload"));
+            _originalCache.Store("my_key", 911, Encoding.ASCII.GetBytes("Payload"), new DateTime(2013, 04, 26));
 
             var output = _outputStream.ToArray();
 
@@ -42,7 +42,7 @@ namespace Nemcache.Tests
         [TestMethod]
         public void WriteAndRestoreSingleKey()
         {
-            _originalCache.Store("my_key", 911, new DateTime(2013, 04, 26), Encoding.ASCII.GetBytes("Payload"));
+            _originalCache.Store("my_key", 911, Encoding.ASCII.GetBytes("Payload"), new DateTime(2013, 04, 26));
 
             var output = _outputStream.ToArray();
 
@@ -57,8 +57,8 @@ namespace Nemcache.Tests
         [TestMethod]
         public void WriteAndRestoreTwoKeys()
         {
-            _originalCache.Store("my_key1", 123, new DateTime(2013, 05, 26), Encoding.ASCII.GetBytes("Payload1"));
-            _originalCache.Store("my_key2", 456, new DateTime(2013, 05, 26), Encoding.ASCII.GetBytes("Payload2"));
+            _originalCache.Store("my_key1", 123, Encoding.ASCII.GetBytes("Payload1"), new DateTime(2013, 05, 26));
+            _originalCache.Store("my_key2", 456, Encoding.ASCII.GetBytes("Payload2"), new DateTime(2013, 05, 26));
 
             var output = _outputStream.ToArray();
 
