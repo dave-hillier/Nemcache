@@ -1,13 +1,5 @@
-﻿using System;
-using System.IO;
-using System.Net;
-using System.Reactive;
+﻿using System.Net;
 using System.Reactive.Concurrency;
-using System.Reactive.Linq;
-using Nemcache.Service.IO;
-using Nemcache.Service.Notifications;
-using Nemcache.Service.Reactive;
-using Nemcache.Service.RequestHandlers;
 
 namespace Nemcache.Service
 {
@@ -22,7 +14,7 @@ namespace Nemcache.Service
             _memCache = new MemCache(capacity);
 
             _requestDispatcher = new RequestDispatcher(Scheduler.Default, _memCache);
-            _server = new RequestResponseTcpServer(IPAddress.Any, (int) port, _requestDispatcher.Dispatch);
+            _server = new RequestResponseTcpServer(IPAddress.Any, (int) port, _requestDispatcher);
         }
 
         public void Start()
@@ -33,7 +25,6 @@ namespace Nemcache.Service
         public void Stop()
         {
             _server.Stop();
-            _requestDispatcher.Stop(); // 
         }
     }
 }

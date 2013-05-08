@@ -12,15 +12,11 @@ namespace Nemcache.Service
     internal class RequestDispatcher
     {
         private const int RequestSizeLimit = 1024;
-        private static readonly DateTime UnixTimeEpoc = new DateTime(1970, 1, 1, 0, 0, 0, 0);
         private readonly byte[] _endOfLine = new byte[] {13, 10}; // Ascii for "\r\n"
         private readonly Dictionary<string, IRequestHandler> _requestHandlers;
-        private readonly IScheduler _scheduler;
 
         public RequestDispatcher(IScheduler scheduler, IMemCache cache)
         {
-            _scheduler = scheduler;
-
             var helpers = new RequestConverters(scheduler);
             var getHandler = new GetHandler(helpers, cache, scheduler);
             var mutateHandler = new MutateHandler(helpers, cache, scheduler);
@@ -175,10 +171,6 @@ namespace Nemcache.Service
                 last = current;
             }
             return buffer;
-        }
-
-        public void Stop()
-        {
         }
     }
 }
