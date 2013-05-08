@@ -1,7 +1,7 @@
 nemcached
 =========
 
-Nemcached is a Memcached server implemented in C#. 
+Nemcached is a Memcached server implemented in C# 4.5. 
 [Memcached](http://memcached.org/) is an in-memory key-value store for small chunks of arbitrary data (strings, objects) from results of database calls, API calls, or page rendering.
 Nemcached can be used as a drop in replacement and is compatible with existing Memcache clients.
 
@@ -9,7 +9,7 @@ Status
 ======
 
 Nemcached is not yet ready for production use as it, although functionally complete enough to be used, 
-not fully tested and is unoptimised. The sockets code is a bit buggy at the moment.
+not fully tested and is unoptimised.  
 
 The following commands from the [Memcached specification](https://raw.github.com/memcached/memcached/master/doc/protocol.txt) are implemented:
 * get (and gets)
