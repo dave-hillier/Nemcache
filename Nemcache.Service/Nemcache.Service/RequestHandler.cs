@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reactive.Concurrency;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Nemcache.Service
 {
@@ -12,6 +14,7 @@ namespace Nemcache.Service
         private readonly byte[] _endOfLine = new byte[] {13, 10}; // Ascii for "\r\n"
         private readonly IMemCache _cache;
         private readonly IScheduler _scheduler;
+        private const int RequestSizeLimit = 1024;
 
         public RequestHandler(IScheduler scheduler, IMemCache cache)
         {
@@ -50,8 +53,8 @@ namespace Nemcache.Service
 
         public string ToKey(string key)
         {
-            //if (key.Length > 250)
-            //    throw new InvalidOperationException("Key too long");
+            if (key.Length > 250)
+                throw new InvalidOperationException("Key too long");
             // TODO: no control chars
             return key;
         }
@@ -61,17 +64,12 @@ namespace Nemcache.Service
             return ulong.Parse(flags);
         }
 
-        public byte[] Dispatch(string remoteEndpoint, byte[] request, IDisposable clientConnectionHandle)
+        public async Task<byte[]> Dispatch(Stream stream, string remoteEndpoint, IDisposable clientConnectionHandle)
             // TODO: an interface for this?
         {
-            // TODO: Is it possible for the client to send multiple requests in one.
-            // Yes if no reply is on!
-
             try
             {
-                var result = ProcessRequest(request, clientConnectionHandle);
-
-                return result;
+                return await ProcessRequest(stream, clientConnectionHandle);
             }
             catch (Exception ex)
             {
@@ -79,34 +77,74 @@ namespace Nemcache.Service
             }
         }
 
-        private byte[] ProcessRequest(byte[] request, IDisposable clientConnectionHandle)
+        private async Task<byte[]> ProcessRequest(Stream stream, IDisposable clientConnectionHandle)
         {
-            var input = TakeFirstLine(request).ToArray();
-            request = request.Skip(input.Length + 2).ToArray();
+            var buffer = GetFirstLine(stream);
 
-            var requestFirstLine = Encoding.ASCII.GetString(input);
+            var requestFirstLine = Encoding.ASCII.GetString(buffer.ToArray()).TrimEnd();
+
             var requestTokens = requestFirstLine.Split(' ');
             var commandName = requestTokens.First();
             var commandParams = requestTokens.Skip(1).ToArray();
-            bool noreply = commandParams.LastOrDefault() == "noreply" && !commandName.StartsWith("get");
 
-            int length;
-            IEnumerable<byte> result = DispatchCommand(request, commandName, commandParams, clientConnectionHandle, out length);
-            result = noreply ? new byte[] {} : result;
+            byte[] dataBlock = await GetDataBlock(commandName, stream, commandParams);
 
-            if (length > 0)
-            {
-                request = request.Skip(length + 2).ToArray();
-                if (request.Length > 0)
-                    result = result.Concat(ProcessRequest(request, clientConnectionHandle));
-            }
-            return result.ToArray();
+            var result = DispatchCommand(dataBlock, commandName, commandParams, clientConnectionHandle);
+
+            return IsNoReply(commandParams, commandName) ? new byte[] {} : result;
         }
 
-        private byte[] DispatchCommand(byte[] request, string commandName, string[] commandParams,
-                                       IDisposable clientConnectionHandle, out int length)
+        private static bool IsNoReply(IEnumerable<string> commandParams, string commandName)
         {
-            length = 0;
+            return commandParams.LastOrDefault() == "noreply" && !commandName.StartsWith("get");
+        }
+
+        private static async Task<byte[]> GetDataBlock(string commandName, Stream stream, string[] commandParams)
+        {
+            byte[] dataBlock = null;
+            bool hasDataBlock = IsSetCommand(commandName);
+            if (hasDataBlock)
+            {
+                var bytes = commandParams[3];
+                dataBlock = new byte[Int32.Parse(bytes)];
+                int count = await stream.ReadAsync(dataBlock, 0, dataBlock.Length); // TODO: does this need to repeat for large payloads?
+            }
+            return dataBlock;
+        }
+
+        private static bool IsSetCommand(string commandName)
+        {
+            return commandName == "add" ||
+                   commandName == "replace" ||
+                   commandName == "set" ||
+                   commandName == "append" ||
+                   commandName == "prepend" ||
+                   commandName == "cas";
+        }
+
+        private List<byte> GetFirstLine(Stream stream)
+        {
+            var buffer = new List<byte>();
+            byte last = 0;
+            while (true)
+            {
+                var current = (byte)stream.ReadByte();
+
+                buffer.Add(current);
+                if (buffer.Count > RequestSizeLimit)
+                    throw new Exception("New line not found");
+                if (last == _endOfLine[0] &&
+                    current == _endOfLine[1])
+                {
+                    break;
+                }
+                last = current;
+            }
+            return buffer;
+        }
+
+        private byte[] DispatchCommand(byte[] dataBlock, string commandName, string[] commandParams, IDisposable clientConnectionHandle)
+        {
             switch (commandName)
             {
                 case "get":
@@ -117,9 +155,9 @@ namespace Nemcache.Service
                 case "append":
                 case "prepend":
                 case "set": // <command name> <key> <flags> <exptime> <bytes> [noreply]
-                    return HandleStore(request, commandName, commandParams, out length);
+                    return HandleStore(dataBlock, commandName, commandParams);
                 case "cas": //cas <key> <flags> <exptime> <bytes> <cas unique> [noreply]\r\n
-                    return HandleCas(request, commandParams, out length);
+                    return HandleCas(dataBlock, commandParams);
                 case "delete": // delete <key> [noreply]\r\n
                     return HandleDelete(commandParams);
                 case "incr": //incr <key> <value> [noreply]\r\n
@@ -242,30 +280,23 @@ namespace Nemcache.Service
                        : Encoding.ASCII.GetBytes("NOT_FOUND\r\n");
         }
 
-        private byte[] HandleCas(byte[] request, string[] commandParams, out int length)
+        private byte[] HandleCas(byte[] dataBlock, string[] commandParams)
         {
             var key = ToKey(commandParams[0]);
             var flags = ToFlags(commandParams[1]);
             var exptime = ToExpiry(commandParams[2]);
-            var bytes = int.Parse(commandParams[3]);
             var casUnique = ulong.Parse(commandParams[4]);
-            byte[] data = request.Take(bytes).ToArray();
-            length = bytes;
-            return _cache.Cas(key, flags, exptime, casUnique, data)
+            return _cache.Cas(key, flags, exptime, casUnique, dataBlock)
                        ? Encoding.ASCII.GetBytes("STORED\r\n")
                        : Encoding.ASCII.GetBytes("EXISTS\r\n");
         }
 
-        private byte[] HandleStore(byte[] request, string commandName, string[] commandParams, out int length)
+        private byte[] HandleStore(byte[] dataBlock, string commandName, string[] commandParams)
         {
             var key = ToKey(commandParams[0]);
             var flags = ToFlags(commandParams[1]);
             var exptime = ToExpiry(commandParams[2]);
-            var bytes = int.Parse(commandParams[3]);
-            length = bytes;
-            byte[] data = request.Take(bytes).ToArray();
-
-            return Store(commandName, key, flags, exptime, data);
+            return Store(commandName, key, flags, exptime, dataBlock);
         }
     }
 }

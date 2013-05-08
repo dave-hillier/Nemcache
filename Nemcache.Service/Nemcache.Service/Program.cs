@@ -22,7 +22,7 @@ namespace Nemcache.Service
                 {
                     hc.Service<Service>(s =>
                         {
-                            s.ConstructUsing(() => new Service(capacity, port, cacheFileName, partitionSize));
+                            s.ConstructUsing(() => new Service(capacity, port));
                             s.WhenStarted(xs => xs.Start());
                             s.WhenStopped(xs => xs.Stop());
                         });

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using Microsoft.Reactive.Testing;
 using Nemcache.Service;
 
@@ -19,7 +20,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
 
         public byte[] Send(byte[] p)
         {
-            return _requestHandler.Dispatch("", p, OnDisconnect);
+            return _requestHandler.Dispatch(new MemoryStream(p), "", OnDisconnect).Result;
         }
 
         public IDisposable OnDisconnect { get; set; }

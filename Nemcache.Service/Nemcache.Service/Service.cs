@@ -14,140 +14,25 @@ namespace Nemcache.Service
     {
         private readonly RequestResponseTcpServer _server;
         private readonly MemCache _memCache;
-        private readonly string _cacheFileName;
-        private readonly uint _partitionSize;
-        private readonly FileSystemWrapper _fileSystem;
-        private StreamArchiver _archiver;
-        private IDisposable _archiverSubscription;
-        private bool _cleanUpDue;
-        private readonly IDisposable _cleanUpSubscription;
 
-        public Service(ulong capacity, uint port, string cacheFileName, uint partitionSize)
+        public Service(ulong capacity, uint port)
         {
-            _partitionSize = partitionSize;
-            _cacheFileName = Path.GetRandomFileName() + cacheFileName;
             _memCache = new MemCache(capacity);
 
             var requestHandler = new RequestHandler(Scheduler.Default, _memCache);
-            _server = new RequestResponseTcpServer(IPAddress.Any, (int)port, requestHandler.Dispatch);
-            _fileSystem = new FileSystemWrapper();
-
-            // TODO: Should this be an extension method? 
-            var writeThresholdNotification = new WriteThresholdNotification(
-                _partitionSize * 10, TimeSpan.FromMinutes(1), Scheduler.Default);
-
-            // TODO: perhaps a cache notifications interface?
-            var notifications = _memCache.Notifications.Publish().RefCount();
-
-            var logWriteNotifications = WriteNotifications(notifications); // TODO: Should probably really subscribe to file writes
-            var snapshotCompleted = SnapshotCompleted(notifications); // TODO: does this need to subscribe to the archiver rather than the cache?
-            _cleanUpSubscription = snapshotCompleted.Where(_ => _cleanUpDue).Subscribe(_ => CleanUpOldLog()); 
+            _server = new RequestResponseTcpServer(IPAddress.Any, (int) port, requestHandler.Dispatch);
             
-            writeThresholdNotification.Create(logWriteNotifications).Subscribe(_ => DoCompact());
-        }
 
-        private string LogFileNameExtension
-        {
-            get
-            {
-                var extension = Path.GetExtension(_cacheFileName);
-                if (extension != null) 
-                    return extension.TrimStart('.');
-                return "";
-            }
-        }
-
-        private string LogFileNameWithoutExtension
-        {
-            get { return Path.GetFileNameWithoutExtension(_cacheFileName); }
         }
 
         public void Start()
         {
-            //RestoreFromLog();
-
-            _archiver = CreateArchiver();
-
-            _archiverSubscription = _memCache.Notifications.Subscribe(_archiver);
-
             _server.Start();
-        }
-
-        private void DoCompact()
-        {
-            DisposeCurrentArchiver();
-            _archiver = CreateArchiver();
-            _archiverSubscription = _memCache.Notifications.Subscribe(_archiver);
-        }
-
-        private StreamArchiver CreateArchiver()
-        {
-            _cleanUpDue = true;
-            var newLog = new PartitioningFileStream(
-                _fileSystem, 
-                LogFileNameWithoutExtension, LogFileNameExtension, 
-                _partitionSize,
-                FileAccess.Write);
-
-            return new StreamArchiver(newLog);
-        }
-
-        private void DisposeCurrentArchiver()
-        {
-            if (_archiver != null)
-            {
-                _archiverSubscription.Dispose();
-            }
-        }
-
-        private static IObservable<long> WriteNotifications(IObservable<ICacheNotification> notifications)
-        {
-            return notifications.
-                OfType<StoreNotification>().
-                SkipWhile(n => n.IsSnapshot).
-                Select(n => (long)n.Data.Length);
-        }
-
-        private static IObservable<Unit> SnapshotCompleted(IObservable<ICacheNotification> notifications)
-        {
-            return notifications.
-                OfType<StoreNotification>().
-                SkipWhile(n => n.IsSnapshot).
-                Take(1).
-                Select(_ => new Unit());
-        }
-
-        public void RestoreFromLog()
-        {
-            if (_fileSystem.File.Exists(LogFileNameWithoutExtension + ".0." + LogFileNameExtension))
-            {
-                using (var existingLog = new PartitioningFileStream(
-                    _fileSystem, LogFileNameWithoutExtension, LogFileNameExtension,
-                    _partitionSize, FileAccess.Read))
-                {
-                    StreamArchiver.Restore(existingLog, _memCache);
-                }
-            }
-        }
-
-        // TODO: separate file
-        public void CleanUpOldLog()
-        {
-            /*var generator = new LogFileNameGenerator(LogFileNameWithoutExtension, LogFileNameExtension);
-            var existingFiles = generator.GetNextFileName().TakeWhile(fn => _fileSystem.File.Exists(fn)); // TODO: repetition
-
-            foreach (var existingFile in existingFiles)
-            {
-                _fileSystem.File.Delete(existingFile);
-            }
-            _cleanUpDue = false;*/
         }
 
         public void Stop()
         {
             _server.Stop();
-            DisposeCurrentArchiver();
-            _cleanUpSubscription.Dispose();
         }
     }
 }

@@ -3,6 +3,8 @@ using System.IO;
 using System.Linq;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using Nemcache.Tests.RequestHandlerIntegrationTests;
 
 namespace Nemcache.IntegrationTestRunner
@@ -40,6 +42,30 @@ namespace Nemcache.IntegrationTestRunner
 
         }
 
+
+        public async Task<byte[]> SendAsync(byte[] request)
+        {
+            //var memoryStream = new MemoryStream(request);
+
+            var requestString = Encoding.ASCII.GetString(request);
+            //Console.WriteLine("Requesting: {0}", requestString);
+            await _stream.WriteAsync(request, 0, request.Length);
+
+            if (requestString.Contains("noreply"))
+            {
+                return new byte[] { };
+            }
+            var buffer = new byte[4096];
+            int read = await _stream.ReadAsync(buffer, 0, 4096);
+            var result = buffer.Take(read).ToArray();
+
+            //Console.WriteLine("  Response: {0}", Encoding.ASCII.GetString(result));
+
+            return result;
+
+        }
+
         public IDisposable OnDisconnect { get; set; }
     }
+
 }

@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Text;
+using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Nemcache.Client.Builders;
 using Nemcache.Tests.RequestHandlerIntegrationTests;
@@ -14,8 +15,8 @@ namespace Nemcache.IntegrationTestRunner
     {
         static void Main(string[] args)
         {
-            int port = 11222;
-            //int port = 11211;
+            //int port = 11222;
+            int port = 11211;
 
             var client = new SyncClient(port);
             var tests = new object[]
@@ -77,31 +78,57 @@ namespace Nemcache.IntegrationTestRunner
 
 
             var stopWatch = new Stopwatch();
+
+            var timeSpan = TimeSpan.Zero;
+            var lastCount = 0;
+            var tf = new TaskFactory();
+
             stopWatch.Start();
-            Parallel.For(0, 1, i =>
+
+            for (int i = 0; i < 1; i++)
+            {
+                tf.StartNew(
+                () => 
                 {
                     var client1 = new SyncClient(port);
-                    SimpleBenchmark(client1, string.Format("Key{0}", i), 100000);
+                    SimpleBenchmark(client1, string.Format("Key{0}", i), 1000000);
                 });
-            stopWatch.Stop();
-            Console.WriteLine("Took {0}", stopWatch.Elapsed);
+
+            }
+            tf.StartNew(() =>
+            {
+                while (true)
+                {
+                    Task.Delay(TimeSpan.FromSeconds(10));
+                    if (timeSpan + TimeSpan.FromSeconds(10) < stopWatch.Elapsed)
+                    {
+
+                        timeSpan = stopWatch.Elapsed;
+                        Console.WriteLine("{0} per second", _count - lastCount);
+                        lastCount = _count;
+                    }
+                }
+            });
+//            stopWatch.Stop();
+            //Console.WriteLine("Took {0}", stopWatch.Elapsed);
  
-            Console.WriteLine("Done!");
+            //Console.WriteLine("Done!");
             Console.ReadLine();
 
         }
 
-        private static void SimpleBenchmark(SyncClient client, string key = "key", int iterations = 100000)
+        private static int _count = 0;
+        private static async void SimpleBenchmark(SyncClient client, string key = "key", int iterations = 100000)
         {
+
             var stopWatch = new Stopwatch();
             stopWatch.Start();
             for (int i = 0; i < iterations; ++i)
             {
                 var b = new StoreRequestBuilder("set", key, string.Format("Data{0}", i));
                 var request = b.ToAsciiRequest();
-                //Console.WriteLine("Send!");
-                var resposne = client.Send(request);
-                //Console.WriteLine("{0}", Encoding.ASCII.GetString(resposne));
+                var resposne = await client.SendAsync(request);
+                Interlocked.Increment(ref _count);
             }
 
             var get = new GetRequestBuilder("get", key);

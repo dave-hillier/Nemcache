@@ -1,4 +1,5 @@
-﻿using Microsoft.Reactive.Testing;
+﻿using System.IO;
+using Microsoft.Reactive.Testing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Nemcache.Client.Builders;
 using Nemcache.Service;
@@ -14,7 +15,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
 
         private byte[] Dispatch(byte[] p)
         {
-            return _requestHandler.Dispatch("", p, null);
+            return _requestHandler.Dispatch(new MemoryStream(p), "", null).Result;
         }
 
         [TestInitialize]
