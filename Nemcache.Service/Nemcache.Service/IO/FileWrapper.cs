@@ -28,7 +28,7 @@ namespace Nemcache.Service.IO
         public void Replace(string sourceFileName, string destinationFileName, string destinationBackupFileName,
                             bool ignoreMetadataErrors)
         {
-            File.Replace(sourceFileName, destinationBackupFileName, destinationBackupFileName, ignoreMetadataErrors);
+            File.Replace(sourceFileName, destinationFileName, destinationBackupFileName, ignoreMetadataErrors);
         }
     }
 }
