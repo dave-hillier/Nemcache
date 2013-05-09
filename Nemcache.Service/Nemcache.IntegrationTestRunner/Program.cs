@@ -17,8 +17,12 @@ namespace Nemcache.IntegrationTestRunner
 
         private static void Main(string[] args)
         {
-            //int port = 11222;
-            int port = 11211;
+            int port = 11222;
+            //int port = 11211;
+
+            var disconnect = new SyncClient(port);
+            disconnect.Disconnect();
+            
 
             var client = new SyncClient(port);
             var tests = new object[]

@@ -19,6 +19,12 @@ namespace Nemcache.IntegrationTestRunner
             _stream = _tcpClient.GetStream();
         }
 
+        public void Disconnect()
+        {
+            _tcpClient.Close();
+            
+        }
+
         public byte[] Send(byte[] request)
         {
             var memoryStream = new MemoryStream(request);
