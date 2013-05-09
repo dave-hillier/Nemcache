@@ -77,7 +77,7 @@
   <ItemGroup>
     <Compile Include="IO\FakeFile.cs" />
     <Compile Include="IO\TestStream.cs" />
-    <Compile Include="CacheRestorerTests.cs" />
+    <Compile Include="Persistence\CacheRestorerTests.cs" />
     <Compile Include="MemcacheTest.cs" />
     <Compile Include="Reactive\CombineCurrentStateWithUpdatesTests.cs" />
     <Compile Include="Eviction\LRUEvictionTests.cs" />
@@ -103,7 +103,7 @@
     <Compile Include="TestExt.cs" />
     <Compile Include="RequestHandlerIntegrationTests\TouchTests.cs" />
     <Compile Include="RequestHandlerIntegrationTests\VersionRequestTests.cs" />
-    <Compile Include="StreamArchiverTests.cs" />
+    <Compile Include="Persistence\StreamArchiverTests.cs" />
     <Compile Include="Reactive\WriteThresholdNotificationTests.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -7,7 +7,7 @@ using Nemcache.Service.IO;
 using Nemcache.Service.Notifications;
 using ProtoBuf;
 
-namespace Nemcache.Service
+namespace Nemcache.Service.Persistence
 {
     class CacheRestorer
     {

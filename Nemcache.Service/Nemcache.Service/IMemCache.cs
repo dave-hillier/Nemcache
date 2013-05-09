@@ -12,7 +12,7 @@ namespace Nemcache.Service
 
         IEnumerable<string> Keys { get; }
 
-        IObservable<ICacheNotification> Notifications { get; }
+        IObservable<ICacheNotification> FullStateNotifications { get; }
 
         IEnumerable<KeyValuePair<string, CacheEntry>> Retrieve(IEnumerable<string> keys);
 

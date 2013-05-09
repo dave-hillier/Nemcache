@@ -3,7 +3,7 @@ using System.IO;
 using Nemcache.Service.Notifications;
 using ProtoBuf;
 
-namespace Nemcache.Service
+namespace Nemcache.Service.Persistence
 {
     internal class StreamArchiver : IObserver<ICacheNotification>
     {

@@ -68,7 +68,7 @@ namespace Nemcache.Tests
         private void CreateObserverAndSubscribe()
         {
             _testObserver = _testScheduler.CreateObserver<ICacheNotification>();
-            _cache.Notifications.Subscribe(_testObserver);
+            _cache.FullStateNotifications.Subscribe(_testObserver);
         }
 
         [TestMethod]

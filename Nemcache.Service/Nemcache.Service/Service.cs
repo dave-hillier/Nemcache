@@ -1,6 +1,9 @@
 ﻿using System;
+using System.IO;
 using System.Net;
 using System.Reactive.Concurrency;
+using Nemcache.Service.IO;
+using Nemcache.Service.Persistence;
 
 namespace Nemcache.Service
 {
@@ -9,16 +12,28 @@ namespace Nemcache.Service
         private readonly MemCache _memCache;
         private readonly RequestDispatcher _requestDispatcher;
         private readonly RequestResponseTcpServer _server;
+        private readonly CacheRestorer _restorer;
+        private readonly StreamArchiver _archiver;
 
         public Service(ulong capacity, uint port)
         {
             _memCache = new MemCache(capacity, Scheduler.Default);
+
             _requestDispatcher = new RequestDispatcher(Scheduler.Default, _memCache);
             _server = new RequestResponseTcpServer(IPAddress.Any, (int) port, _requestDispatcher);
+
+            var fileSystem = new FileSystemWrapper();
+            const string cachelogBin = "cachelog.bin";
+            _restorer = new CacheRestorer(_memCache, fileSystem, cachelogBin);
+            _archiver = new StreamArchiver(fileSystem.File.Open("cachelogBin", FileMode.OpenOrCreate, FileAccess.Write));
         }
 
         public void Start()
         {
+            _restorer.RestoreCache();
+
+            _memCache.NewNotifications.Subscribe(_archiver);
+
             _server.Start();
         }
 

@@ -61,8 +61,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ArchiveEntry.cs" />
-    <Compile Include="CacheRestorer.cs" />
+    <Compile Include="Persistence\ArchiveEntry.cs" />
+    <Compile Include="Persistence\CacheRestorer.cs" />
     <Compile Include="IRequestContext.cs" />
     <Compile Include="RequestContext.cs" />
     <Compile Include="RequestHandlers\IRequestHandler.cs" />
@@ -97,7 +97,7 @@
     <Compile Include="Reactive\ThresholdExtension.cs" />
     <Compile Include="Service.cs" />
     <Compile Include="RequestHandlers\StatsHandler.cs" />
-    <Compile Include="StreamArchiver.cs" />
+    <Compile Include="Persistence\StreamArchiver.cs" />
     <Compile Include="MemCache.cs" />
     <Compile Include="Eviction\NullEvictionStrategy.cs" />
     <Compile Include="Eviction\RandomEvictionStrategy.cs" />

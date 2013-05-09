@@ -1,11 +1,12 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Nemcache.Service;
+using Nemcache.Service.Persistence;
 using ProtoBuf;
 using System;
 using System.IO;
 using System.Text;
 
-namespace Nemcache.Tests
+namespace Nemcache.Tests.Persistence
 {
     [TestClass]
     public class StreamArchiverTests
@@ -21,7 +22,7 @@ namespace Nemcache.Tests
             _originalCache = new MemCache(1000);
             _outputStream = new MemoryStream();
             _streamArchiver = new StreamArchiver(_outputStream);
-            _originalCache.Notifications.Subscribe(_streamArchiver);
+            _originalCache.FullStateNotifications.Subscribe(_streamArchiver);
         }
 
         [TestMethod]

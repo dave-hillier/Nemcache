@@ -25,7 +25,7 @@ namespace Nemcache.Service
         private readonly Subject<ICacheNotification> _notificationsSubject;
         private int _currentSequenceId;
         private int _used;
-        private IDisposable _interval;
+        private readonly IDisposable _interval;
 
         public MemCache(ulong capacity) : this(capacity, Scheduler.Default)
         {
@@ -293,9 +293,14 @@ namespace Nemcache.Service
                    select KeyValuePair.Create(key, _cache[key]);
         }
 
-        public IObservable<ICacheNotification> Notifications
+        public IObservable<ICacheNotification> FullStateNotifications
         {
             get { return _combinedNotifications; }
+        }
+
+        public IObservable<ICacheNotification> NewNotifications
+        {
+            get { return _notificationsSubject; }
         }
 
         public IEnumerable<string> Keys

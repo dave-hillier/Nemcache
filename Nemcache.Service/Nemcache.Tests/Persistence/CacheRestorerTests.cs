@@ -6,9 +6,10 @@ using Moq;
 using Nemcache.Service;
 using Nemcache.Service.IO;
 using Nemcache.Service.Notifications;
+using Nemcache.Service.Persistence;
 using ProtoBuf;
 
-namespace Nemcache.Tests
+namespace Nemcache.Tests.Persistence
 {
     [TestClass]
     public class CacheRestorerTests
