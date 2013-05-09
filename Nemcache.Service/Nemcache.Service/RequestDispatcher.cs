@@ -11,7 +11,7 @@ namespace Nemcache.Service
 {
     internal class RequestDispatcher
     {
-        private const int RequestSizeLimit = 1024;
+        private const int RequestSizeLimit = 256;
         private readonly byte[] _endOfLine = new byte[] {13, 10}; // Ascii for "\r\n"
         private readonly Dictionary<string, IRequestHandler> _requestHandlers;
 
@@ -42,23 +42,6 @@ namespace Nemcache.Service
                 };
         }
 
-        public IEnumerable<byte> TakeFirstLine(byte[] request)
-        {
-            int endOfLineIndex = -1;
-            for (int i = 0; i < request.Length; ++i)
-            {
-                if (request[i + 0] == _endOfLine[0] &&
-                    request[i + 1] == _endOfLine[1])
-                {
-                    endOfLineIndex = i;
-                    break;
-                }
-            }
-            if (endOfLineIndex != -1)
-                return request.Take(endOfLineIndex);
-            throw new Exception("New line not found"); // TODO: better exception type.
-        }
-
         public async Task Dispatch(
             Stream stream,
             Stream outStream,
@@ -69,6 +52,13 @@ namespace Nemcache.Service
             {
                 var requestContext = await CreateRequestContext(stream, outStream, clientConnectionHandle);
 
+                if (requestContext == null) // disconnected
+                {
+                    if (clientConnectionHandle != null)
+                        clientConnectionHandle.Dispose();
+                    return;
+                }
+
                 if (_requestHandlers.ContainsKey(requestContext.CommandName))
                 {
                     _requestHandlers[requestContext.CommandName].HandleRequest(requestContext);
@@ -77,6 +67,10 @@ namespace Nemcache.Service
                 {
                     WriteUnknownCommandResponse(requestContext);
                 }
+            }
+            catch (IOException)
+            {
+                throw;
             }
             catch (Exception ex)
             {
@@ -100,12 +94,14 @@ namespace Nemcache.Service
                                                                 IDisposable clientConnectionHandle)
         {
             var requestFirstLine = GetFirstLine(stream);
+            if (string.IsNullOrEmpty(requestFirstLine))
+                return null;
 
             var requestTokens = requestFirstLine.Split(' ');
             var commandName = requestTokens.First();
             var commandParams = requestTokens.Skip(1).ToArray();
 
-            byte[] dataBlock = await GetDataBlock(commandName, stream, commandParams);
+            byte[] dataBlock = await GetDataBlock(commandName, stream, commandParams, clientConnectionHandle);
 
             var requestContext = new RequestContext(commandName, commandParams,
                                                     dataBlock,
@@ -119,6 +115,8 @@ namespace Nemcache.Service
         private string GetFirstLine(Stream stream)
         {
             var firstLine = GetFirstLineBytes(stream);
+            if (firstLine == null)
+                return null;
 
             var requestFirstLine = Encoding.ASCII.GetString(firstLine.ToArray()).TrimEnd();
             return requestFirstLine;
@@ -129,7 +127,7 @@ namespace Nemcache.Service
             return commandParams.LastOrDefault() == "noreply" && !commandName.StartsWith("get");
         }
 
-        private static async Task<byte[]> GetDataBlock(string commandName, Stream stream, string[] commandParams)
+        private static async Task<byte[]> GetDataBlock(string commandName, Stream stream, string[] commandParams, IDisposable clientConnectionHandle)
         {
             byte[] dataBlock = null;
             bool hasDataBlock = IsSetCommand(commandName);
@@ -142,8 +140,16 @@ namespace Nemcache.Service
                 while (read < dataBlock.Length)
                 {
                     int count = await stream.ReadAsync(dataBlock, read, dataBlock.Length - read);
+                    if (count == 0)
+                    {
+                        clientConnectionHandle.Dispose();
+                        return new byte[]{};
+                    }
                     read += count;
                 }
+                // TODO: test the stream position
+                stream.ReadByte();// \r
+                stream.ReadByte();// \n
             }
             return dataBlock;
         }
@@ -165,12 +171,14 @@ namespace Nemcache.Service
             while (true)
             {
                 var current = (byte) stream.ReadByte();
+
+                // Disconnected
                 if (current == 0xFF)
-                    throw new Exception("End");
+                    return null;
 
                 buffer.Add(current);
                 if (buffer.Count > RequestSizeLimit)
-                    throw new Exception("New line not found");
+                    throw new Exception("New line not found"); // TODO: or request too long?
                 if (last == _endOfLine[0] &&
                     current == _endOfLine[1])
                 {
