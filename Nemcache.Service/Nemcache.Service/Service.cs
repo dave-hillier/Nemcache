@@ -13,7 +13,8 @@ namespace Nemcache.Service
         private readonly RequestDispatcher _requestDispatcher;
         private readonly RequestResponseTcpServer _server;
         private readonly CacheRestorer _restorer;
-        private readonly StreamArchiver _archiver;
+        private StreamArchiver _archiver;
+        private readonly FileSystemWrapper _fileSystem;
 
         public Service(ulong capacity, uint port)
         {
@@ -22,15 +23,16 @@ namespace Nemcache.Service
             _requestDispatcher = new RequestDispatcher(Scheduler.Default, _memCache);
             _server = new RequestResponseTcpServer(IPAddress.Any, (int) port, _requestDispatcher);
 
-            var fileSystem = new FileSystemWrapper();
+            _fileSystem = new FileSystemWrapper();
             const string cachelogBin = "cachelog.bin";
-            _restorer = new CacheRestorer(_memCache, fileSystem, cachelogBin);
-            _archiver = new StreamArchiver(fileSystem.File.Open("cachelogBin", FileMode.OpenOrCreate, FileAccess.Write));
+            _restorer = new CacheRestorer(_memCache, _fileSystem, cachelogBin);
         }
 
         public void Start()
         {
             _restorer.RestoreCache();
+
+            _archiver = new StreamArchiver(_fileSystem.File.Open("cachelog.bin", FileMode.OpenOrCreate, FileAccess.Write));
 
             _memCache.NewNotifications.Subscribe(_archiver);
 
