@@ -148,6 +148,8 @@ namespace Nemcache.Service
             _cacheObserver.Use(key);
             MakeSpaceForNewEntry(data.Length); // In the case of replace this could be offset by the existing value
             var eventId = Interlocked.Increment(ref _currentSequenceId);
+            if (_cache.ContainsKey(key))
+                Interlocked.Add(ref _used, -_cache[key].Data.Length);
             var replaced = _cache.TryUpdate(key, e => new CacheEntry
                 {
                     Data = data,
@@ -157,6 +159,7 @@ namespace Nemcache.Service
                 });
             if (replaced)
             {
+                Interlocked.Add(ref _used, data.Length);
                 _notificationsSubject.OnNext(new StoreNotification
                     {
                         Key = key,

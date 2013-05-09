@@ -3,7 +3,7 @@ using System.Reactive.Concurrency;
 
 namespace Nemcache.Service
 {
-    internal struct CacheEntry
+    public struct CacheEntry
     {
         public ulong Flags { get; set; }
         public DateTime Expiry { get; set; }

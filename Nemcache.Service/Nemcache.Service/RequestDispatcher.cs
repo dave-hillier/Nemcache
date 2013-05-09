@@ -137,8 +137,13 @@ namespace Nemcache.Service
             {
                 var bytes = commandParams[3];
                 dataBlock = new byte[Int32.Parse(bytes)];
-                int count = await stream.ReadAsync(dataBlock, 0, dataBlock.Length);
-                // TODO: does this need to repeat for large payloads?
+
+                int read = 0;
+                while (read < dataBlock.Length)
+                {
+                    int count = await stream.ReadAsync(dataBlock, read, dataBlock.Length - read);
+                    read += count;
+                }
             }
             return dataBlock;
         }

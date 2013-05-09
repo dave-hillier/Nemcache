@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using Nemcache.Service.Notifications;
 using ProtoBuf;
@@ -33,25 +32,6 @@ namespace Nemcache.Service
             _outputStream.Dispose();
         }
 
-        public static IEnumerable<ArchiveEntry> ReadLog(Stream stream)
-        {
-            while (stream.Position < stream.Length)
-            {
-                yield return Serializer.DeserializeWithLengthPrefix<ArchiveEntry>(stream, PrefixStyle.Fixed32);
-            }
-        }
-
-        // TODO: move to a separate class
-        public static void Restore(Stream stream, IMemCache cache)
-        {
-            var log = ReadLog(stream);
-            foreach (var entry in log)
-            {
-                if (entry.Store != null)
-                    cache.Add(entry.Store.Key, entry.Store.Flags, entry.Store.Expiry, entry.Store.Data);
-            }
-        }
-
         private void OnNotification(ArchiveEntry archiveEntry)
         {
             Serializer.SerializeWithLengthPrefix(_outputStream, archiveEntry, PrefixStyle.Fixed32);
@@ -70,20 +50,6 @@ namespace Nemcache.Service
             return archiveEntry;
         }
 
-        [ProtoContract]
-        public class ArchiveEntry
-        {
-            [ProtoMember(1)]
-            public StoreNotification Store { get; set; }
 
-            [ProtoMember(2)]
-            public ClearNotification Clear { get; set; }
-
-            [ProtoMember(3)]
-            public TouchNotification Touch { get; set; }
-
-            [ProtoMember(4)]
-            public RemoveNotification Remove { get; set; }
-        }
     }
 }

@@ -4,12 +4,14 @@ using Nemcache.Service.Notifications;
 
 namespace Nemcache.Service
 {
-    internal interface IMemCache : IDisposable
+    public interface IMemCache : IDisposable
     {
         ulong Capacity { get; set; }
+
         ulong Used { get; }
 
         IEnumerable<string> Keys { get; }
+
         IObservable<ICacheNotification> Notifications { get; }
 
         IEnumerable<KeyValuePair<string, CacheEntry>> Retrieve(IEnumerable<string> keys);
@@ -27,6 +29,7 @@ namespace Nemcache.Service
         bool Touch(string key, DateTime exptime);
 
         bool Remove(string key);
+
         void Clear();
 
         bool Mutate(string key, ulong incr, out byte[] resultDataOut, bool positive);

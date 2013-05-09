@@ -75,7 +75,9 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="IO\FakeFile.cs" />
     <Compile Include="IO\TestStream.cs" />
+    <Compile Include="CacheRestorerTests.cs" />
     <Compile Include="MemcacheTest.cs" />
     <Compile Include="Reactive\CombineCurrentStateWithUpdatesTests.cs" />
     <Compile Include="Eviction\LRUEvictionTests.cs" />

@@ -61,6 +61,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ArchiveEntry.cs" />
+    <Compile Include="CacheRestorer.cs" />
     <Compile Include="IRequestContext.cs" />
     <Compile Include="RequestContext.cs" />
     <Compile Include="RequestHandlers\IRequestHandler.cs" />
@@ -74,7 +76,6 @@
     <Compile Include="RequestHandlers\FlushHandler.cs" />
     <Compile Include="RequestHandlers\GetHandler.cs" />
     <Compile Include="IO\LogFileNameGenerator.cs" />
-    <Compile Include="Manager.cs" />
     <Compile Include="RequestHandlers\PrependHandler.cs" />
     <Compile Include="RequestHandlers\QuitHandler.cs" />
     <Compile Include="RequestHandlers\ReplaceHandler.cs" />

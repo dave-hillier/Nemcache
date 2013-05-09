@@ -8,5 +8,6 @@ namespace Nemcache.Service.IO
         bool Exists(string path);
         long Size(string filename);
         void Delete(string path);
+        void Replace(string sourceFileName, string destinationFileName, string destinationBackupFileName, bool ignoreMetadataErrors);
     }
 }
