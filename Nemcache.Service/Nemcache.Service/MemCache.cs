@@ -14,7 +14,6 @@ using Nemcache.Service.Reactive;
 
 namespace Nemcache.Service
 {
-    // TODO: remove expired items
     internal class MemCache : IMemCache
     {
         private readonly ConcurrentDictionary<string, CacheEntry> _cache =
@@ -60,15 +59,7 @@ namespace Nemcache.Service
 
         public ulong Capacity { get; set; }
 
-        public ulong Used
-        {
-            // TODO: this accounted for a few percent of time on profiles. 
-            get
-            {
-                return (ulong) _used;
-                //return (ulong) _cache.Values.Select(e => (long) e.Data.Length).Sum();
-            }
-        }
+        public ulong Used { get { return (ulong) _used; } }
 
         public void Clear()
         {
@@ -371,6 +362,12 @@ namespace Nemcache.Service
                     Operation = StoreOperation.Store,
                     EventId = eventId
                 });
+        }
+
+        public void Dispose()
+        {
+            _interval.Dispose();
+            _notificationsSubject.Dispose();
         }
     }
 }

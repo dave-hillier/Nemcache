@@ -4,7 +4,7 @@ using Nemcache.Service.Notifications;
 
 namespace Nemcache.Service
 {
-    internal interface IMemCache
+    internal interface IMemCache : IDisposable
     {
         ulong Capacity { get; set; }
         ulong Used { get; }

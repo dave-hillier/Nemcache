@@ -1,9 +1,10 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using System.Reactive.Concurrency;
 
 namespace Nemcache.Service
 {
-    internal class Service
+    internal class Service : IDisposable
     {
         private readonly MemCache _memCache;
         private readonly RequestDispatcher _requestDispatcher;
@@ -24,6 +25,13 @@ namespace Nemcache.Service
         public void Stop()
         {
             _server.Stop();
+        }
+
+        public void Dispose()
+        {
+            Stop();
+            _server.Dispose();
+            _memCache.Dispose();
         }
     }
 }

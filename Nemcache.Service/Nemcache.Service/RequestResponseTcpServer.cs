@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Nemcache.Service
 {
-    internal class RequestResponseTcpServer
+    internal class RequestResponseTcpServer : IDisposable
     {
         private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
         private readonly RequestDispatcher _dispatcher;
@@ -72,6 +72,12 @@ namespace Nemcache.Service
         {
             _listener.Stop();
             _cancellationTokenSource.Cancel();
+        }
+
+        public void Dispose()
+        {
+            Stop();
+            _cancellationTokenSource.Dispose();
         }
     }
 }
