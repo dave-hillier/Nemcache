@@ -25,6 +25,7 @@ namespace Nemcache.Service
         private readonly IScheduler _scheduler;
         private readonly Subject<ICacheNotification> _notificationsSubject;
         private int _currentSequenceId;
+        private int _used;
         private IDisposable _interval;
 
         public MemCache(ulong capacity) : this(capacity, Scheduler.Default)
@@ -43,6 +44,7 @@ namespace Nemcache.Service
             _evictionStrategy = lruStrategy;
             _cacheObserver = lruStrategy;
 
+            // TODO: replace this with some other kind of scheduling. Perhaps a sorted list...
             _interval = Observable.Interval(TimeSpan.FromSeconds(1), _scheduler).Subscribe(_ => RemoveExpired());
 
         }
@@ -61,7 +63,11 @@ namespace Nemcache.Service
         public ulong Used
         {
             // TODO: this accounted for a few percent of time on profiles. 
-            get { return (ulong) _cache.Values.Select(e => (long) e.Data.Length).Sum(); }
+            get
+            {
+                return (ulong) _used;
+                //return (ulong) _cache.Values.Select(e => (long) e.Data.Length).Sum();
+            }
         }
 
         public void Clear()
@@ -188,6 +194,7 @@ namespace Nemcache.Service
 
             if (result)
             {
+                Interlocked.Add(ref _used, data.Length);
                 _cacheObserver.Use(key);
                 _notificationsSubject.OnNext(new StoreNotification
                     {
@@ -218,6 +225,8 @@ namespace Nemcache.Service
                 });
             if (exists)
             {
+
+                Interlocked.Add(ref _used, data.Length);
                 _notificationsSubject.OnNext(
                     new StoreNotification
                         {
@@ -237,6 +246,12 @@ namespace Nemcache.Service
             _cacheObserver.Use(key);
             MakeSpaceForNewEntry(data.Length); // In the case of replace this could be offset by the existing value
             var eventId = Interlocked.Increment(ref _currentSequenceId);
+
+            int size = 0;
+            if (_cache.ContainsKey(key))
+            {
+                size = _cache[key].Data.Length;
+            }
             _cache[key] = new CacheEntry
                 {
                     Data = data,
@@ -244,6 +259,7 @@ namespace Nemcache.Service
                     Flags = flags,
                     EventId = eventId
                 };
+            Interlocked.Add(ref _used, data.Length - size);
             _notificationsSubject.OnNext(
                 new StoreNotification
                     {
@@ -264,7 +280,10 @@ namespace Nemcache.Service
             var eventId = Interlocked.Increment(ref _currentSequenceId);
             bool removed = _cache.TryRemove(key, out entry);
             if (removed)
-                _notificationsSubject.OnNext(new RemoveNotification {Key = key, EventId = eventId});
+            {
+                Interlocked.Add(ref _used, -entry.Data.Length);
+                _notificationsSubject.OnNext(new RemoveNotification { Key = key, EventId = eventId });
+            }
             return removed;
         }
 
@@ -325,16 +344,33 @@ namespace Nemcache.Service
         private void CasStore(string key, ulong flags, DateTime exptime, ulong casUnique, byte[] newData)
         {
             _cacheObserver.Use(key);
-            var eventId2 = Interlocked.Increment(ref _currentSequenceId);
+            MakeSpaceForNewEntry(newData.Length); // In the case of replace this could be offset by the existing value
+            var eventId = Interlocked.Increment(ref _currentSequenceId);
+
+            int size = 0;
+            if (_cache.ContainsKey(key))
+            {
+                size = _cache[key].Data.Length;
+            }
             _cache[key] = new CacheEntry
+            {
+                Data = newData,
+                Expiry = exptime,
+                Flags = flags,
+                EventId = eventId,
+                CasUnique = casUnique
+            };
+            Interlocked.Add(ref _used, newData.Length - size);
+            _notificationsSubject.OnNext(
+                new StoreNotification
                 {
-                    CasUnique = casUnique,
+                    Key = key,
                     Data = newData,
                     Expiry = exptime,
                     Flags = flags,
-                    EventId = eventId2,
-                };
-            // TODO: notfiy Cas
+                    Operation = StoreOperation.Store,
+                    EventId = eventId
+                });
         }
     }
 }
