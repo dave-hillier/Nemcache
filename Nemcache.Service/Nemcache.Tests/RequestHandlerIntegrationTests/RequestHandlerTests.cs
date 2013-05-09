@@ -25,9 +25,9 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
         [TestMethod]
         public void UnknownCommand()
         {
-            var error = Dispatch(Encoding.ASCII.GetBytes("unknown command\r\n"));
+            var error = Dispatch(Encoding.ASCII.GetBytes("NotACommand\r\n"));
 
-            Assert.AreEqual("ERROR\r\n", Encoding.ASCII.GetString(error));
+            Assert.AreEqual("ERROR Unknown command: NotACommand\r\n", Encoding.ASCII.GetString(error));
         }
 
         [TestMethod]

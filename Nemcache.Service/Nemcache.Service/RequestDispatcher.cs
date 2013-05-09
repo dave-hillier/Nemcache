@@ -92,7 +92,7 @@ namespace Nemcache.Service
 
         private static void WriteUnknownCommandResponse(RequestContext requestContext)
         {
-            var response = Encoding.ASCII.GetBytes("ERROR\r\n");
+            var response = Encoding.ASCII.GetBytes(string.Format("ERROR Unknown command: {0}\r\n", requestContext.CommandName));
             requestContext.ResponseStream.WriteAsync(response, 0, response.Length);
         }
 
@@ -165,6 +165,8 @@ namespace Nemcache.Service
             while (true)
             {
                 var current = (byte) stream.ReadByte();
+                if (current == 0xFF)
+                    throw new Exception("End");
 
                 buffer.Add(current);
                 if (buffer.Count > RequestSizeLimit)
