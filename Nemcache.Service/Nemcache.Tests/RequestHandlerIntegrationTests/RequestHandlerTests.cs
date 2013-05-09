@@ -1,4 +1,5 @@
-﻿using System.Reactive.Disposables;
+﻿using System.Linq;
+using System.Reactive.Disposables;
 using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -33,7 +34,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
         [TestMethod]
         public void MalformedCommand()
         {
-            var error = Dispatch(Encoding.ASCII.GetBytes("malformed command"));
+            var error = Dispatch(Encoding.ASCII.GetBytes("malformed command").Concat(new byte[512]).ToArray());
 
             Assert.AreEqual("SERVER ERROR New line not found\r\n", Encoding.ASCII.GetString(error));
         }
