@@ -25,6 +25,7 @@
         };
         connection.onmessage = function(event) {
             console.log(event.data);
+            connection.send('pong!');
         };
         
     </script>

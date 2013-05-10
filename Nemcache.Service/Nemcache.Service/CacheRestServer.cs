@@ -13,7 +13,6 @@ namespace Nemcache.Service
     class CacheRestServer
     {
         private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
-
         private readonly IMemCache _cache;
         private readonly HttpListener _listener = new HttpListener();
         private readonly TaskFactory _taskFactory;
@@ -109,6 +108,31 @@ namespace Nemcache.Service
 
         private async Task OnWebSocket(WebSocket webSocket)
         {
+            Task.WaitAll(
+                SendLoop(webSocket), 
+                ReceiveLoop(webSocket));
+        }
+
+        private async Task ReceiveLoop(WebSocket webSocket)
+        {
+            var receiveBuffer = new byte[4096];
+            while (webSocket.State == WebSocketState.Open)
+            {
+                var arraySegment = new ArraySegment<byte>(receiveBuffer);
+                var receiveResult = await webSocket.ReceiveAsync(arraySegment, _cancellationTokenSource.Token);
+                if (receiveResult.MessageType == WebSocketMessageType.Close)
+                {
+                    await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "", _cancellationTokenSource.Token);
+                }
+                else if (receiveResult.MessageType == WebSocketMessageType.Text)
+                {
+                    Console.WriteLine("Received: {0}", Encoding.ASCII.GetString(arraySegment.Array).Trim('\0'));
+                }
+            }
+        }
+
+        private async Task SendLoop(WebSocket webSocket)
+        {
             while (webSocket.State == WebSocketState.Open)
             {
                 var response = Encoding.ASCII.GetBytes("Ping!");
@@ -116,31 +140,9 @@ namespace Nemcache.Service
                 await webSocket.SendAsync(arraySegment, WebSocketMessageType.Text, true, _cancellationTokenSource.Token);
 
                 await Task.Delay(1000);
-                /*var receiveBuffer = new byte[4096];
-                var receiveResult = await webSocket.ReceiveAsync(new ArraySegment<byte>(receiveBuffer), CancellationToken.None);
-                if (receiveResult.MessageType == WebSocketMessageType.Close)
-                {
-                    await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
-                }
-                else if (receiveResult.MessageType == WebSocketMessageType.Text)
-                {
-                    while (true)
-                    {
-                        
-                        var response = Encoding.ASCII.GetBytes("Ping!");
-                        var arraySegment = new ArraySegment<byte>(response);
-                        await webSocket.SendAsync(arraySegment, WebSocketMessageType.Text, true, _cancellationTokenSource.Token);
-                        
-                        await Task.Delay(1000);
-                    }
-                    //await webSocket.CloseAsync(WebSocketCloseStatus.InvalidMessageType, "Cannot accept text frame", CancellationToken.None);
-                }
-                else
-                {
-                    //await webSocket.SendAsync(new ArraySegment<byte>(receiveBuffer, 0, receiveResult.Count), WebSocketMessageType.Binary, receiveResult.EndOfMessage, CancellationToken.None);
-                }*/
             }
         }
+    
 
 
         public void Stop()
