@@ -61,6 +61,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CacheRestServer.cs" />
     <Compile Include="Persistence\ArchiveEntry.cs" />
     <Compile Include="Persistence\CacheRestorer.cs" />
     <Compile Include="IRequestContext.cs" />

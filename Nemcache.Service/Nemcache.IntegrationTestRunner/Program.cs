@@ -122,8 +122,6 @@ namespace Nemcache.IntegrationTestRunner
 
         private static async void SimpleBenchmark(SyncClient client, string key = "key", int iterations = 100000)
         {
-            var stopWatch = new Stopwatch();
-            stopWatch.Start();
             for (int i = 0; i < iterations; ++i)
             {
                 var b = new StoreRequestBuilder("set", key, string.Format("Data{0}", i));
@@ -135,8 +133,6 @@ namespace Nemcache.IntegrationTestRunner
             var get = new GetRequestBuilder("get", key);
             var request2 = get.ToAsciiRequest();
             var resposne2 = client.Send(request2);
-            stopWatch.Stop();
-            //Console.WriteLine("{0} after {1}", Encoding.ASCII.GetString(resposne2), stopWatch.Elapsed);
         }
 
         private static void Connected(TcpClient client)

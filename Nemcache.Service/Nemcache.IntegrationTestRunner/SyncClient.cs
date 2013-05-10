@@ -40,9 +40,7 @@ namespace Nemcache.IntegrationTestRunner
             var buffer = new byte[4096];
             int read = _stream.Read(buffer, 0, 4096);
             var result = buffer.Take(read).ToArray();
-
             //Console.WriteLine("  Response: {0}", Encoding.ASCII.GetString(result));
-
             return result;
         }
 
