@@ -16,7 +16,7 @@ namespace Nemcache.Service
         private readonly CacheRestorer _restorer;
         private StreamArchiver _archiver;
         private readonly FileSystemWrapper _fileSystem;
-        private CacheRestServer _restListener;
+        private readonly CacheRestServer _restListener;
 
         public Service(ulong capacity, uint port)
         {

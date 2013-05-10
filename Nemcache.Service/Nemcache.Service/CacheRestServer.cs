@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.WebSockets;
@@ -49,31 +50,59 @@ namespace Nemcache.Service
 
             if (httpContext.Request.IsWebSocketRequest)
             {
-                var webSocketContext = await httpContext.AcceptWebSocketAsync(subProtocol: string.Empty);
+                if (rawUrl == "/cache/notifications")
+                {
+                    // Todo json, text or binary?
+                    var webSocketContext = await httpContext.AcceptWebSocketAsync(subProtocol: "nemcache-0.1");
+                    //webSocketContext.
+                    await OnWebSocket(webSocketContext.WebSocket);
+                }
 
-                await OnWebSocket(webSocketContext.WebSocket);
             }
             else if (httpContext.Request.HttpMethod == "GET")
             {
-                var regex = new Regex("/cache/(.+)");
-                var match = regex.Match(rawUrl);
-                if (match.Success)
+                if (rawUrl == "/cache/test")
                 {
-                    var key = match.Groups[1].Value;
-                    var entries = _cache.Retrieve(new [] { key }).ToArray();
-                    if (!entries.Any())
-                    {
-                        httpContext.Response.StatusCode = 404;
-                        httpContext.Response.Close();
-                    }
-                    else
-                    {
-                        // TODO: retrieve mime-type -- perhaps reserved keys
-                        var value = entries.Single().Value.Data;
-                        var outputStream = httpContext.Response.OutputStream;
-                        await outputStream.WriteAsync(value, 0, value.Length, _cancellationTokenSource.Token); 
-                        httpContext.Response.Close();
-                    }
+                    var bytes = File.ReadAllBytes("test.html");
+                    httpContext.Response.ContentType = "text/html";
+                    httpContext.Response.StatusCode = 200;
+                    await httpContext.Response.OutputStream.WriteAsync(bytes, 0, bytes.Length);
+                    httpContext.Response.Close();
+                }
+                else
+                    await HandleGet(httpContext, rawUrl);
+            }
+            else if (httpContext.Request.HttpMethod == "PUT")
+            {
+                await HandlePut(httpContext, rawUrl);
+            }
+            // Todo: put/post/delete
+        }
+
+        private async Task HandlePut(HttpListenerContext httpContext, string rawUrl)
+        {
+        }
+
+        private async Task HandleGet(HttpListenerContext httpContext, string rawUrl)
+        {
+            var regex = new Regex("/cache/(.+)");
+            var match = regex.Match(rawUrl);
+            if (match.Success)
+            {
+                var key = match.Groups[1].Value;
+                var entries = _cache.Retrieve(new[] {key}).ToArray();
+                if (!entries.Any())
+                {
+                    httpContext.Response.StatusCode = 404;
+                    httpContext.Response.Close();
+                }
+                else
+                {
+                    // TODO: retrieve mime-type -- perhaps reserved keys
+                    var value = entries.Single().Value.Data;
+                    var outputStream = httpContext.Response.OutputStream;
+                    await outputStream.WriteAsync(value, 0, value.Length, _cancellationTokenSource.Token);
+                    httpContext.Response.Close();
                 }
             }
         }
@@ -82,10 +111,34 @@ namespace Nemcache.Service
         {
             while (webSocket.State == WebSocketState.Open)
             {
-                await Task.Delay(1000);
-                var response = Encoding.ASCII.GetBytes("Hello, World!");
+                var response = Encoding.ASCII.GetBytes("Ping!");
                 var arraySegment = new ArraySegment<byte>(response);
-                await webSocket.SendAsync(arraySegment, WebSocketMessageType.Text, false, _cancellationTokenSource.Token);
+                await webSocket.SendAsync(arraySegment, WebSocketMessageType.Text, true, _cancellationTokenSource.Token);
+
+                await Task.Delay(1000);
+                /*var receiveBuffer = new byte[4096];
+                var receiveResult = await webSocket.ReceiveAsync(new ArraySegment<byte>(receiveBuffer), CancellationToken.None);
+                if (receiveResult.MessageType == WebSocketMessageType.Close)
+                {
+                    await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
+                }
+                else if (receiveResult.MessageType == WebSocketMessageType.Text)
+                {
+                    while (true)
+                    {
+                        
+                        var response = Encoding.ASCII.GetBytes("Ping!");
+                        var arraySegment = new ArraySegment<byte>(response);
+                        await webSocket.SendAsync(arraySegment, WebSocketMessageType.Text, true, _cancellationTokenSource.Token);
+                        
+                        await Task.Delay(1000);
+                    }
+                    //await webSocket.CloseAsync(WebSocketCloseStatus.InvalidMessageType, "Cannot accept text frame", CancellationToken.None);
+                }
+                else
+                {
+                    //await webSocket.SendAsync(new ArraySegment<byte>(receiveBuffer, 0, receiveResult.Count), WebSocketMessageType.Binary, receiveResult.EndOfMessage, CancellationToken.None);
+                }*/
             }
         }
 

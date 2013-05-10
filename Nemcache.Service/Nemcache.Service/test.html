@@ -1,0 +1,31 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>Nemcache Test Page</title>
+</head>
+    <body>
+        <div id ="events"></div>
+    </body>
+    <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+    <script src="http://code.jquery.com/jquery-migrate-1.1.1.min.js"></script>
+    <script>
+        var connection = new WebSocket('ws://localhost:8222/cache/notifications', 'nemcache-0.1');
+        connection.onopen = function() {
+            /*Send a small message to the console once the connection is established */
+            console.log('Connection open!');
+            //connection.send('test');
+        };
+        connection.onclose = function() {
+            console.log('Connection closed');
+        };
+        connection.onerror = function(error) {
+            console.log('Error detected: ' + error);
+        };
+        connection.onmessage = function(event) {
+            console.log(event.data);
+        };
+        
+    </script>
+</html>
