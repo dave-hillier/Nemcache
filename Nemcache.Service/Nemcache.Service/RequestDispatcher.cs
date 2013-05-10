@@ -9,7 +9,16 @@ using Nemcache.Service.RequestHandlers;
 
 namespace Nemcache.Service
 {
-    internal class RequestDispatcher
+    internal interface IRequestDispatcher
+    {
+        Task Dispatch(
+            Stream stream,
+            Stream outStream,
+            string remoteEndpoint,
+            Action clientDisconnectCallback);
+    }
+
+    internal class RequestDispatcher : IRequestDispatcher
     {
         private const int RequestSizeLimit = 256;
         private readonly byte[] _endOfLine = new byte[] {13, 10}; // Ascii for "\r\n"
@@ -46,16 +55,16 @@ namespace Nemcache.Service
             Stream stream,
             Stream outStream,
             string remoteEndpoint,
-            IDisposable clientConnectionHandle)
+            Action clientDisconnectCallback)
         {
             try
             {
-                var requestContext = await CreateRequestContext(stream, outStream, clientConnectionHandle);
+                var requestContext = await CreateRequestContext(stream, outStream, clientDisconnectCallback);
 
                 if (requestContext == null) // disconnected
                 {
-                    if (clientConnectionHandle != null)
-                        clientConnectionHandle.Dispose();
+                    if (clientDisconnectCallback != null)
+                        clientDisconnectCallback();
                     return;
                 }
 
@@ -91,7 +100,7 @@ namespace Nemcache.Service
         }
 
         private async Task<RequestContext> CreateRequestContext(Stream stream, Stream outStream,
-                                                                IDisposable clientConnectionHandle)
+                                                                Action clientDisconnectCallback)
         {
             var requestFirstLine = GetFirstLine(stream);
             if (string.IsNullOrEmpty(requestFirstLine))
@@ -101,14 +110,14 @@ namespace Nemcache.Service
             var commandName = requestTokens.First();
             var commandParams = requestTokens.Skip(1).ToArray();
 
-            byte[] dataBlock = await GetDataBlock(commandName, stream, commandParams, clientConnectionHandle);
+            byte[] dataBlock = await GetDataBlock(commandName, stream, commandParams, clientDisconnectCallback);
 
             var requestContext = new RequestContext(commandName, commandParams,
                                                     dataBlock,
                                                     IsNoReply(commandParams, commandName)
                                                         ? new MemoryStream()
                                                         : outStream,
-                                                    () => clientConnectionHandle.Dispose());
+                                                    () => clientDisconnectCallback());
             return requestContext;
         }
 
@@ -127,7 +136,8 @@ namespace Nemcache.Service
             return commandParams.LastOrDefault() == "noreply" && !commandName.StartsWith("get");
         }
 
-        private static async Task<byte[]> GetDataBlock(string commandName, Stream stream, string[] commandParams, IDisposable clientConnectionHandle)
+        private static async Task<byte[]> GetDataBlock(string commandName, 
+            Stream stream, string[] commandParams, Action clientDisconnectCallback)
         {
             byte[] dataBlock = null;
             bool hasDataBlock = IsSetCommand(commandName);
@@ -142,7 +152,7 @@ namespace Nemcache.Service
                     int count = await stream.ReadAsync(dataBlock, read, dataBlock.Length - read);
                     if (count == 0)
                     {
-                        clientConnectionHandle.Dispose();
+                        clientDisconnectCallback();
                         return new byte[]{};
                     }
                     read += count;

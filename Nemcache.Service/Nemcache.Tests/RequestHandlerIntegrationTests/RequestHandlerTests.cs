@@ -52,7 +52,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
         {
             // TODO:
             bool disposed = false;
-            _client.OnDisconnect = Disposable.Create(() => { disposed = true; });
+            _client.OnDisconnect = (() => { disposed = true; });
             Dispatch(Encoding.ASCII.GetBytes("quit\r\n"));
             Assert.AreEqual(disposed, true);
         }

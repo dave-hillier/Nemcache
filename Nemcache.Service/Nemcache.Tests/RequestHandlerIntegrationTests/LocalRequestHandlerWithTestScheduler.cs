@@ -30,7 +30,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             return memoryStream.ToArray();
         }
 
-        public IDisposable OnDisconnect { get; set; }
+        public Action OnDisconnect { get; set; }
 
         public void Capacity(int i)
         {

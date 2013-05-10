@@ -54,7 +54,7 @@ namespace Nemcache.Service
                 {
                     while (!disconnected)
                     {
-                        await _dispatcher.Dispatch(stream, stream, "", Disposable.Create(() =>
+                        await _dispatcher.Dispatch(stream, stream, "", (() =>
                             {
                                 disconnected = true;
                                 tcpClient.Close();

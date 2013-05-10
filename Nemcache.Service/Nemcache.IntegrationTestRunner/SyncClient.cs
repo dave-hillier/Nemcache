@@ -45,7 +45,7 @@ namespace Nemcache.IntegrationTestRunner
         }
 
 
-        public IDisposable OnDisconnect { get; set; }
+        public Action OnDisconnect { get; set; }
 
         public async Task<byte[]> SendAsync(byte[] request)
         {

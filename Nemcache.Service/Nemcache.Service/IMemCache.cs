@@ -12,8 +12,6 @@ namespace Nemcache.Service
 
         IEnumerable<string> Keys { get; }
 
-        IObservable<ICacheNotification> FullStateNotifications { get; }
-
         IEnumerable<KeyValuePair<string, CacheEntry>> Retrieve(IEnumerable<string> keys);
 
         bool Store(string key, ulong flags, byte[] data, DateTime exptime);
@@ -33,5 +31,9 @@ namespace Nemcache.Service
         void Clear();
 
         bool Mutate(string key, ulong incr, out byte[] resultDataOut, bool positive);
+
+        IObservable<ICacheNotification> FullStateNotifications { get; }
     }
+
+    // TODO: consider implementing dictionary interface for above...
 }
