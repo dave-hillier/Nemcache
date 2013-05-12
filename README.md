@@ -34,7 +34,8 @@ The following commands from the [Memcached specification](https://raw.github.com
 are implemented: get (and gets), set, add, replace, delete, append, prepend, incr, decr, touch, flush_all, cas, quit and version.
  
 Currently only TCP is supported including the noreply mode. 
+
 Flags support up-to 64 bit values, although this is a divergence from the original spec and therefore might not be supported by your client.
-Eviction works by evicting a random cache entry until the cache can insert the new value. 
+
 The cache is persisted to files so state can be maintained across cache restarts.
 
