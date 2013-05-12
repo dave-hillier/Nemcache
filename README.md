@@ -37,5 +37,5 @@ Currently only TCP is supported including the noreply mode.
 
 Flags support up-to 64 bit values, although this is a divergence from the original spec and therefore might not be supported by your client.
 
-The cache is persisted to files so state can be maintained across cache restarts.
+The cache is persisted to file so state can be maintained across cache restarts. 
 
