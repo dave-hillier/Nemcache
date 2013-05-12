@@ -1,18 +1,18 @@
-# nemcached
+# Nemcache
 
-Nemcached is a Memcached server implemented in C# 4.5. 
+Nemcache is a Memcached server implemented in C# 4.5. 
 [Memcached](http://memcached.org/) is an in-memory key-value store for small chunks of arbitrary data (strings, objects) from results of database calls, API calls, or page rendering.
-Nemcached can be used as a drop in replacement and is compatible with existing Memcache clients.
+Nemcache can be used as a drop in replacement and is compatible with existing Memcache clients.
 
 ## Installation
 
-Nemcached uses [TopShelf](http://topshelf-project.com/) to handle service installation. 
-Clone the repository:
+Nemcache uses [TopShelf](http://topshelf-project.com/) to handle service installation. 
+First, clone the repository:
 ```
-git clone https://github.com/dave-hillier/nemcached.git
+git clone https://github.com/dave-hillier/nemcache.git
 ```
 
-After cloning the repository, run either `msbuild` or open `Nemcached.Sln` in Visual Studio and build. 
+After cloning the repository, run either `msbuild` or open `Nemcache.Sln` in Visual Studio and build. 
 
 To start the service as a command line application, simply run `Nemcache.Service.exe` 
 
