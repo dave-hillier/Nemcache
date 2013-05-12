@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -53,8 +54,7 @@ namespace Nemcache.Service
                 {
                     // Todo json, text or binary?
                     var webSocketContext = await httpContext.AcceptWebSocketAsync(subProtocol: "nemcache-0.1");
-                    //webSocketContext.
-                    await OnWebSocket(webSocketContext.WebSocket);
+                    OnWebSocket(webSocketContext.WebSocket);
                 }
 
             }
@@ -75,11 +75,30 @@ namespace Nemcache.Service
             {
                 await HandlePut(httpContext, rawUrl);
             }
-            // Todo: put/post/delete
         }
 
-        private async Task HandlePut(HttpListenerContext httpContext, string rawUrl)
+        private async Task HandlePut(HttpListenerContext context, string rawUrl)
         {
+            var regex = new Regex("/cache/(.+)");
+            var match = regex.Match(rawUrl);
+            if (match.Success)
+            {
+                // TODO: content type...
+                var key = match.Groups[1].Value;
+                var streamReader = new StreamReader(context.Request.InputStream);
+                var body = await streamReader.ReadToEndAsync();
+
+                _cache.Store(key, 0, Encoding.UTF8.GetBytes(body), DateTime.MaxValue);
+
+                byte[] response = Encoding.UTF8.GetBytes("STORED\r\n");
+                context.Response.StatusCode = 200;
+                context.Response.KeepAlive = false;
+                context.Response.ContentLength64 = response.Length;
+
+                var output = context.Response.OutputStream;
+                await output.WriteAsync(response, 0, response.Length);
+                context.Response.Close();
+            }
         }
 
         private async Task HandleGet(HttpListenerContext httpContext, string rawUrl)
@@ -106,7 +125,7 @@ namespace Nemcache.Service
             }
         }
 
-        private async Task OnWebSocket(WebSocket webSocket)
+        private void OnWebSocket(WebSocket webSocket)
         {
             Task.WaitAll(
                 SendLoop(webSocket), 
@@ -133,13 +152,20 @@ namespace Nemcache.Service
 
         private async Task SendLoop(WebSocket webSocket)
         {
-            while (webSocket.State == WebSocketState.Open)
+            var sendQueue = new BlockingCollection<byte[]>
+                {
+                    Encoding.UTF8.GetBytes("hello"),
+                    Encoding.UTF8.GetBytes("world"),
+                    Encoding.UTF8.GetBytes("foo"),
+                    Encoding.UTF8.GetBytes("bar")
+                };// Todo: save this so it is acecssible from somewhere else somehow...
+            foreach (var val in sendQueue.GetConsumingEnumerable(_cancellationTokenSource.Token))
             {
-                var response = Encoding.ASCII.GetBytes("Ping!");
-                var arraySegment = new ArraySegment<byte>(response);
+                if (webSocket.State != WebSocketState.Open)
+                    break;
+                var arraySegment = new ArraySegment<byte>(val);
                 await webSocket.SendAsync(arraySegment, WebSocketMessageType.Text, true, _cancellationTokenSource.Token);
-
-                await Task.Delay(1000);
+                
             }
         }
     
