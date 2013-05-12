@@ -1,8 +1,7 @@
 # Nemcache
 
-Nemcache is a Memcached server implemented in C# 4.5. 
-[Memcached](http://memcached.org/) is an in-memory key-value store for small chunks of arbitrary data (strings, objects) from results of database calls, API calls, or page rendering.
-Nemcache can be used as a drop in replacement and is compatible with existing Memcache clients.
+Nemcache is a persistent, key-value store implemented in C# 4.5. 
+It is client compatible with [Memcache](http://memcached.org/) (an in-memory key-value store).
 
 ## Installation
 
