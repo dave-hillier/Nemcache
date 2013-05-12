@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -14,23 +15,21 @@ namespace Nemcache.Service
     class CacheRestServer
     {
         private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
-        private readonly IMemCache _cache;
+        private readonly Dictionary<string, IHttpHandler> _handlers;
         private readonly HttpListener _listener = new HttpListener();
         private readonly TaskFactory _taskFactory;
 
-        public CacheRestServer(IMemCache cache)
+        public CacheRestServer(Dictionary<string, IHttpHandler> handlers)
         {
             _taskFactory = new TaskFactory(_cancellationTokenSource.Token);
-            _listener.Prefixes.Add("http://localhost:8222/cache/");
-            _cache = cache;
+            _listener.Prefixes.Add("http://localhost:8222/");
+            _handlers = handlers;
         }
 
         public void Start()
         {
             _listener.Start();
-
             _taskFactory.StartNew(ListenForClients);
-
         }
 
         private async void ListenForClients()
@@ -39,7 +38,6 @@ namespace Nemcache.Service
                    _listener.IsListening)
             {
                 var httpContext = await _listener.GetContextAsync();
-
                 await _taskFactory.StartNew(() => OnClientConnection(httpContext));
             }
         }
@@ -47,7 +45,6 @@ namespace Nemcache.Service
         private async Task OnClientConnection(HttpListenerContext httpContext)
         {
             var rawUrl = httpContext.Request.RawUrl;
-
             if (httpContext.Request.IsWebSocketRequest)
             {
                 if (rawUrl == "/cache/notifications")
@@ -56,70 +53,37 @@ namespace Nemcache.Service
                     var webSocketContext = await httpContext.AcceptWebSocketAsync(subProtocol: "nemcache-0.1");
                     OnWebSocket(webSocketContext.WebSocket);
                 }
-
             }
-            else if (httpContext.Request.HttpMethod == "GET")
+            else
             {
-                if (rawUrl == "/cache/test")
+                var handlerfound = (from kv in _handlers
+                                    let regex = new Regex(kv.Key)
+                                    let match = regex.Match(rawUrl)
+                                    where match.Success
+                                    select new { Match = match, Handler = kv.Value }).FirstOrDefault();
+                if (handlerfound != null)
                 {
-                    var bytes = File.ReadAllBytes("test.html");
-                    httpContext.Response.ContentType = "text/html";
-                    httpContext.Response.StatusCode = 200;
-                    await httpContext.Response.OutputStream.WriteAsync(bytes, 0, bytes.Length);
-                    httpContext.Response.Close();
+                    // TODO: pass the rest of the matches to the handler
+                    var value = handlerfound.Match.Groups[1].Value;
+                    switch (httpContext.Request.HttpMethod)
+                    {
+                        case "GET":
+                            await handlerfound.Handler.Get(httpContext, value);
+                            break;
+                        case "PUT":
+                            await handlerfound.Handler.Put(httpContext, value);
+                            break;
+                        case "DELETE":
+                            await handlerfound.Handler.Delete(httpContext, value);
+                            break;
+                        case "POST":
+                            await handlerfound.Handler.Post(httpContext, value);
+                            break;
+                    }
                 }
                 else
-                    await HandleGet(httpContext, rawUrl);
-            }
-            else if (httpContext.Request.HttpMethod == "PUT")
-            {
-                await HandlePut(httpContext, rawUrl);
-            }
-        }
-
-        private async Task HandlePut(HttpListenerContext context, string rawUrl)
-        {
-            var regex = new Regex("/cache/(.+)");
-            var match = regex.Match(rawUrl);
-            if (match.Success)
-            {
-                // TODO: content type...
-                var key = match.Groups[1].Value;
-                var streamReader = new StreamReader(context.Request.InputStream);
-                var body = await streamReader.ReadToEndAsync();
-
-                _cache.Store(key, 0, Encoding.UTF8.GetBytes(body), DateTime.MaxValue);
-
-                byte[] response = Encoding.UTF8.GetBytes("STORED\r\n");
-                context.Response.StatusCode = 200;
-                context.Response.KeepAlive = false;
-                context.Response.ContentLength64 = response.Length;
-
-                var output = context.Response.OutputStream;
-                await output.WriteAsync(response, 0, response.Length);
-                context.Response.Close();
-            }
-        }
-
-        private async Task HandleGet(HttpListenerContext httpContext, string rawUrl)
-        {
-            var regex = new Regex("/cache/(.+)");
-            var match = regex.Match(rawUrl);
-            if (match.Success)
-            {
-                var key = match.Groups[1].Value;
-                var entries = _cache.Retrieve(new[] {key}).ToArray();
-                if (!entries.Any())
                 {
                     httpContext.Response.StatusCode = 404;
-                    httpContext.Response.Close();
-                }
-                else
-                {
-                    // TODO: retrieve mime-type -- perhaps reserved keys
-                    var value = entries.Single().Value.Data;
-                    var outputStream = httpContext.Response.OutputStream;
-                    await outputStream.WriteAsync(value, 0, value.Length, _cancellationTokenSource.Token);
                     httpContext.Response.Close();
                 }
             }
@@ -158,18 +122,16 @@ namespace Nemcache.Service
                     Encoding.UTF8.GetBytes("world"),
                     Encoding.UTF8.GetBytes("foo"),
                     Encoding.UTF8.GetBytes("bar")
-                };// Todo: save this so it is acecssible from somewhere else somehow...
+                };// TODO: save this so it is acecssible from somewhere else somehow...
+
             foreach (var val in sendQueue.GetConsumingEnumerable(_cancellationTokenSource.Token))
             {
                 if (webSocket.State != WebSocketState.Open)
                     break;
                 var arraySegment = new ArraySegment<byte>(val);
                 await webSocket.SendAsync(arraySegment, WebSocketMessageType.Text, true, _cancellationTokenSource.Token);
-                
             }
         }
-    
-
 
         public void Stop()
         {

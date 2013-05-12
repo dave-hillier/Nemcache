@@ -117,7 +117,7 @@ namespace Nemcache.Service
                                                     IsNoReply(commandParams, commandName)
                                                         ? new MemoryStream()
                                                         : outStream,
-                                                    () => clientDisconnectCallback());
+                                                    clientDisconnectCallback);
             return requestContext;
         }
 
@@ -157,7 +157,7 @@ namespace Nemcache.Service
                     }
                     read += count;
                 }
-                // TODO: test the stream position
+                // TODO: add a test the stream position
                 stream.ReadByte();// \r
                 stream.ReadByte();// \n
             }
