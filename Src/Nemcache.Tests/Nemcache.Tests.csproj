@@ -75,6 +75,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="CacheRestServerTests.cs" />
     <Compile Include="IO\FakeFile.cs" />
     <Compile Include="IO\TestStream.cs" />
     <Compile Include="Persistence\CacheRestorerTests.cs" />
@@ -100,6 +101,7 @@
     <Compile Include="RequestHandlerIntegrationTests\ReplaceTests.cs" />
     <Compile Include="RequestHandlerIntegrationTests\CasTests.cs" />
     <Compile Include="RequestHandlerIntegrationTests\RequestHandlerTests.cs" />
+    <Compile Include="RequestResponseTcpServerTests.cs" />
     <Compile Include="TestExt.cs" />
     <Compile Include="RequestHandlerIntegrationTests\TouchTests.cs" />
     <Compile Include="RequestHandlerIntegrationTests\VersionRequestTests.cs" />

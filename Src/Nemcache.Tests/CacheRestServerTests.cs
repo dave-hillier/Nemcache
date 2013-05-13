@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Nemcache.Service;
 
-namespace Nemcache.Comms.IntegrationTest
+namespace Nemcache.Tests
 {
     [TestClass]
     public class CacheRestServerTests

@@ -120,6 +120,7 @@
     <Compile Include="RequestHandlers\VersionHandler.cs" />
     <Compile Include="StaticFileHttpHandler.cs" />
     <Compile Include="WebSocketHandler.cs" />
+    <Compile Include="WebSocketServer.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

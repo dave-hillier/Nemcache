@@ -13,9 +13,8 @@ namespace Nemcache.Service
         private readonly Dictionary<string, IHttpHandler> _httpHandlers;
         private readonly HttpListener _listener = new HttpListener();
         private readonly TaskFactory _taskFactory;
-        private readonly IWebSocketHandler _webSocketHandler;
 
-        public CacheRestServer(Dictionary<string, IHttpHandler> httpHandlers, IWebSocketHandler webSocketHandler, string[] prefixes)
+        public CacheRestServer(Dictionary<string, IHttpHandler> httpHandlers, string[] prefixes)
         {
             _taskFactory = new TaskFactory(_cancellationTokenSource.Token);
             foreach (var prefix in prefixes)
@@ -23,7 +22,6 @@ namespace Nemcache.Service
                 _listener.Prefixes.Add(prefix);
             }
             _httpHandlers = httpHandlers;
-            _webSocketHandler = webSocketHandler;
         }
 
         public void Start()
@@ -45,52 +43,41 @@ namespace Nemcache.Service
         private async Task OnClientConnection(HttpListenerContext httpContext)
         {
             var rawUrl = httpContext.Request.RawUrl;
-            if (httpContext.Request.IsWebSocketRequest) // TODO: move websockets to another listener
+            var handlerfound = (from kv in _httpHandlers
+                                let regex = new Regex(kv.Key)
+                                let match = regex.Match(rawUrl)
+                                where match.Success
+                                select new { Match = match, Handler = kv.Value }).FirstOrDefault();
+            if (handlerfound != null)
             {
-                if (rawUrl == "/cache/notifications")
+                string[] value = new string[]{};
+
+                if (handlerfound.Match.Groups.Count > 1)
                 {
-                    var webSocketContext = await httpContext.AcceptWebSocketAsync(subProtocol: "nemcache-0.1");
-                    _webSocketHandler.OnWebSocketConnected(webSocketContext.WebSocket);
+                    var result = new Group[handlerfound.Match.Groups.Count];
+                    handlerfound.Match.Groups.CopyTo(result, handlerfound.Match.Groups.Count);
+                    value = result.Select(g => g.Value).ToArray();
+                }
+                switch (httpContext.Request.HttpMethod)
+                {
+                    case "GET":
+                        await handlerfound.Handler.Get(httpContext, value);
+                        break;
+                    case "PUT":
+                        await handlerfound.Handler.Put(httpContext, value);
+                        break;
+                    case "DELETE":
+                        await handlerfound.Handler.Delete(httpContext, value);
+                        break;
+                    case "POST":
+                        await handlerfound.Handler.Post(httpContext, value);
+                        break;
                 }
             }
             else
             {
-                var handlerfound = (from kv in _httpHandlers
-                                    let regex = new Regex(kv.Key)
-                                    let match = regex.Match(rawUrl)
-                                    where match.Success
-                                    select new { Match = match, Handler = kv.Value }).FirstOrDefault();
-                if (handlerfound != null)
-                {
-                    string[] value = new string[]{};
-
-                    if (handlerfound.Match.Groups.Count > 1)
-                    {
-                        var result = new Group[handlerfound.Match.Groups.Count];
-                        handlerfound.Match.Groups.CopyTo(result, handlerfound.Match.Groups.Count);
-                        value = result.Select(g => g.Value).ToArray();
-                    }
-                    switch (httpContext.Request.HttpMethod)
-                    {
-                        case "GET":
-                            await handlerfound.Handler.Get(httpContext, value);
-                            break;
-                        case "PUT":
-                            await handlerfound.Handler.Put(httpContext, value);
-                            break;
-                        case "DELETE":
-                            await handlerfound.Handler.Delete(httpContext, value);
-                            break;
-                        case "POST":
-                            await handlerfound.Handler.Post(httpContext, value);
-                            break;
-                    }
-                }
-                else
-                {
-                    httpContext.Response.StatusCode = 404;
-                    httpContext.Response.Close();
-                }
+                httpContext.Response.StatusCode = 404;
+                httpContext.Response.Close();
             }
         }
 

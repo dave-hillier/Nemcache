@@ -6,7 +6,6 @@ using System.Net;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Nemcache.Service.IO;
 using Nemcache.Service.Persistence;
@@ -93,7 +92,7 @@ namespace Nemcache.Service
                     {
                         {"/cache/(.+)", new CacheRestHttpHandler(_memCache)},
                         {"/static/(.+)", new StaticFileHttpHandler()}
-                    }, new WebSocketHandler(new CancellationTokenSource()), new[]
+                    }, new[]
                         {
                             "http://localhost:8222/cache/",
                             "http://localhost:8222/static/"
