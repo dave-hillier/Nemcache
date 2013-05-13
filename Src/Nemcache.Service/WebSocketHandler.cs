@@ -36,7 +36,7 @@ namespace Nemcache.Service
                 }
                 else if (receiveResult.MessageType == WebSocketMessageType.Text)
                 {
-                    // TODO: consider sending via an actor?
+                    // TODO: subscribe, unsubscribe
                     Console.WriteLine("Received: {0}", Encoding.ASCII.GetString(arraySegment.Array).Trim('\0'));
                 }
             }

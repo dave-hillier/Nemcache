@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -60,8 +61,9 @@ namespace Nemcache.Service
                                     select new { Match = match, Handler = kv.Value }).FirstOrDefault();
                 if (handlerfound != null)
                 {
-                    // TODO: pass the rest of the matches to the handler
-                    var value = handlerfound.Match.Groups[1].Value;
+                    var result = new Group[handlerfound.Match.Groups.Count];
+                    handlerfound.Match.Groups.CopyTo(result, handlerfound.Match.Groups.Count);
+                    var value = result.Select(g => g.Value).ToArray();
                     switch (httpContext.Request.HttpMethod)
                     {
                         case "GET":
