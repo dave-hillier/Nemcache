@@ -6,6 +6,7 @@ using System.Net;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Nemcache.Service.IO;
 using Nemcache.Service.Persistence;
@@ -88,11 +89,11 @@ namespace Nemcache.Service
 
             _requestDispatcher = new RequestDispatcher(Scheduler.Default, _memCache);
             _server = new RequestResponseTcpServer(IPAddress.Any, (int) port, _requestDispatcher);
-            _restListener = new CacheRestServer(new Dictionary<string, IHttpHandler>()
+            _restListener = new CacheRestServer(new Dictionary<string, IHttpHandler>
                     {
                         {"/cache/(.+)", new CacheRestHttpHandler(_memCache)},
                         {"/static/(.+)", new StaticFileHttpHandler()}
-                    });
+                    }, new WebSocketHandler(new CancellationTokenSource()));
 
             _fileSystem = new FileSystemWrapper();
             const string cachelogBin = "cachelog.bin";

@@ -64,6 +64,7 @@
     <Compile Include="CacheRestServer.cs" />
     <Compile Include="HttpHandlerBase.cs" />
     <Compile Include="IHttpHandler.cs" />
+    <Compile Include="IWebSocketHandler.cs" />
     <Compile Include="Persistence\ArchiveEntry.cs" />
     <Compile Include="Persistence\CacheRestorer.cs" />
     <Compile Include="IRequestContext.cs" />
@@ -118,6 +119,7 @@
     <Compile Include="RequestHandlers\TouchHandler.cs" />
     <Compile Include="RequestHandlers\VersionHandler.cs" />
     <Compile Include="StaticFileHttpHandler.cs" />
+    <Compile Include="WebSocketHandler.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
