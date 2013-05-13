@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nemcache.IntegrationTestRun
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{2E97F31A-8983-45A2-AA95-3378FAE32184}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nemcache.Comms.IntegrationTest", "Nemcache.Comms.IntegrationTest\Nemcache.Comms.IntegrationTest.csproj", "{1D8E161F-788B-49AE-8073-FA2EB1C3D12E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{F99A4B89-FCF5-4D37-A144-EFE0AD897261}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F99A4B89-FCF5-4D37-A144-EFE0AD897261}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F99A4B89-FCF5-4D37-A144-EFE0AD897261}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1D8E161F-788B-49AE-8073-FA2EB1C3D12E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1D8E161F-788B-49AE-8073-FA2EB1C3D12E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1D8E161F-788B-49AE-8073-FA2EB1C3D12E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1D8E161F-788B-49AE-8073-FA2EB1C3D12E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -40,5 +46,6 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{F99A4B89-FCF5-4D37-A144-EFE0AD897261} = {2E97F31A-8983-45A2-AA95-3378FAE32184}
 		{0ED84914-65F3-4BB2-AA13-36EEDEB72937} = {2E97F31A-8983-45A2-AA95-3378FAE32184}
+		{1D8E161F-788B-49AE-8073-FA2EB1C3D12E} = {2E97F31A-8983-45A2-AA95-3378FAE32184}
 	EndGlobalSection
 EndGlobal

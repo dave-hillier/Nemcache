@@ -8,7 +8,8 @@ namespace Nemcache.Service
     {
         public override async Task Get(HttpListenerContext httpContext, params string[] matches)
         {
-            var bytes = File.ReadAllBytes("test.html");
+            // TODO: get the folder from config
+            var bytes = File.ReadAllBytes("test.html");// TODO: create the path from the matches, escaping .. etc
             httpContext.Response.ContentType = "text/html";
             httpContext.Response.StatusCode = 200;
             await httpContext.Response.OutputStream.WriteAsync(bytes, 0, bytes.Length);

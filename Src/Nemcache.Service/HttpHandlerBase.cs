@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace Nemcache.Service
 {
-    class HttpHandlerBase : IHttpHandler
+    public class HttpHandlerBase : IHttpHandler
     {
         public virtual async Task Get(HttpListenerContext context, params string[] match)
         {

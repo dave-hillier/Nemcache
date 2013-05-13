@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
@@ -17,10 +15,14 @@ namespace Nemcache.Service
         private readonly TaskFactory _taskFactory;
         private readonly IWebSocketHandler _webSocketHandler;
 
-        public CacheRestServer(Dictionary<string, IHttpHandler> httpHandlers, IWebSocketHandler webSocketHandler)
+        // TODO: separate listener for websockets...
+        public CacheRestServer(Dictionary<string, IHttpHandler> httpHandlers, IWebSocketHandler webSocketHandler, string[] prefixes)
         {
             _taskFactory = new TaskFactory(_cancellationTokenSource.Token);
-            _listener.Prefixes.Add("http://localhost:8222/");
+            foreach (var prefix in prefixes)
+            {
+                _listener.Prefixes.Add(prefix);
+            }
             _httpHandlers = httpHandlers;
             _webSocketHandler = webSocketHandler;
         }
@@ -44,7 +46,7 @@ namespace Nemcache.Service
         private async Task OnClientConnection(HttpListenerContext httpContext)
         {
             var rawUrl = httpContext.Request.RawUrl;
-            if (httpContext.Request.IsWebSocketRequest)
+            if (httpContext.Request.IsWebSocketRequest) // TODO: move websockets to another listener
             {
                 if (rawUrl == "/cache/notifications")
                 {

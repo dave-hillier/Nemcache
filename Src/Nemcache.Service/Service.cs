@@ -93,7 +93,11 @@ namespace Nemcache.Service
                     {
                         {"/cache/(.+)", new CacheRestHttpHandler(_memCache)},
                         {"/static/(.+)", new StaticFileHttpHandler()}
-                    }, new WebSocketHandler(new CancellationTokenSource()));
+                    }, new WebSocketHandler(new CancellationTokenSource()), new[]
+                        {
+                            "http://localhost:8222/cache/",
+                            "http://localhost:8222/static/"
+                        });
 
             _fileSystem = new FileSystemWrapper();
             const string cachelogBin = "cachelog.bin";
