@@ -63,9 +63,14 @@ namespace Nemcache.Service
                                     select new { Match = match, Handler = kv.Value }).FirstOrDefault();
                 if (handlerfound != null)
                 {
-                    var result = new Group[handlerfound.Match.Groups.Count];
-                    handlerfound.Match.Groups.CopyTo(result, handlerfound.Match.Groups.Count);
-                    var value = result.Select(g => g.Value).ToArray();
+                    string[] value = new string[]{};
+
+                    if (handlerfound.Match.Groups.Count > 1)
+                    {
+                        var result = new Group[handlerfound.Match.Groups.Count];
+                        handlerfound.Match.Groups.CopyTo(result, handlerfound.Match.Groups.Count);
+                        value = result.Select(g => g.Value).ToArray();
+                    }
                     switch (httpContext.Request.HttpMethod)
                     {
                         case "GET":

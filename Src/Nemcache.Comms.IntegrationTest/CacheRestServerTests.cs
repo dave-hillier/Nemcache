@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
@@ -22,8 +23,8 @@ namespace Nemcache.Comms.IntegrationTest
                 };
             _server = new CacheRestServer(handlers, null, new[]
                 {
-                    "http://localhost:8222/cache/",
-                    "http://localhost:8222/static/"
+                    "http://localhost:44444/cache/",
+                    "http://localhost:44444/static/"
                 });
             _server.Start();
         }
@@ -35,9 +36,12 @@ namespace Nemcache.Comms.IntegrationTest
         }
 
         [TestMethod]
-        public void CanRequest()
+        public void GetTest()
         {
             
+            var webClient = new WebClient();
+            var response = webClient.DownloadString(new Uri("http://localhost:44444/cache/test"));
+            Assert.AreEqual("Response", response);
         }
     }
 
@@ -49,8 +53,9 @@ namespace Nemcache.Comms.IntegrationTest
             {
                 context.Response.StatusCode = 200;
                 await sw.WriteAsync("Response");
-                context.Response.Close();
+                await sw.FlushAsync();
             }
+            context.Response.Close();
         }
     }
 }
