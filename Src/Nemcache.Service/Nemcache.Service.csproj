@@ -61,6 +61,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CacheRestHttpHandler.cs" />
     <Compile Include="CacheRestServer.cs" />
     <Compile Include="HttpHandlerBase.cs" />
     <Compile Include="IHttpHandler.cs" />
@@ -69,21 +70,21 @@
     <Compile Include="Persistence\CacheRestorer.cs" />
     <Compile Include="IRequestContext.cs" />
     <Compile Include="RequestContext.cs" />
-    <Compile Include="RequestHandlers\IRequestHandler.cs" />
-    <Compile Include="RequestHandlers\MutateHandler.cs" />
-    <Compile Include="RequestHandlers\AddHandler.cs" />
-    <Compile Include="RequestHandlers\AppendHandler.cs" />
+    <Compile Include="MemcacheRequestHandlers\IRequestHandler.cs" />
+    <Compile Include="MemcacheRequestHandlers\MutateHandler.cs" />
+    <Compile Include="MemcacheRequestHandlers\AddHandler.cs" />
+    <Compile Include="MemcacheRequestHandlers\AppendHandler.cs" />
     <Compile Include="CacheEntry.cs" />
-    <Compile Include="RequestHandlers\CasHandler.cs" />
-    <Compile Include="RequestHandlers\DeleteHandler.cs" />
-    <Compile Include="RequestHandlers\ExceptionHandler.cs" />
-    <Compile Include="RequestHandlers\FlushHandler.cs" />
-    <Compile Include="RequestHandlers\GetHandler.cs" />
+    <Compile Include="MemcacheRequestHandlers\CasHandler.cs" />
+    <Compile Include="MemcacheRequestHandlers\DeleteHandler.cs" />
+    <Compile Include="MemcacheRequestHandlers\ExceptionHandler.cs" />
+    <Compile Include="MemcacheRequestHandlers\FlushHandler.cs" />
+    <Compile Include="MemcacheRequestHandlers\GetHandler.cs" />
     <Compile Include="IO\LogFileNameGenerator.cs" />
-    <Compile Include="RequestHandlers\PrependHandler.cs" />
-    <Compile Include="RequestHandlers\QuitHandler.cs" />
-    <Compile Include="RequestHandlers\ReplaceHandler.cs" />
-    <Compile Include="RequestHandlers\SetHandler.cs" />
+    <Compile Include="MemcacheRequestHandlers\PrependHandler.cs" />
+    <Compile Include="MemcacheRequestHandlers\QuitHandler.cs" />
+    <Compile Include="MemcacheRequestHandlers\ReplaceHandler.cs" />
+    <Compile Include="MemcacheRequestHandlers\SetHandler.cs" />
     <Compile Include="RequestConverters.cs" />
     <Compile Include="RequestResponseTcpServer.cs" />
     <Compile Include="Reactive\ObservableRateLimitExtension.cs" />
@@ -100,7 +101,7 @@
     <Compile Include="IO\PartitioningFileStream.cs" />
     <Compile Include="Reactive\ThresholdExtension.cs" />
     <Compile Include="Service.cs" />
-    <Compile Include="RequestHandlers\StatsHandler.cs" />
+    <Compile Include="MemcacheRequestHandlers\StatsHandler.cs" />
     <Compile Include="Persistence\StreamArchiver.cs" />
     <Compile Include="MemCache.cs" />
     <Compile Include="Eviction\NullEvictionStrategy.cs" />
@@ -116,8 +117,8 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Reactive\WriteThresholdNotification.cs" />
-    <Compile Include="RequestHandlers\TouchHandler.cs" />
-    <Compile Include="RequestHandlers\VersionHandler.cs" />
+    <Compile Include="MemcacheRequestHandlers\TouchHandler.cs" />
+    <Compile Include="MemcacheRequestHandlers\VersionHandler.cs" />
     <Compile Include="StaticFileHttpHandler.cs" />
     <Compile Include="WebSocketHandler.cs" />
     <Compile Include="WebSocketServer.cs" />

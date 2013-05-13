@@ -1,78 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Nemcache.Service.IO;
 using Nemcache.Service.Persistence;
+using Nemcache.Service.RequestHandlers;
 
 namespace Nemcache.Service
 {
-    class CacheRestHttpHandler : HttpHandlerBase
-    {
-        private readonly IMemCache _cache;
-
-        public CacheRestHttpHandler(IMemCache cache)
-        {
-            _cache = cache;
-        }
-
-        public override async Task Get(HttpListenerContext httpContext, params string[] matches)
-        {
-            var key = matches[0];
-            var entries = _cache.Retrieve(new[] { key }).
-                Select(kve => kve.Value.Data).ToArray();
-            if (!entries.Any())
-            {
-                httpContext.Response.StatusCode = 404;
-                httpContext.Response.Close();
-            }
-            else
-            {
-                var contentKey = string.Format("content:{0}", key);
-                var contentBytes = _cache.Retrieve(new[] { contentKey }).
-                    Select(kve => kve.Value.Data).SingleOrDefault();
-                string contentType = httpContext.Request.ContentType;
-                if (contentBytes != null)
-                {
-                    //httpContext.Request.ContentType
-                    contentType = Encoding.UTF8.GetString(contentBytes);
-                }
-
-                httpContext.Response.ContentType = contentType;
-
-                var value = entries.Single();// TODO: does this need converting?
-                var outputStream = httpContext.Response.OutputStream;
-                await outputStream.WriteAsync(value, 0, value.Length/*, _cancellationTokenSource.Token*/);
-                httpContext.Response.Close();
-            }
-        }
-
-        public override async Task Put(HttpListenerContext context, params string[] matches)
-        {
-            // TODO: content type...
-            var key = matches[0];
-            var streamReader = new StreamReader(context.Request.InputStream);
-            var body = await streamReader.ReadToEndAsync();
-
-            _cache.Store(key, 0, Encoding.UTF8.GetBytes(body), DateTime.MaxValue);
-
-            byte[] response = Encoding.UTF8.GetBytes("STORED\r\n");
-            context.Response.StatusCode = 200;
-            context.Response.KeepAlive = false;
-            context.Response.ContentLength64 = response.Length;
-
-            var output = context.Response.OutputStream;
-            await output.WriteAsync(response, 0, response.Length);
-            context.Response.Close();
-        }
-    }
-
-    internal class Service : IDisposable
+    public class Service : IDisposable
     {
         private readonly MemCache _memCache;
         private readonly RequestDispatcher _requestDispatcher;
@@ -86,13 +24,17 @@ namespace Nemcache.Service
         {
             _memCache = new MemCache(capacity, Scheduler.Default);
 
-            _requestDispatcher = new RequestDispatcher(Scheduler.Default, _memCache);
-            _server = new RequestResponseTcpServer(IPAddress.Any, (int) port, _requestDispatcher);
+            IScheduler scheduler = Scheduler.Default;
+
+            var requestHandlers = GetRequestHandlers(scheduler, _memCache);
+            _requestDispatcher = new RequestDispatcher(scheduler, _memCache, requestHandlers);
+            _server = new RequestResponseTcpServer(IPAddress.Any, (int)port, _requestDispatcher);
             _restListener = new CacheRestServer(new Dictionary<string, IHttpHandler>
                     {
                         {"/cache/(.+)", new CacheRestHttpHandler(_memCache)},
                         {"/static/(.+)", new StaticFileHttpHandler()}
-                    }, new[]
+                    }, 
+                    new[]
                         {
                             "http://localhost:8222/cache/",
                             "http://localhost:8222/static/"
@@ -103,6 +45,17 @@ namespace Nemcache.Service
             _restorer = new CacheRestorer(_memCache, _fileSystem, cachelogBin);
         }
 
+        public static Dictionary<string, IRequestHandler> GetRequestHandlers(IScheduler scheduler, IMemCache cache)
+        {
+            var helpers = new RequestConverters(scheduler);
+            var getHandler = new GetHandler(helpers, cache, scheduler);
+            var mutateHandler = new MutateHandler(helpers, cache, scheduler);
+            return new Dictionary<string, IRequestHandler>
+                {
+                    {"get", getHandler}, {"gets", getHandler}, {"set", new SetHandler(helpers, cache)}, {"append", new AppendHandler(helpers, cache)}, {"prepend", new PrependHandler(helpers, cache)}, {"add", new AddHandler(helpers, cache)}, {"replace", new ReplaceHandler(helpers, cache)}, {"cas", new CasHandler(helpers, cache)}, {"stats", new StatsHandler()}, {"delete", new DeleteHandler(helpers, cache)}, {"flush_all", new FlushHandler(cache, scheduler)}, {"quit", new QuitHandler()}, {"exception", new ExceptionHandler()}, {"version", new VersionHandler()}, {"touch", new TouchHandler(helpers, cache)}, {"incr", mutateHandler}, {"decr", mutateHandler},
+                };
+
+        }
         public void Start()
         {
             _restorer.RestoreCache();

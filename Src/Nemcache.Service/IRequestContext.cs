@@ -3,7 +3,7 @@ using System.IO;
 
 namespace Nemcache.Service
 {
-    internal interface IRequestContext
+    public interface IRequestContext
     {
         string CommandName { get; }
         IEnumerable<string> Parameters { get; }

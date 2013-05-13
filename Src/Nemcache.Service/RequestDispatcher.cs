@@ -24,31 +24,9 @@ namespace Nemcache.Service
         private readonly byte[] _endOfLine = new byte[] {13, 10}; // Ascii for "\r\n"
         private readonly Dictionary<string, IRequestHandler> _requestHandlers;
 
-        public RequestDispatcher(IScheduler scheduler, IMemCache cache)
+        public RequestDispatcher(IScheduler scheduler, IMemCache cache, Dictionary<string, IRequestHandler> requestHandlers)
         {
-            var helpers = new RequestConverters(scheduler);
-            var getHandler = new GetHandler(helpers, cache, scheduler);
-            var mutateHandler = new MutateHandler(helpers, cache, scheduler);
-            _requestHandlers = new Dictionary<string, IRequestHandler>
-                {
-                    {"get", getHandler},
-                    {"gets", getHandler},
-                    {"set", new SetHandler(helpers, cache)},
-                    {"append", new AppendHandler(helpers, cache)},
-                    {"prepend", new PrependHandler(helpers, cache)},
-                    {"add", new AddHandler(helpers, cache)},
-                    {"replace", new ReplaceHandler(helpers, cache)},
-                    {"cas", new CasHandler(helpers, cache)},
-                    {"stats", new StatsHandler()},
-                    {"delete", new DeleteHandler(helpers, cache)},
-                    {"flush_all", new FlushHandler(cache, scheduler)},
-                    {"quit", new QuitHandler()},
-                    {"exception", new ExceptionHandler()},
-                    {"version", new VersionHandler()},
-                    {"touch", new TouchHandler(helpers, cache)},
-                    {"incr", mutateHandler},
-                    {"decr", mutateHandler},
-                };
+            _requestHandlers = requestHandlers;
         }
 
         public async Task Dispatch(

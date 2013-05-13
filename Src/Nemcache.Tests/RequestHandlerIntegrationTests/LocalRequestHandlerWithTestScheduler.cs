@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Reactive.Concurrency;
 using Microsoft.Reactive.Testing;
 using Nemcache.Service;
+using Nemcache.Service.RequestHandlers;
 
 namespace Nemcache.Tests.RequestHandlerIntegrationTests
 {
@@ -15,7 +18,8 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
         {
             _scheduler = new TestScheduler();
             _cache = new MemCache(capacity: 100);
-            _requestDispatcher = new RequestDispatcher(_scheduler, _cache);
+            var requestHandlers = Service.Service.GetRequestHandlers(_scheduler, _cache);
+            _requestDispatcher = new RequestDispatcher(_scheduler, _cache, requestHandlers);
         }
 
         public TestScheduler TestScheduler
@@ -37,4 +41,5 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             _cache.Capacity = 10;
         }
     }
+
 }
