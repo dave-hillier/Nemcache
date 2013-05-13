@@ -54,9 +54,8 @@ namespace Nemcache.Service
 
                 if (handlerfound.Match.Groups.Count > 1)
                 {
-                    var result = new Group[handlerfound.Match.Groups.Count];
-                    handlerfound.Match.Groups.CopyTo(result, handlerfound.Match.Groups.Count);
-                    value = result.Select(g => g.Value).ToArray();
+                    value = handlerfound.Match.Groups.
+                        OfType<Group>().Skip(1).Select(g => g.Value).ToArray();
                 }
                 switch (httpContext.Request.HttpMethod)
                 {
