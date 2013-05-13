@@ -43,6 +43,24 @@ namespace Nemcache.Comms.IntegrationTest
             var response = webClient.DownloadString(new Uri("http://localhost:44444/cache/test"));
             Assert.AreEqual("Response", response);
         }
+
+        [TestMethod]
+        public void Test404()
+        {
+
+            var webClient = new WebClient();
+            bool thrown = false;
+            try
+            {
+                webClient.DownloadString(new Uri("http://localhost:44444/cache/unknown"));
+            }
+            catch (WebException ex)
+            {
+                Assert.IsTrue(ex.Message.Contains("404"));
+                thrown = true;
+            }
+            Assert.IsTrue(thrown);
+        }
     }
 
     public class TestHandler : HttpHandlerBase

@@ -15,7 +15,6 @@ namespace Nemcache.Service
         private readonly TaskFactory _taskFactory;
         private readonly IWebSocketHandler _webSocketHandler;
 
-        // TODO: separate listener for websockets...
         public CacheRestServer(Dictionary<string, IHttpHandler> httpHandlers, IWebSocketHandler webSocketHandler, string[] prefixes)
         {
             _taskFactory = new TaskFactory(_cancellationTokenSource.Token);
