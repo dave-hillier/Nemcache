@@ -33,6 +33,10 @@ namespace Nemcache.Service
         bool Mutate(string key, ulong incr, out byte[] resultDataOut, bool positive);
 
         IObservable<ICacheNotification> FullStateNotifications { get; }
+
+        CacheEntry Get(string s);
+
+        bool TryGet(string s, out CacheEntry cacheEntry);
     }
 
     // TODO: consider implementing dictionary interface for above...

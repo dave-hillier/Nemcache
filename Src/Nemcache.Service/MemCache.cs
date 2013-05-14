@@ -44,7 +44,8 @@ namespace Nemcache.Service
             _cacheObserver = lruStrategy;
 
             // TODO: replace this with some other kind of scheduling. Perhaps a sorted list...
-            _interval = Observable.Interval(TimeSpan.FromSeconds(1), _scheduler).Subscribe(_ => RemoveExpired());
+            _interval = Observable.Interval(TimeSpan.FromSeconds(1), _scheduler).
+                Subscribe(_ => RemoveExpired());
 
         }
 
@@ -376,6 +377,16 @@ namespace Nemcache.Service
         {
             _interval.Dispose();
             _notificationsSubject.Dispose();
+        }
+
+        public CacheEntry Get(string s)
+        {
+            return _cache[s];
+        }
+
+        public bool TryGet(string s, out CacheEntry cacheEntry)
+        {
+            return _cache.TryGetValue(s, out cacheEntry);
         }
     }
 }

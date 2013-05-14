@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Text;
 using Microsoft.Reactive.Testing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Nemcache.Service;
@@ -76,6 +78,48 @@ namespace Nemcache.Tests
             _testScheduler.AdvanceBy(TimeSpan.FromSeconds(11).Ticks);
 
             Assert.AreEqual(0UL, _cache.Used);
+        }
+
+        [TestMethod]
+        public void GetSingleItem()
+        {
+            _cache.Store("k", 0, Encoding.ASCII.GetBytes("foo"), DateTime.MinValue + TimeSpan.FromSeconds(10));
+
+            Assert.AreEqual("foo", Encoding.ASCII.GetString(_cache.Get("k").Data));
+        }
+
+        [TestMethod]
+        public void GetMissing()
+        {
+            bool caught = false;
+            try
+            {
+                _cache.Get("k");
+            }
+            catch (KeyNotFoundException ex)
+            {
+                caught = true;
+            }
+            Assert.IsTrue(caught);
+        }
+
+        // TODO: tryget
+        [TestMethod]
+        public void TryGetFail()
+        {
+            CacheEntry cacheEntry;
+            var result = _cache.TryGet("k", out cacheEntry);
+            Assert.AreEqual(false, result);
+        }
+
+        [TestMethod]
+        public void TryGet()
+        {
+            _cache.Store("k", 0, Encoding.ASCII.GetBytes("foo"), DateTime.MinValue + TimeSpan.FromSeconds(10));
+            CacheEntry cacheEntry;
+            var result = _cache.TryGet("k", out cacheEntry);
+            Assert.AreEqual(true, result);
+            Assert.AreEqual("foo", Encoding.ASCII.GetString(_cache.Get("k").Data));
         }
     }
 }

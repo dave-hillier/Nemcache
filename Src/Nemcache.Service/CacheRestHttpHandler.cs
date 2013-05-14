@@ -19,9 +19,9 @@ namespace Nemcache.Service
         public override async Task Get(HttpListenerContext httpContext, params string[] matches)
         {
             var key = matches[0];
-            var entries = _cache.Retrieve(new[] { key }).
-                                 Select(kve => kve.Value.Data).ToArray();
-            if (!entries.Any())
+            CacheEntry entry;
+            var hasValue = _cache.TryGet(key, out entry);
+            if (!hasValue)
             {
                 httpContext.Response.StatusCode = 404;
                 httpContext.Response.Close();
@@ -29,18 +29,20 @@ namespace Nemcache.Service
             else
             {
                 var contentKey = string.Format("content:{0}", key);
-                var contentBytes = _cache.Retrieve(new[] { contentKey }).
-                                          Select(kve => kve.Value.Data).SingleOrDefault();
+                CacheEntry cacheEntry;
+                var hasContent = _cache.TryGet(contentKey, out cacheEntry);
+                
                 string contentType = httpContext.Request.ContentType;
-                if (contentBytes != null)
+                if (hasContent)
                 {
+                    var contentTypeBytes = cacheEntry.Data;
                     //httpContext.Request.ContentType
-                    contentType = Encoding.UTF8.GetString(contentBytes);
+                    contentType = Encoding.UTF8.GetString(contentTypeBytes);
                 }
 
                 httpContext.Response.ContentType = contentType;
 
-                var value = entries.Single();// TODO: does this need converting?
+                var value = entry.Data;// TODO: does this need converting?
                 var outputStream = httpContext.Response.OutputStream;
                 await outputStream.WriteAsync(value, 0, value.Length/*, _cancellationTokenSource.Token*/);
                 httpContext.Response.Close();
