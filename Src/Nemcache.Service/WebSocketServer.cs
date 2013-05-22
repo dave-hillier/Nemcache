@@ -39,12 +39,13 @@ namespace Nemcache.Service
 
         private async Task OnClientConnection(HttpListenerContext httpContext)
         {
-            if (httpContext.Request.IsWebSocketRequest) // TODO: move websockets to another listener
+            if (httpContext.Request.IsWebSocketRequest) 
             {
-                var rawUrl = httpContext.Request.RawUrl;
-                if (rawUrl == "/cache/notifications")
+                //var rawUrl = httpContext.Request.RawUrl;
+                //if (rawUrl == "/cache/notifications")
                 {
                     var webSocketContext = await httpContext.AcceptWebSocketAsync(subProtocol: "nemcache-0.1");
+                    
                     _webSocketHandler.OnWebSocketConnected(webSocketContext.WebSocket);
                 }
             }

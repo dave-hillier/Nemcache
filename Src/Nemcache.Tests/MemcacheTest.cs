@@ -103,7 +103,6 @@ namespace Nemcache.Tests
             Assert.IsTrue(caught);
         }
 
-        // TODO: tryget
         [TestMethod]
         public void TryGetFail()
         {

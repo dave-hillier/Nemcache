@@ -58,7 +58,6 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             Assert.AreEqual("NOT_FOUND\r\n", response.ToAsciiString());
         }
 
-        // TODO: Remove time sensitive element
         [TestMethod]
         public void SetTouchExpiryThenGetGone()
         {

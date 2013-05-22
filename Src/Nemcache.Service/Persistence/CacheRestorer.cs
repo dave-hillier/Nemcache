@@ -89,7 +89,6 @@ namespace Nemcache.Service.Persistence
 
             var storeAndRemoveEntries = log.Where(e => e.Touch == null);
 
-            // TODO: simplify this...
             foreach (var entry in storeAndRemoveEntries)
             {
                 var key = GetKey(entry);

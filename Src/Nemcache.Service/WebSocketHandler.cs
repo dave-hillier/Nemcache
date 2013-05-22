@@ -9,6 +9,9 @@ namespace Nemcache.Service
 {
     class WebSocketHandler : IWebSocketHandler
     {
+        // TODO: does this belong in the WebSocketServer?
+        private ConcurrentDictionary<string, BlockingCollection<byte[]>> _messageQueues =
+            new ConcurrentDictionary<string, BlockingCollection<byte[]>>(); // TODO: subjects or queues?
         private readonly CancellationTokenSource _cancellationTokenSource;
 
         public WebSocketHandler(CancellationTokenSource cancellationTokenSource)
@@ -18,6 +21,7 @@ namespace Nemcache.Service
 
         public void OnWebSocketConnected(WebSocket webSocket)
         {
+            //_messageQueues[endpoint] = 
             Task.WaitAll(
                 SendLoop(webSocket),
                 ReceiveLoop(webSocket));
@@ -36,6 +40,7 @@ namespace Nemcache.Service
                 }
                 else if (receiveResult.MessageType == WebSocketMessageType.Text)
                 {
+                    // Perhaps have one handler for blockking, one for not...
                     // TODO: subscribe, unsubscribe
                     Console.WriteLine("Received: {0}", Encoding.ASCII.GetString(arraySegment.Array).Trim('\0'));
                 }
@@ -44,6 +49,7 @@ namespace Nemcache.Service
 
         private async Task SendLoop(WebSocket webSocket)
         {
+            // TODO: what do identify a client on?
             // TODO: create a client message queue
             var sendQueue = new BlockingCollection<byte[]>
                 {

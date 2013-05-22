@@ -3,9 +3,6 @@ using Nemcache.Client.Builders;
 
 namespace Nemcache.Tests.RequestHandlerIntegrationTests
 {
-    // TODO: move these integration tests to another project. 
-    // TODO: Allow to be run again a real service or the fake one.
-    // TODO: test against Memcache to ensure I do the right thing...
     [TestClass]
     public class AddTest
     {

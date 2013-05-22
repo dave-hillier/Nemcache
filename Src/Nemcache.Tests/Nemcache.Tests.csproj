@@ -107,6 +107,7 @@
     <Compile Include="RequestHandlerIntegrationTests\VersionRequestTests.cs" />
     <Compile Include="Persistence\StreamArchiverTests.cs" />
     <Compile Include="Reactive\WriteThresholdNotificationTests.cs" />
+    <Compile Include="WebSocketServerTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Nemcache.Client\Nemcache.Client.csproj">

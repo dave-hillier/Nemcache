@@ -42,7 +42,7 @@ namespace Nemcache.Service
 
                 httpContext.Response.ContentType = contentType;
 
-                var value = entry.Data;// TODO: does this need converting?
+                var value = entry.Data;// TODO: does this need converting, based upon content type
                 var outputStream = httpContext.Response.OutputStream;
                 await outputStream.WriteAsync(value, 0, value.Length/*, _cancellationTokenSource.Token*/);
                 httpContext.Response.Close();
