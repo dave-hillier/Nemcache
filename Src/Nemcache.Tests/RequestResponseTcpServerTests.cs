@@ -6,7 +6,6 @@ using System.Reactive.Concurrency;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Nemcache.Service;
 using Nemcache.Service.RequestHandlers;
-using Nemcache.Tests.RequestHandlerIntegrationTests;
 
 namespace Nemcache.Tests
 {
@@ -67,8 +66,6 @@ namespace Nemcache.Tests
                 Assert.AreEqual("Pong!", response);
             }
         }
-
-       
 
         [TestCleanup]
         public void Cleanup()

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net.WebSockets;
+using System.Text;
 using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Nemcache.Service;
@@ -10,7 +11,7 @@ namespace Nemcache.Tests
     public class WebSocketServerTests
     {
         private WebSocketServer _webSocketServer;
-        private ClientWebSocket _cws;
+        private ClientWebSocket _clientWebSocket;
         private Uri _wsUri;
         private CancellationTokenSource _cts;
 
@@ -25,23 +26,33 @@ namespace Nemcache.Tests
             var webSocketHandler = new WebSocketHandler(_cts);
             _webSocketServer = new WebSocketServer(webSocketHandler, new[] { httpUrl });
             _webSocketServer.Start();
-            _cws = new ClientWebSocket();
-            _cws.Options.AddSubProtocol("nemcache-0.1");
+            _clientWebSocket = new ClientWebSocket();
+            _clientWebSocket.Options.AddSubProtocol("nemcache-0.1");
+            _clientWebSocket.ConnectAsync(_wsUri, _cts.Token).Wait();
+        }
+        
+        [TestCleanup]
+        public void Cleanup()
+        {
+            _clientWebSocket.Abort();
+            _webSocketServer.Stop();
         }
 
         [TestMethod]
-        public void ConnectWebSocketDoesNotThrow()
+        public void ClientSubscribesToKey()
         {
-            _cws.ConnectAsync(_wsUri, _cts.Token).Wait();
-        }
-
-        [TestMethod]
-        public void Receive()
-        {
-            _cws.ConnectAsync(_wsUri, _cts.Token).Wait();
+            // Send subscribe as text/json
+            const string subscribeRequest = "{'command':'subscribe', 'key':'mykey'}";
+            var sendBuffer = new ArraySegment<byte>(Encoding.UTF8.GetBytes(subscribeRequest));
+            _clientWebSocket.SendAsync(sendBuffer, WebSocketMessageType.Text, false, _cts.Token);
 
             var buffer = new ArraySegment<byte>(new byte[1024]);
-            var r = _cws.ReceiveAsync(buffer, _cts.Token).Result;
+            var response = _clientWebSocket.ReceiveAsync(buffer, _cts.Token).Result;
+
+            // Expect an initial value - or no value if it doesnt exist?
+            Assert.AreEqual(WebSocketMessageType.Text, response.MessageType);
         }
+
+        // TODO: pull out this protocol into text based tests...
     }
 }
