@@ -78,6 +78,7 @@
     <Compile Include="CacheRestServerTests.cs" />
     <Compile Include="IO\FakeFile.cs" />
     <Compile Include="IO\TestStream.cs" />
+    <Compile Include="JsonCommandTests.cs" />
     <Compile Include="Persistence\CacheRestorerTests.cs" />
     <Compile Include="MemcacheTest.cs" />
     <Compile Include="Reactive\CombineCurrentStateWithUpdatesTests.cs" />

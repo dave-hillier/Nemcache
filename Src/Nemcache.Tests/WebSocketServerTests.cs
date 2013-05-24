@@ -53,6 +53,6 @@ namespace Nemcache.Tests
             Assert.AreEqual(WebSocketMessageType.Text, response.MessageType);
         }
 
-        // TODO: pull out this protocol into text based tests...
+        // TODO: a couple of basic tests
     }
 }
