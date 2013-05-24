@@ -4,6 +4,12 @@ using ProtoBuf;
 
 namespace Nemcache.Service.Notifications
 {
+    public class RetrieveNotification : IKeyCacheNotification
+    {
+        public int EventId { get; set; }
+        public string Key { get; set; }
+    }
+
     [ProtoContract]
     public class StoreNotification : IKeyCacheNotification
     {

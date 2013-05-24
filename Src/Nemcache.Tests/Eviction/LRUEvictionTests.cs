@@ -47,9 +47,9 @@ namespace Nemcache.Tests.Eviction
         [TestMethod]
         public void ReplacePreventsEvict()
         {
-            _cache.Store("key1", 0, new byte[] {0, 1, 2, 3, 4}, DateTime.MaxValue);
-            _cache.Store("key2", 0, new byte[] {0, 1, 2, 3, 4}, DateTime.MaxValue);
-            _cache.Replace("key1", 0, DateTime.MaxValue, new byte[] {4, 3, 2, 1, 0});
+            _cache.Store("key1", 0, new byte[] {0, 1, 2, 3}, DateTime.MaxValue);
+            _cache.Store("key2", 0, new byte[] {0, 1, 2, 3}, DateTime.MaxValue);
+            _cache.Replace("key1", 0, DateTime.MaxValue, new byte[] {3, 2, 1, 0});
 
             _cache.Store("key3", 0, new byte[] {0, 1, 2, 3, 4}, DateTime.MaxValue);
 

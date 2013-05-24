@@ -93,7 +93,6 @@
     <Compile Include="Eviction\IEvictionStrategy.cs" />
     <Compile Include="IO\FileSystemWrapper.cs" />
     <Compile Include="IO\FileWrapper.cs" />
-    <Compile Include="ICacheObserver.cs" />
     <Compile Include="IO\IFile.cs" />
     <Compile Include="IO\IFileSystem.cs" />
     <Compile Include="IMemCache.cs" />

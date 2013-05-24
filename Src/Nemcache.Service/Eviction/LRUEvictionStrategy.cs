@@ -1,16 +1,26 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Disposables;
+using System.Reactive.Linq;
+using Nemcache.Service.Notifications;
 
 namespace Nemcache.Service.Eviction
 {
-    internal class LRUEvictionStrategy : IEvictionStrategy, ICacheObserver
+    internal class LruEvictionStrategy : IEvictionStrategy, IDisposable
     {
         private readonly MemCache _cache;
         private readonly List<string> _keys = new List<string>();
+        private readonly IDisposable _subscriptions;
 
-        public LRUEvictionStrategy(MemCache cache)
+        public LruEvictionStrategy(MemCache cache)
         {
             _cache = cache;
+            var notifications = _cache.FullStateNotifications;
+
+            var removeSubscription = notifications.OfType<RemoveNotification>().Subscribe(n => Remove(n.Key));
+            var touchSubscription = notifications.OfType<IKeyCacheNotification>().Where(n => !(n is RemoveNotification)).Subscribe(n => Use(n.Key));
+            _subscriptions = new CompositeDisposable {removeSubscription, touchSubscription};
         }
 
         public void Use(string key)
@@ -39,6 +49,11 @@ namespace Nemcache.Service.Eviction
                     _cache.Remove(_keys[0]);
                 }
             }
+        }
+
+        public void Dispose()
+        {
+            _subscriptions.Dispose();
         }
     }
 }
