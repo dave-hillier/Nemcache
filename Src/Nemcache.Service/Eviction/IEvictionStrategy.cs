@@ -1,6 +1,7 @@
-﻿namespace Nemcache.Service.Eviction
+﻿using System;
+namespace Nemcache.Service.Eviction
 {
-    internal interface IEvictionStrategy
+    internal interface IEvictionStrategy : IDisposable
     {
         void EvictEntry();
     }

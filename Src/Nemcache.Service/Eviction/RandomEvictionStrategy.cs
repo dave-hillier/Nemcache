@@ -22,5 +22,10 @@ namespace Nemcache.Service.Eviction
                 _cache.Remove(keyToEvict);
             }
         }
+
+        public void Dispose()
+        {
+            
+        }
     }
 }

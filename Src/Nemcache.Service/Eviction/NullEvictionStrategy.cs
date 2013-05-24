@@ -5,5 +5,10 @@
         public void EvictEntry()
         {
         }
+
+        public void Dispose()
+        {
+            
+        }
     }
 }

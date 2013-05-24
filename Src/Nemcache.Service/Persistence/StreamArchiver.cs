@@ -16,6 +16,9 @@ namespace Nemcache.Service.Persistence
 
         public void OnNext(ICacheNotification value)
         {
+            if (value is RetrieveNotification)
+                return;
+
             var entry = CreateArchiveEntry(value);
             OnNotification(entry);
         }
@@ -40,6 +43,7 @@ namespace Nemcache.Service.Persistence
 
         private static ArchiveEntry CreateArchiveEntry(ICacheNotification notification)
         {
+            
             var archiveEntry = new ArchiveEntry
                 {
                     Store = notification as StoreNotification,

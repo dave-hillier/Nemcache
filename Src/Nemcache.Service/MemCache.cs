@@ -375,6 +375,7 @@ namespace Nemcache.Service
         {
             _interval.Dispose();
             _notificationsSubject.Dispose();
+            _evictionStrategy.Dispose();
         }
 
         public CacheEntry Get(string s)

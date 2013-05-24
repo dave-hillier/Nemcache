@@ -7,7 +7,7 @@ using Nemcache.Service.Notifications;
 
 namespace Nemcache.Service.Eviction
 {
-    internal class LruEvictionStrategy : IEvictionStrategy, IDisposable
+    internal class LruEvictionStrategy : IEvictionStrategy
     {
         private readonly MemCache _cache;
         private readonly List<string> _keys = new List<string>();
