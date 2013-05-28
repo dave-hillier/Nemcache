@@ -2,42 +2,54 @@
 using System.Reactive.Subjects;
 using Microsoft.Reactive.Testing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Nemcache.Service;
 
 namespace Nemcache.Tests
 {
     [TestClass]
-    public class JsonCommandTests
+    public class WebSocketSubscriptionHandlerTests : ReactiveTest
     {
         private Client _client;
         private ITestableObserver<string> _testObserver;
+        private WebSocketSubscriptionHandler _subscriptionHandler;
 
-        class Client : ISubject<string>
+        // TODO: is there any point in this class?
+        // It could go to network....
+        class Client : ISubject<string> 
         {
+            private readonly WebSocketSubscriptionHandler _handler;
+
+            public Client(WebSocketSubscriptionHandler handler)
+            {
+                _handler = handler;
+            }
+
             public void OnNext(string command)
             {
-                throw new NotImplementedException();
+                _handler.OnNext(command);
             }
 
             public void OnError(Exception error)
             {
-                throw new NotImplementedException();
+                _handler.OnError(error);
             }
 
             public void OnCompleted()
             {
-                throw new NotImplementedException();
+                _handler.OnCompleted();
             }
 
             public IDisposable Subscribe(IObserver<string> observer)
             {
-                throw new NotImplementedException();
+                return _handler.Subscribe(observer);
             }
         }
 
         [TestInitialize]
         public void Setup()
         {
-            _client = new Client();
+            _subscriptionHandler = new WebSocketSubscriptionHandler();
+            _client = new Client(_subscriptionHandler);
             var testScheduler = new TestScheduler();
             _testObserver = testScheduler.CreateObserver<string>();
         }
@@ -48,16 +60,18 @@ namespace Nemcache.Tests
             var command = "{'command':'subscribe','key':'nosuchkey'}";
             _client.Subscribe(_testObserver);
             _client.OnNext(command);
-            // TODO: assert what?
+            _testObserver.Messages.AssertEqual(
+                OnNext(1, "{'subscription':'nosuchkey','response':'OK'}"));
         }
 
         [TestMethod]
         public void SubscribeToEmptyKey()
         {
-            var command = "{'command':'subscribe','key':''}";
+            var command = "{'command':'subscribe','key':''}"; // TODO: or missing entirely?
             _client.Subscribe(_testObserver);
             _client.OnNext(command);
-            // TODO: assert what?
+            _testObserver.Messages.AssertEqual(
+                OnNext(1, "{'subscription':'nosuchkey','response':'ERROR: Empty Key'}"));
         }
 
         [TestMethod]
@@ -76,6 +90,7 @@ namespace Nemcache.Tests
             _client.Subscribe(_testObserver);
             _client.OnNext(command);
             // TODO: assert what?
+            // First no value, then value after interval
         }
 
         [TestMethod]
@@ -109,9 +124,10 @@ namespace Nemcache.Tests
             // TODO: assert what?
         }
 
-        // TODO: Content type encoding.
-
+        // TODO: multiple client tests
         // Do I want?
+        // TODO: Content type encoding - in subscription? In response?
+        // TODO: pattern matching subscribe
         // TODO: subscribe to all?
         // TODO: multikey subscribe?
     }

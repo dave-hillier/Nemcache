@@ -35,6 +35,9 @@
     <Reference Include="protobuf-net">
       <HintPath>..\packages\protobuf-net.2.0.0.621\lib\net40\protobuf-net.dll</HintPath>
     </Reference>
+    <Reference Include="ServiceStack.Text">
+      <HintPath>..\packages\ServiceStack.Text.3.9.47\lib\net35\ServiceStack.Text.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
@@ -65,7 +68,6 @@
     <Compile Include="CacheRestServer.cs" />
     <Compile Include="HttpHandlerBase.cs" />
     <Compile Include="IHttpHandler.cs" />
-    <Compile Include="IWebSocketHandler.cs" />
     <Compile Include="Persistence\ArchiveEntry.cs" />
     <Compile Include="Persistence\CacheRestorer.cs" />
     <Compile Include="IRequestContext.cs" />
@@ -119,8 +121,8 @@
     <Compile Include="MemcacheRequestHandlers\TouchHandler.cs" />
     <Compile Include="MemcacheRequestHandlers\VersionHandler.cs" />
     <Compile Include="StaticFileHttpHandler.cs" />
-    <Compile Include="WebSocketHandler.cs" />
     <Compile Include="WebSocketServer.cs" />
+    <Compile Include="WebSocketSubscriptionHandler.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

@@ -13,7 +13,7 @@ namespace Nemcache.Tests
         private WebSocketServer _webSocketServer;
         private ClientWebSocket _clientWebSocket;
         private Uri _wsUri;
-        private CancellationTokenSource _cts;
+        private readonly CancellationTokenSource _cts = new CancellationTokenSource();
 
         [TestInitialize]
         public void Setup()
@@ -21,10 +21,8 @@ namespace Nemcache.Tests
             const string baseUrl = "localhost:8688/websocket/";
             const string httpUrl = "http://" + baseUrl;
             _wsUri = new Uri("ws://" + baseUrl + "someend");
-            _cts = new CancellationTokenSource();
 
-            var webSocketHandler = new WebSocketHandler(_cts);
-            _webSocketServer = new WebSocketServer(webSocketHandler, new[] { httpUrl });
+            _webSocketServer = new WebSocketServer(new[] { httpUrl });
             _webSocketServer.Start();
             _clientWebSocket = new ClientWebSocket();
             _clientWebSocket.Options.AddSubProtocol("nemcache-0.1");
@@ -38,6 +36,7 @@ namespace Nemcache.Tests
             _webSocketServer.Stop();
         }
 
+        // TODO: Immediate response test
         [TestMethod]
         public void ClientSubscribesToKey()
         {
@@ -53,6 +52,10 @@ namespace Nemcache.Tests
             Assert.AreEqual(WebSocketMessageType.Text, response.MessageType);
         }
 
-        // TODO: a couple of basic tests
+        // TODO: delayed response test
+
+        // TODO: multiple response test
+
+        // TODO: multiple request test
     }
 }
