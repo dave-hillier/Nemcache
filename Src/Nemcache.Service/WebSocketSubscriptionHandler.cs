@@ -14,6 +14,8 @@ namespace Nemcache.Service
     {
         private readonly IMemCache _cache;
         readonly Subject<string> _response = new Subject<string>();
+        private Dictionary<string,IDisposable> _subscriptions = new Dictionary<string, IDisposable>();
+
         public WebSocketSubscriptionHandler(IMemCache cache)
         {
             _cache = cache;
@@ -23,30 +25,48 @@ namespace Nemcache.Service
         {
             var cmd = JsonObject.Parse(command);
 
+            var commandName = cmd["command"];
+            if (commandName == "subscribe")
+            {
+                Subscribe(cmd);
+            }
+            else if (commandName == "unsubscribe")
+            {
+                var key = cmd["key"];
+                if (_subscriptions.ContainsKey(key))
+                {
+                    _subscriptions[key].Dispose();
+                    _subscriptions.Remove(key);
+                }
+
+            }
+        }
+
+        private void Subscribe(JsonObject cmd)
+        {
             var key = cmd["key"];
             if (string.IsNullOrEmpty(key))
             {
                 var response = new Dictionary<string, string>()
-                {
-                    {"subscription", ""},
-                    {"response", "ERROR"}
-                };
+                    {
+                        {"subscription", ""},
+                        {"response", "ERROR"}
+                    };
                 _response.OnNext(JsonSerializer.SerializeToString(response));
             }
             else
             {
-                
                 var response = new Dictionary<string, string>()
-                {
-                    {"subscription", key},
-                    {"response", "OK"}
-                };
+                    {
+                        {"subscription", key},
+                        {"response", "OK"}
+                    };
                 _response.OnNext(JsonSerializer.SerializeToString(response));
-                
-                _cache.FullStateNotifications. // TODO: subscribe at start?
-                        OfType<IKeyCacheNotification>().
-                        Where(k => k.Key == key).
-                        Subscribe(n => _response.OnNext(JsonFromNotifications(n)));
+
+                _subscriptions[key] = _cache.FullStateNotifications. // TODO: subscribe at start?
+                       OfType<IKeyCacheNotification>().
+                       Where(k => k.Key == key).
+                       Subscribe(n => _response.OnNext(JsonFromNotifications(n)));
             }
         }
 
