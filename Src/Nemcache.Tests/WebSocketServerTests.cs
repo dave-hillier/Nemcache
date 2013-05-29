@@ -22,7 +22,9 @@ namespace Nemcache.Tests
             const string httpUrl = "http://" + baseUrl;
             _wsUri = new Uri("ws://" + baseUrl + "someend");
 
-            _webSocketServer = new WebSocketServer(new[] { httpUrl });
+            var cache = new MemCache(10000);
+            var handler = new WebSocketSubscriptionHandler(cache);
+            _webSocketServer = new WebSocketServer(new[] { httpUrl }, handler);
             _webSocketServer.Start();
             _clientWebSocket = new ClientWebSocket();
             _clientWebSocket.Options.AddSubProtocol("nemcache-0.1");
@@ -41,21 +43,23 @@ namespace Nemcache.Tests
         public void ClientSubscribesToKey()
         {
             // Send subscribe as text/json
-            const string subscribeRequest = "{'command':'subscribe', 'key':'mykey'}";
+            const string subscribeRequest = "{\"command\":\"subscribe\", \"key\":\"mykey\"}";
             var sendBuffer = new ArraySegment<byte>(Encoding.UTF8.GetBytes(subscribeRequest));
-            _clientWebSocket.SendAsync(sendBuffer, WebSocketMessageType.Text, false, _cts.Token);
+            _clientWebSocket.SendAsync(sendBuffer, WebSocketMessageType.Text, false, _cts.Token).Wait();
 
             var buffer = new ArraySegment<byte>(new byte[1024]);
             var response = _clientWebSocket.ReceiveAsync(buffer, _cts.Token).Result;
+            var responseString = Encoding.UTF8.GetString(buffer.Array);
 
             // Expect an initial value - or no value if it doesnt exist?
             Assert.AreEqual(WebSocketMessageType.Text, response.MessageType);
+            Assert.AreEqual("{\"subscription\":\"mykey\",\"response\":\"OK\"}", responseString.Trim('\0'));
         }
 
         // TODO: delayed response test
-
         // TODO: multiple response test
-
         // TODO: multiple request test
+        // TODO: disconnect test
+        // TODO: multiple client test
     }
 }

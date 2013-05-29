@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
@@ -8,43 +9,55 @@ using ServiceStack.Text;
 
 namespace Nemcache.Service
 {
+    internal class RequestMessage
+    {
+        public BlockingCollection<byte[]> ResponseQueue { get; set; }
+        public string Message { get; set; }
+    }
+
     // TODO: Is this named well? It inteprets commands and setups subscriptions?
     // One per client? Should there be lots of these?
-    class WebSocketSubscriptionHandler : ISubject<string>
+    class WebSocketSubscriptionHandler
     {
         private readonly IMemCache _cache;
-        readonly Subject<string> _response = new Subject<string>();
-        private Dictionary<string,IDisposable> _subscriptions = new Dictionary<string, IDisposable>();
+        private readonly Dictionary<Tuple<object, string>, IDisposable> _subscriptions = new Dictionary<Tuple<object, string>, IDisposable>();
 
         public WebSocketSubscriptionHandler(IMemCache cache)
         {
             _cache = cache;
         }
 
-        public void OnNext(string command)
+        public void HandleMessage(string command, IObserver<string> responseObserver)
         {
             var cmd = JsonObject.Parse(command);
 
             var commandName = cmd["command"];
             if (commandName == "subscribe")
             {
-                Subscribe(cmd);
+                Subscribe(cmd, responseObserver);
             }
             else if (commandName == "unsubscribe")
             {
-                var key = cmd["key"];
-                if (_subscriptions.ContainsKey(key))
-                {
-                    _subscriptions[key].Dispose();
-                    _subscriptions.Remove(key);
-                }
-
+                Unsubscribe(cmd, responseObserver);
             }
         }
 
-        private void Subscribe(JsonObject cmd)
+        private void Unsubscribe(JsonObject cmd, IObserver<string> responseObserver)
         {
             var key = cmd["key"];
+            var subKey = Tuple.Create((object) responseObserver, key);
+            if (_subscriptions.ContainsKey(subKey))
+            {
+                _subscriptions[subKey].Dispose();
+                _subscriptions.Remove(subKey);
+            }
+            // TODO: unsubscribe success?
+        }
+
+        private void Subscribe(JsonObject cmd, IObserver<string> responseObserver)
+        {
+            var key = cmd["key"];
+            var subKey = Tuple.Create((object)responseObserver, key);
             if (string.IsNullOrEmpty(key))
             {
                 var response = new Dictionary<string, string>()
@@ -52,7 +65,7 @@ namespace Nemcache.Service
                         {"subscription", ""},
                         {"response", "ERROR"}
                     };
-                _response.OnNext(JsonSerializer.SerializeToString(response));
+                responseObserver.OnNext(JsonSerializer.SerializeToString(response));
             }
             else
             {
@@ -61,12 +74,14 @@ namespace Nemcache.Service
                         {"subscription", key},
                         {"response", "OK"}
                     };
-                _response.OnNext(JsonSerializer.SerializeToString(response));
+                responseObserver.OnNext(JsonSerializer.SerializeToString(response));
 
-                _subscriptions[key] = _cache.FullStateNotifications. // TODO: subscribe at start?
+                // TODO: concurrency?
+                _subscriptions[subKey] = _cache.FullStateNotifications. // TODO: subscribe at start? Seems wrong for every client?
                        OfType<IKeyCacheNotification>().
                        Where(k => k.Key == key).
-                       Subscribe(n => _response.OnNext(JsonFromNotifications(n)));
+                       Select(n => JsonFromNotifications(n)).
+                       Subscribe(responseObserver);
             }
         }
 
@@ -76,6 +91,7 @@ namespace Nemcache.Service
             var store = keyCacheNotification as StoreNotification;
             if (store != null)
                 data = store.Data;
+            // TODO: removes
 
             var responseValue = new Dictionary<string, string>()
                     {
@@ -83,21 +99,6 @@ namespace Nemcache.Service
                         {"data", Encoding.UTF8.GetString(data)}
                     };
             return responseValue.ToJson();
-        }
-
-        public void OnError(Exception error)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void OnCompleted()
-        {
-            throw new NotImplementedException();
-        }
-
-        public IDisposable Subscribe(IObserver<string> observer)
-        {
-            return _response.Subscribe(observer);
-        }
+        }        
     }
 }

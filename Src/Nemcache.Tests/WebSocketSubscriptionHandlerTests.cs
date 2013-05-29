@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Text;
@@ -22,7 +23,7 @@ namespace Nemcache.Tests
         class Client : ISubject<string> 
         {
             private readonly WebSocketSubscriptionHandler _handler;
-
+            private readonly Subject<string> _response = new Subject<string>(); 
             public Client(WebSocketSubscriptionHandler handler)
             {
                 _handler = handler;
@@ -30,23 +31,34 @@ namespace Nemcache.Tests
 
             public void OnNext(string command)
             {
-                _handler.OnNext(command);
+                _handler.HandleMessage(command, _response);
             }
 
             public void OnError(Exception error)
             {
-                _handler.OnError(error);
             }
 
             public void OnCompleted()
             {
-                _handler.OnCompleted();
             }
 
             public IDisposable Subscribe(IObserver<string> observer)
             {
-                return _handler.Subscribe(observer);
+                return _response.Subscribe(observer);
             }
+        }
+
+        private void SetupValueKey()
+        {
+            _cache.Add("valuekey", 0, DateTime.MaxValue, Encoding.UTF8.GetBytes("1234567890"));
+        }
+
+        private void SetupTickingKey()
+        {
+            Observable.Interval(TimeSpan.FromTicks(1), _testScheduler)
+                      .Subscribe(
+                          i => _cache.Store("tickingkey", 0,
+                              Encoding.UTF8.GetBytes(i.ToString(CultureInfo.InvariantCulture)), DateTime.MaxValue));
         }
 
         [TestInitialize]
@@ -93,18 +105,13 @@ namespace Nemcache.Tests
                 );
         }
 
-        private void SetupValueKey()
-        {
-            _cache.Add("valuekey", 0, DateTime.MaxValue, Encoding.UTF8.GetBytes("1234567890"));
-        }
-
         [TestMethod]
         public void SubscribeHasTickingValue()
         {
             SetupTickingKey();
 
-            var command = "{\"command\":\"subscribe\",\"key\":\"tickingkey\"}";
             _client.Subscribe(_testObserver);
+            var command = "{\"command\":\"subscribe\",\"key\":\"tickingkey\"}";
             _client.OnNext(command);
             _testScheduler.AdvanceBy(2);
 
@@ -115,23 +122,17 @@ namespace Nemcache.Tests
                 );
         }
 
-        private void SetupTickingKey()
-        {
-            Observable.Interval(TimeSpan.FromTicks(1), _testScheduler)
-                      .Subscribe(
-                          i => { _cache.Store("tickingkey", 0, Encoding.UTF8.GetBytes(i.ToString()), DateTime.MaxValue); });
-        }
 
         [TestMethod]
         public void Unsubscribe()
         {
             SetupTickingKey(); 
             
-            var command1 = "{\"command\":\"subscribe\",\"key\":\"tickingkey\"}";
-            var command2 = "{\"command\":\"unsubscribe\",\"key\":\"tickingkey\"}";
             _client.Subscribe(_testObserver);
+            var command1 = "{\"command\":\"subscribe\",\"key\":\"tickingkey\"}";
             _client.OnNext(command1);
             _testScheduler.AdvanceBy(1);
+            var command2 = "{\"command\":\"unsubscribe\",\"key\":\"tickingkey\"}";
             _client.OnNext(command2);
             _testScheduler.AdvanceBy(1);
 
@@ -146,8 +147,9 @@ namespace Nemcache.Tests
         {
             SetupTickingKey();
 
-            var command = "{\"command\":\"subscribe\",\"key\":\"tickingkey\"}";
             var sub = _client.Subscribe(_testObserver);
+
+            var command = "{\"command\":\"subscribe\",\"key\":\"tickingkey\"}";
             _client.OnNext(command);
             sub.Dispose();
             _testScheduler.AdvanceBy(1);
@@ -161,10 +163,10 @@ namespace Nemcache.Tests
         {
             SetupTickingKey();
             SetupValueKey();
-            var command1 = "{\"command\":\"subscribe\",\"key\":\"tickingkey\"}";
-            var command2 = "{\"command\":\"subscribe\",\"key\":\"valuekey\"}";
             _client.Subscribe(_testObserver);
+            var command1 = "{\"command\":\"subscribe\",\"key\":\"tickingkey\"}";
             _client.OnNext(command1);
+            var command2 = "{\"command\":\"subscribe\",\"key\":\"valuekey\"}";
             _client.OnNext(command2);
 
             _testObserver.Messages.AssertEqual(
