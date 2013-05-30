@@ -1,88 +1,93 @@
-﻿using System;
-using System.Collections.Concurrent;
+﻿using Nemcache.Service.Notifications;
+using ServiceStack.Text;
+using System;
 using System.Collections.Generic;
 using System.Reactive.Linq;
-using System.Reactive.Subjects;
 using System.Text;
-using Nemcache.Service.Notifications;
-using ServiceStack.Text;
 
 namespace Nemcache.Service
 {
-    internal class RequestMessage
-    {
-        public BlockingCollection<byte[]> ResponseQueue { get; set; }
-        public string Message { get; set; }
-    }
-
-    // TODO: Is this named well? It inteprets commands and setups subscriptions?
-    // One per client? Should there be lots of these?
-    class WebSocketSubscriptionHandler
+    // TODO: replace dictionaries with classes
+    // TODO: extract interface and rename
+    class WebSocketSubscriptionHandler : IDisposable
     {
         private readonly IMemCache _cache;
-        private readonly Dictionary<Tuple<object, string>, IDisposable> _subscriptions = new Dictionary<Tuple<object, string>, IDisposable>();
+        private readonly IObserver<string> _responseObserver;
+        private readonly Dictionary<string, IDisposable> _subscriptions = new Dictionary<string, IDisposable>();
 
-        public WebSocketSubscriptionHandler(IMemCache cache)
+        public WebSocketSubscriptionHandler(IMemCache cache, IObserver<string> responseObserver) // Not sure how right it 
         {
             _cache = cache;
+            _responseObserver = responseObserver;
         }
 
-        public void HandleMessage(string command, IObserver<string> responseObserver)
+        public void HandleMessage(string command)
         {
             var cmd = JsonObject.Parse(command);
 
             var commandName = cmd["command"];
             if (commandName == "subscribe")
             {
-                Subscribe(cmd, responseObserver);
+                Subscribe(cmd);
             }
             else if (commandName == "unsubscribe")
             {
-                Unsubscribe(cmd, responseObserver);
+                Unsubscribe(cmd);
             }
         }
 
-        private void Unsubscribe(JsonObject cmd, IObserver<string> responseObserver)
+        private void Unsubscribe(JsonObject cmd)
         {
             var key = cmd["key"];
-            var subKey = Tuple.Create((object) responseObserver, key);
-            if (_subscriptions.ContainsKey(subKey))
+            if (_subscriptions.ContainsKey(key))
             {
-                _subscriptions[subKey].Dispose();
-                _subscriptions.Remove(subKey);
+                _subscriptions[key].Dispose();
+                _subscriptions.Remove(key);
             }
             // TODO: unsubscribe success?
         }
 
-        private void Subscribe(JsonObject cmd, IObserver<string> responseObserver)
+        private void Subscribe(JsonObject cmd)
         {
             var key = cmd["key"];
-            var subKey = Tuple.Create((object)responseObserver, key);
             if (string.IsNullOrEmpty(key))
             {
-                var response = new Dictionary<string, string>()
-                    {
-                        {"subscription", ""},
-                        {"response", "ERROR"}
-                    };
-                responseObserver.OnNext(JsonSerializer.SerializeToString(response));
+                SendError(_responseObserver);
             }
             else
             {
-                var response = new Dictionary<string, string>()
-                    {
-                        {"subscription", key},
-                        {"response", "OK"}
-                    };
-                responseObserver.OnNext(JsonSerializer.SerializeToString(response));
-
-                // TODO: concurrency?
-                _subscriptions[subKey] = _cache.FullStateNotifications. // TODO: subscribe at start? Seems wrong for every client?
-                       OfType<IKeyCacheNotification>().
-                       Where(k => k.Key == key).
-                       Select(n => JsonFromNotifications(n)).
-                       Subscribe(responseObserver);
+                SendSubscriptionConfirmation(_responseObserver, key);
+                Subscribe(_responseObserver, key);
             }
+        }
+
+        private void SendSubscriptionConfirmation(IObserver<string> responseObserver, string key)
+        {
+            var response = new Dictionary<string, string>
+                {
+                    {"subscription", key},
+                    {"response", "OK"}
+                };
+            responseObserver.OnNext(response.ToJson());
+        }
+
+        private void Subscribe(IObserver<string> responseObserver, string key)
+        {
+            _subscriptions[key] = _cache.FullStateNotifications. // TODO: subscribe at start? Seems wrong for every client?
+                                            OfType<IKeyCacheNotification>().
+                                            Where(k => k.Key == key).
+                                            Select(JsonFromNotifications).
+                                            Subscribe(responseObserver);
+        }
+
+        private static void SendError(IObserver<string> responseObserver)
+        {
+            var response = new Dictionary<string, string>
+                {
+                    {"subscription", ""},
+                    {"response", "ERROR"}
+                };
+            responseObserver.OnNext(JsonSerializer.SerializeToString(response));
         }
 
         private string JsonFromNotifications(IKeyCacheNotification keyCacheNotification)
@@ -93,12 +98,20 @@ namespace Nemcache.Service
                 data = store.Data;
             // TODO: removes
 
-            var responseValue = new Dictionary<string, string>()
+            var responseValue = new Dictionary<string, string>
                     {
                         {"value", keyCacheNotification.Key},
                         {"data", Encoding.UTF8.GetString(data)}
                     };
             return responseValue.ToJson();
-        }        
+        }
+
+        public void Dispose()
+        {
+            foreach (var subscription in _subscriptions.Values)
+            {
+                subscription.Dispose();
+            }
+        }
     }
 }

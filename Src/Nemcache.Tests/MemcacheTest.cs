@@ -96,7 +96,7 @@ namespace Nemcache.Tests
             {
                 _cache.Get("k");
             }
-            catch (KeyNotFoundException ex)
+            catch (KeyNotFoundException )
             {
                 caught = true;
             }

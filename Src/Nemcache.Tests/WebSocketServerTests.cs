@@ -23,8 +23,7 @@ namespace Nemcache.Tests
             _wsUri = new Uri("ws://" + baseUrl + "someend");
 
             var cache = new MemCache(10000);
-            var handler = new WebSocketSubscriptionHandler(cache);
-            _webSocketServer = new WebSocketServer(new[] { httpUrl }, handler);
+            _webSocketServer = new WebSocketServer(new[] { httpUrl }, observer => new WebSocketSubscriptionHandler(cache, observer));
             _webSocketServer.Start();
             _clientWebSocket = new ClientWebSocket();
             _clientWebSocket.Options.AddSubProtocol("nemcache-0.1");
@@ -61,5 +60,7 @@ namespace Nemcache.Tests
         // TODO: multiple request test
         // TODO: disconnect test
         // TODO: multiple client test
+        // TODO: some tests with real binary data
+
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Globalization;
+using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Text;
@@ -9,6 +10,7 @@ using Nemcache.Service;
 
 namespace Nemcache.Tests
 {
+    // TODO: these tests are fragile as they depend on Json structure
     [TestClass]
     public class WebSocketSubscriptionHandlerTests : ReactiveTest
     {
@@ -23,7 +25,6 @@ namespace Nemcache.Tests
         class Client : ISubject<string> 
         {
             private readonly WebSocketSubscriptionHandler _handler;
-            private readonly Subject<string> _response = new Subject<string>(); 
             public Client(WebSocketSubscriptionHandler handler)
             {
                 _handler = handler;
@@ -31,11 +32,12 @@ namespace Nemcache.Tests
 
             public void OnNext(string command)
             {
-                _handler.HandleMessage(command, _response);
+                _handler.HandleMessage(command);
             }
 
             public void OnError(Exception error)
             {
+                
             }
 
             public void OnCompleted()
@@ -44,20 +46,20 @@ namespace Nemcache.Tests
 
             public IDisposable Subscribe(IObserver<string> observer)
             {
-                return _response.Subscribe(observer);
+                return Disposable.Empty;
             }
         }
 
-        private void SetupValueKey()
+        private void SetupValueKey(string key = "valuekey")
         {
-            _cache.Add("valuekey", 0, DateTime.MaxValue, Encoding.UTF8.GetBytes("1234567890"));
+            _cache.Add(key, 0, DateTime.MaxValue, Encoding.UTF8.GetBytes("1234567890"));
         }
 
-        private void SetupTickingKey()
+        private void SetupTickingKey(string key = "tickingkey")
         {
             Observable.Interval(TimeSpan.FromTicks(1), _testScheduler)
                       .Subscribe(
-                          i => _cache.Store("tickingkey", 0,
+                          i => _cache.Store(key, 0,
                               Encoding.UTF8.GetBytes(i.ToString(CultureInfo.InvariantCulture)), DateTime.MaxValue));
         }
 
@@ -66,9 +68,9 @@ namespace Nemcache.Tests
         {
             _testScheduler = new TestScheduler();
             _cache = new MemCache(10000, _testScheduler);
-            _subscriptionHandler = new WebSocketSubscriptionHandler(_cache);
-            _client = new Client(_subscriptionHandler);
             _testObserver = _testScheduler.CreateObserver<string>();
+            _subscriptionHandler = new WebSocketSubscriptionHandler(_cache, _testObserver);
+            _client = new Client(_subscriptionHandler);
         }
 
         [TestMethod]
@@ -143,27 +145,12 @@ namespace Nemcache.Tests
         }
 
         [TestMethod]
-        public void DisposeSubscription()
-        {
-            SetupTickingKey();
-
-            var sub = _client.Subscribe(_testObserver);
-
-            var command = "{\"command\":\"subscribe\",\"key\":\"tickingkey\"}";
-            _client.OnNext(command);
-            sub.Dispose();
-            _testScheduler.AdvanceBy(1);
-            _testObserver.Messages.AssertEqual(
-                OnNext(0, "{\"subscription\":\"tickingkey\",\"response\":\"OK\"}")
-                );
-        }
-
-        [TestMethod]
         public void MultiplexedSubscriptions()
         {
             SetupTickingKey();
             SetupValueKey();
             _client.Subscribe(_testObserver);
+
             var command1 = "{\"command\":\"subscribe\",\"key\":\"tickingkey\"}";
             _client.OnNext(command1);
             var command2 = "{\"command\":\"subscribe\",\"key\":\"valuekey\"}";
@@ -210,5 +197,7 @@ namespace Nemcache.Tests
         // TODO: pattern matching subscribe
         // TODO: subscribe to all?
         // TODO: multikey subscribe?
+        // TODO: conflation add a parameter?
+        // TODO: slow consumer - replace old values?
     }
 }

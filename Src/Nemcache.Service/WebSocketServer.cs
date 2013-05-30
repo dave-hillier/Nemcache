@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Net.WebSockets;
 using System.Reactive.Linq;
@@ -13,20 +14,21 @@ namespace Nemcache.Service
 {
     class WebSocketServer
     {
-        private readonly WebSocketSubscriptionHandler _handler;
+        private readonly Func<IObserver<string>, WebSocketSubscriptionHandler> _handlerFactory;
         private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
         private readonly HttpListener _listener = new HttpListener();
         private readonly TaskFactory _taskFactory;
 
-        public WebSocketServer(IEnumerable<string> prefixes, WebSocketSubscriptionHandler handler)
+        public WebSocketServer(IEnumerable<string> prefixes, Func<IObserver<String>, WebSocketSubscriptionHandler> handlerFactory)
         {
-            _handler = handler;
+            _handlerFactory = handlerFactory;
             _taskFactory = new TaskFactory(_cancellationTokenSource.Token);
             foreach (var prefix in prefixes)
             {
                 _listener.Prefixes.Add(prefix);
             }
         }
+
 
         public void Start()
         {
@@ -46,7 +48,7 @@ namespace Nemcache.Service
 
         private async Task OnClientConnection(HttpListenerContext httpContext)
         {
-            if (httpContext.Request.IsWebSocketRequest) 
+            if (httpContext.Request.IsWebSocketRequest)
             {
                 //var rawUrl = httpContext.Request.RawUrl
                 var webSocketContext = await httpContext.AcceptWebSocketAsync(subProtocol: "nemcache-0.1");
@@ -67,18 +69,22 @@ namespace Nemcache.Service
 
         public void OnWebSocketConnected(WebSocket webSocket)
         {
+
             var blockingCollection = new BlockingCollection<string>();
             var subject = new Subject<string>();
-            using (subject.Synchronize().Subscribe(n => blockingCollection.Add(n)))
+            using (subject.Synchronize().Subscribe(blockingCollection.Add))
             {
-                Task.WaitAll(
-                    ReceiveLoop(webSocket, subject),
-                    SendLoop(webSocket, blockingCollection)
-                    );
+                using (var webSocketSubscriptionHandler = _handlerFactory(subject))
+                {
+                    Task.WaitAll(
+                        ReceiveLoop(webSocket, webSocketSubscriptionHandler),
+                        SendLoop(webSocket, blockingCollection)
+                        );
+                }
             }
         }
 
-        private async Task ReceiveLoop(WebSocket webSocket, IObserver<string> observer)
+        private async Task ReceiveLoop(WebSocket webSocket, WebSocketSubscriptionHandler handler)
         {
             var receiveBuffer = new byte[4096];
             while (webSocket.State == WebSocketState.Open)
@@ -90,26 +96,33 @@ namespace Nemcache.Service
                     case WebSocketMessageType.Binary:
                         break;
                     case WebSocketMessageType.Close:
-                        await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "", _cancellationTokenSource.Token);
-                        // OnNext a close
+                        await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure,
+                                                   "", _cancellationTokenSource.Token);
                         break;
                     case WebSocketMessageType.Text:
-                        // TODO: receive entire message
-                        //OnNext the command, let the subscription manager handle it, provide the current context/reponse action?
-
-                        var message = Encoding.UTF8.GetString(arraySegment.Array);
-                        _handler.HandleMessage(message, observer);
+                        var message = await OnMessage(webSocket, arraySegment, receiveResult);
+                        handler.HandleMessage(message);
                         break;
                 }
             }
-            // OnComplete here??
+        }
+
+        private async Task<string> OnMessage(WebSocket webSocket, ArraySegment<byte> arraySegment, WebSocketReceiveResult receiveResult)
+        {
+            var stream = new MemoryStream();
+            stream.Write(arraySegment.Array, 0, arraySegment.Count);
+            while (receiveResult.EndOfMessage == false)
+            {
+                receiveResult =
+                    await webSocket.ReceiveAsync(arraySegment, _cancellationTokenSource.Token);
+                stream.Write(arraySegment.Array, 0, arraySegment.Count);
+            }
+            var message = Encoding.UTF8.GetString(stream.ToArray());
+            return message;
         }
 
         private async Task SendLoop(WebSocket webSocket, BlockingCollection<string> sendQueue)
         {
-            // TODO: what do identify a client on?
-            // TODO: create a client message queue
-
             foreach (var value in sendQueue.GetConsumingEnumerable(_cancellationTokenSource.Token))
             {
                 if (webSocket.State != WebSocketState.Open)
