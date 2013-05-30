@@ -1,5 +1,8 @@
 - [x] Thingier
 - [ ] Implement web socket/subscription handler
+- [ ] Examples of HTTP features
+- [ ] Examples of Websocket subscription features
 - [ ] Master slave replication
 - [ ] Queuing to W/S
+- [ ] Examples of WebSocket queuing
 - [ ] Alternative replication
