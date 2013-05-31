@@ -10,7 +10,7 @@ namespace Nemcache.Service
         {
             // TODO: get the folder from config
             // TODO: allow a set of extensions to be served as various types
-            var bytes = File.ReadAllBytes("test.html");
+            var bytes = File.ReadAllBytes(matches[0]);
             // TODO: create the path from the matches, escaping .. etc
             httpContext.Response.ContentType = "text/html";
             httpContext.Response.StatusCode = 200;

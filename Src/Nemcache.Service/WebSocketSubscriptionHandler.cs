@@ -34,6 +34,7 @@ namespace Nemcache.Service
             {
                 Unsubscribe(cmd);
             }
+            //TODO: unknown cmd
         }
 
         private void Unsubscribe(JsonObject cmd)

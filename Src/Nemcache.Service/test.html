@@ -6,16 +6,17 @@
     <title>Nemcache Test Page</title>
 </head>
     <body>
+        <button onclick="OnClick()">Click</button>
         <div id ="events"></div>
     </body>
-    <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
-    <script src="http://code.jquery.com/jquery-migrate-1.1.1.min.js"></script>
+    <script src="jquery-1.8.0.min.js"></script>
     <script>
-        var connection = new WebSocket('ws://localhost:8222/cache/notifications', 'nemcache-0.1');
+        var connection = new WebSocket('ws://localhost:8222/sub/', 'nemcache-0.1');
         connection.onopen = function() {
             /*Send a small message to the console once the connection is established */
             console.log('Connection open!');
             //connection.send('test');
+            connection.send(JSON.stringify({ "command": "subscribe", "key": "click" }));
         };
         connection.onclose = function() {
             console.log('Connection closed');
@@ -25,8 +26,16 @@
         };
         connection.onmessage = function(event) {
             console.log(event.data);
-            connection.send('pong!');
+            
         };
+
+        var count = 0;
+        function OnClick() {
+            console.log('TODO ' + ++count);
+            
+            //
+            $.ajax({ url: "http://localhost:8222/cache/click", type: "PUT", data: "PUT DATA" });
+        }
         
     </script>
 </html>

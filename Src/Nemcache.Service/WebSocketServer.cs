@@ -42,7 +42,7 @@ namespace Nemcache.Service
                    _listener.IsListening)
             {
                 var httpContext = await _listener.GetContextAsync();
-                await _taskFactory.StartNew(() => OnClientConnection(httpContext));
+                _taskFactory.StartNew(() => OnClientConnection(httpContext));
             }
         }
 
