@@ -38,8 +38,7 @@ namespace Nemcache.Service
 
         private async void ListenForClients()
         {
-            while (!_cancellationTokenSource.IsCancellationRequested &&
-                   _listener.IsListening)
+            while (!_cancellationTokenSource.IsCancellationRequested && _listener.IsListening)
             {
                 var httpContext = await _listener.GetContextAsync();
                 _taskFactory.StartNew(() => OnClientConnection(httpContext));
@@ -50,7 +49,6 @@ namespace Nemcache.Service
         {
             if (httpContext.Request.IsWebSocketRequest)
             {
-                //var rawUrl = httpContext.Request.RawUrl
                 var webSocketContext = await httpContext.AcceptWebSocketAsync(subProtocol: "nemcache-0.1");
                 OnWebSocketConnected(webSocketContext.WebSocket);
             }
@@ -110,15 +108,38 @@ namespace Nemcache.Service
         private async Task<string> OnMessage(WebSocket webSocket, ArraySegment<byte> arraySegment, WebSocketReceiveResult receiveResult)
         {
             var stream = new MemoryStream();
-            stream.Write(arraySegment.Array, 0, arraySegment.Count);
-            while (receiveResult.EndOfMessage == false)
-            {
-                receiveResult =
-                    await webSocket.ReceiveAsync(arraySegment, _cancellationTokenSource.Token);
-                stream.Write(arraySegment.Array, 0, arraySegment.Count);
-            }
+            stream.Write(arraySegment.Array, 0, receiveResult.Count);
             var message = Encoding.UTF8.GetString(stream.ToArray());
-            return message;
+            
+            if (receiveResult.EndOfMessage)
+            {
+                return message;
+            }
+ 
+            var originalType = receiveResult.MessageType;
+            while (true)
+            {
+                receiveResult = await webSocket.ReceiveAsync(arraySegment, _cancellationTokenSource.Token);
+
+                if (receiveResult.MessageType == WebSocketMessageType.Close)
+                {
+                    break;
+                }
+
+                if (originalType != receiveResult.MessageType)
+                {
+                    throw new InvalidOperationException();
+                }
+
+                stream.Write(arraySegment.Array, 0, receiveResult.Count);
+                message = Encoding.UTF8.GetString(stream.ToArray());
+                
+                if (receiveResult.EndOfMessage)
+                {
+                    return message;
+                }
+            }
+            return "";
         }
 
         private async Task SendLoop(WebSocket webSocket, BlockingCollection<string> sendQueue)

@@ -55,6 +55,25 @@ namespace Nemcache.Tests
             Assert.AreEqual("{\"subscription\":\"mykey\",\"response\":\"OK\"}", responseString.Trim('\0'));
         }
 
+        [TestMethod]
+        public void SendInTwoParts()
+        {
+            // Send subscribe as text/json
+            var sendBuffer = new ArraySegment<byte>(Encoding.UTF8.GetBytes("{\"command\":\"subscribe\", \"k"));
+            _clientWebSocket.SendAsync(sendBuffer, WebSocketMessageType.Text, false, _cts.Token).Wait();
+
+            var sendBuffer2 = new ArraySegment<byte>(Encoding.UTF8.GetBytes("ey\":\"mykey\"}"));
+            _clientWebSocket.SendAsync(sendBuffer2, WebSocketMessageType.Text, true, _cts.Token).Wait();
+
+
+            var buffer = new ArraySegment<byte>(new byte[1024]);
+            var response = _clientWebSocket.ReceiveAsync(buffer, _cts.Token).Result;
+            var responseString = Encoding.UTF8.GetString(buffer.Array);
+
+            Assert.AreEqual(WebSocketMessageType.Text, response.MessageType);
+            Assert.AreEqual("{\"subscription\":\"mykey\",\"response\":\"OK\"}", responseString.Trim('\0'));
+        }
+
         // TODO: sending message in multiple parts, endofmessage false, then true
         // TODO: delayed response test
         // TODO: multiple response test
