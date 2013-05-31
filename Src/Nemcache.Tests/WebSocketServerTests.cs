@@ -44,7 +44,7 @@ namespace Nemcache.Tests
             // Send subscribe as text/json
             const string subscribeRequest = "{\"command\":\"subscribe\", \"key\":\"mykey\"}";
             var sendBuffer = new ArraySegment<byte>(Encoding.UTF8.GetBytes(subscribeRequest));
-            _clientWebSocket.SendAsync(sendBuffer, WebSocketMessageType.Text, false, _cts.Token).Wait();
+            _clientWebSocket.SendAsync(sendBuffer, WebSocketMessageType.Text, true, _cts.Token).Wait();
 
             var buffer = new ArraySegment<byte>(new byte[1024]);
             var response = _clientWebSocket.ReceiveAsync(buffer, _cts.Token).Result;
@@ -55,6 +55,7 @@ namespace Nemcache.Tests
             Assert.AreEqual("{\"subscription\":\"mykey\",\"response\":\"OK\"}", responseString.Trim('\0'));
         }
 
+        // TODO: sending message in multiple parts, endofmessage false, then true
         // TODO: delayed response test
         // TODO: multiple response test
         // TODO: multiple request test
