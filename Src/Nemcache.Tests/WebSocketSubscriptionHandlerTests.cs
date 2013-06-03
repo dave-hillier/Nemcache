@@ -16,7 +16,7 @@ namespace Nemcache.Tests
     {
         private Client _client;
         private ITestableObserver<string> _testObserver;
-        private WebSocketSubscriptionHandler _subscriptionHandler;
+        private CacheEntrySubscriptionHandler _subscriptionHandler;
         private MemCache _cache;
         private TestScheduler _testScheduler;
 
@@ -24,8 +24,8 @@ namespace Nemcache.Tests
         // It could go to network....
         class Client : ISubject<string> 
         {
-            private readonly WebSocketSubscriptionHandler _handler;
-            public Client(WebSocketSubscriptionHandler handler)
+            private readonly CacheEntrySubscriptionHandler _handler;
+            public Client(CacheEntrySubscriptionHandler handler)
             {
                 _handler = handler;
             }
@@ -69,7 +69,7 @@ namespace Nemcache.Tests
             _testScheduler = new TestScheduler();
             _cache = new MemCache(10000, _testScheduler);
             _testObserver = _testScheduler.CreateObserver<string>();
-            _subscriptionHandler = new WebSocketSubscriptionHandler(_cache, _testObserver);
+            _subscriptionHandler = new CacheEntrySubscriptionHandler(_cache, _testObserver);
             _client = new Client(_subscriptionHandler);
         }
 

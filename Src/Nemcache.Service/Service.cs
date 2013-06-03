@@ -19,7 +19,7 @@ namespace Nemcache.Service
         private StreamArchiver _archiver;
         private readonly FileSystemWrapper _fileSystem;
         private readonly CacheRestServer _restListener;
-        private WebSocketServer _websocketServer;
+        private readonly WebSocketServer _websocketServer;
 
         public Service(ulong capacity, uint port)
         {
@@ -40,8 +40,8 @@ namespace Nemcache.Service
                             "http://localhost:8222/cache/",
                             "http://localhost:8222/static/"
                         });
-            _websocketServer = new WebSocketServer(new [] { "http://localhost:8222/sub/", },
-                o => new WebSocketSubscriptionHandler(_memCache, o) );
+            _websocketServer = new WebSocketServer(new [] { "http://localhost:8222/sub/" },
+                o => new CacheEntrySubscriptionHandler(_memCache, o) );
             _fileSystem = new FileSystemWrapper();
             const string cachelogBin = "cachelog.bin";
             _restorer = new CacheRestorer(_memCache, _fileSystem, cachelogBin);
@@ -62,9 +62,12 @@ namespace Nemcache.Service
         {
             _restorer.RestoreCache();
 
-            _archiver = new StreamArchiver(_fileSystem.File.Open("cachelog.bin", FileMode.OpenOrCreate, FileAccess.Write));
+            _archiver = new StreamArchiver(_fileSystem,
+                "cachelog.bin",
+                _memCache,
+                10000);
 
-            _memCache.NewNotifications.ObserveOn(Scheduler.Default).Subscribe(_archiver);
+            _memCache.Notifications.ObserveOn(Scheduler.Default).Subscribe(_archiver);
 
             _server.Start();
 

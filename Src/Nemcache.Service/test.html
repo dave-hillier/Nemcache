@@ -15,7 +15,6 @@
         connection.onopen = function() {
             /*Send a small message to the console once the connection is established */
             console.log('Connection open!');
-            //connection.send('test');
             connection.send(JSON.stringify({ "command": "subscribe", "key": "click" }));
         };
         connection.onclose = function() {
@@ -26,16 +25,15 @@
         };
         connection.onmessage = function(event) {
             console.log(event.data);
-            
+
+            var o = JSON.parse(event.data);
+            alert(o.data);
         };
 
         var count = 0;
         function OnClick() {
-            console.log('TODO ' + ++count);
-            
-            //
-            $.ajax({ url: "http://localhost:8222/cache/click", type: "PUT", data: "PUT DATA" });
+            console.log('TODO ' + ++count);            
+            $.ajax({ url: "http://localhost:8222/cache/click", type: "PUT", data: "Clicked: " + count });
         }
-        
     </script>
 </html>

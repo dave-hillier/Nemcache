@@ -18,7 +18,6 @@ namespace Nemcache.Service.Persistence
 
         public CacheRestorer(IMemCache memCache, IFileSystem fileSystem, string path) : 
             this(memCache, fileSystem, path, Scheduler.Default)
-
         {
             
         }
@@ -109,7 +108,6 @@ namespace Nemcache.Service.Persistence
                                         Expiry = updatedExpiry.ContainsKey(key) ? updatedExpiry[key] : storeNotification.Expiry,
                                         Data = storeNotification.Data,
                                         Operation = StoreOperation.Add,
-
                                     }
                             };
                     }

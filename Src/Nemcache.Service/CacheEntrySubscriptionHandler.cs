@@ -1,4 +1,5 @@
 ﻿using Nemcache.Service.Notifications;
+using Nemcache.Service.Reactive;
 using ServiceStack.Text;
 using System;
 using System.Collections.Generic;
@@ -9,13 +10,13 @@ namespace Nemcache.Service
 {
     // TODO: replace dictionaries with classes
     // TODO: extract interface and rename
-    class WebSocketSubscriptionHandler : IDisposable
+    class CacheEntrySubscriptionHandler : IDisposable
     {
         private readonly IMemCache _cache;
         private readonly IObserver<string> _responseObserver;
         private readonly Dictionary<string, IDisposable> _subscriptions = new Dictionary<string, IDisposable>();
 
-        public WebSocketSubscriptionHandler(IMemCache cache, IObserver<string> responseObserver) // Not sure how right it 
+        public CacheEntrySubscriptionHandler(IMemCache cache, IObserver<string> responseObserver) // Not sure how right it 
         {
             _cache = cache;
             _responseObserver = responseObserver;
@@ -74,11 +75,35 @@ namespace Nemcache.Service
 
         private void Subscribe(IObserver<string> responseObserver, string key)
         {
-            _subscriptions[key] = _cache.FullStateNotifications. // TODO: subscribe at start? Seems wrong for every client?
-                                            OfType<IKeyCacheNotification>().
-                                            Where(k => k.Key == key).
-                                            Select(JsonFromNotifications).
-                                            Subscribe(responseObserver);
+            CacheEntry cacheEntry;
+            if (_cache.TryGet(key, out cacheEntry))
+            {
+                var notification = new StoreNotification
+                    {
+                        Key = key,
+                        Data = cacheEntry.Data,
+                        EventId = cacheEntry.EventId,
+                        Expiry = cacheEntry.Expiry,
+                        Flags = cacheEntry.Flags,
+                        Operation = StoreOperation.Add
+                    };
+                var combinedNotifications = Observable.Return(notification).Combine(_cache.Notifications); // TODO: must be a simpler way of doing this...
+
+                _subscriptions[key] = combinedNotifications.
+                                OfType<IKeyCacheNotification>().
+                                Where(k => k.Key == key).
+                                Select(JsonFromNotifications).
+                                Subscribe(responseObserver); 
+            }
+            else
+            {
+                _subscriptions[key] = _cache.Notifications.
+                                                OfType<IKeyCacheNotification>().
+                                                Where(k => k.Key == key).
+                                                Select(JsonFromNotifications).
+                                                Subscribe(responseObserver);                
+            }
+
         }
 
         private static void SendError(IObserver<string> responseObserver)

@@ -23,7 +23,7 @@ namespace Nemcache.Tests
             _wsUri = new Uri("ws://" + baseUrl + "someend");
 
             var cache = new MemCache(10000);
-            _webSocketServer = new WebSocketServer(new[] { httpUrl }, observer => new WebSocketSubscriptionHandler(cache, observer));
+            _webSocketServer = new WebSocketServer(new[] { httpUrl }, observer => new CacheEntrySubscriptionHandler(cache, observer));
             _webSocketServer.Start();
             _clientWebSocket = new ClientWebSocket();
             _clientWebSocket.Options.AddSubProtocol("nemcache-0.1");

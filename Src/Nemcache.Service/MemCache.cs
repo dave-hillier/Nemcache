@@ -18,7 +18,7 @@ namespace Nemcache.Service
     {
         private readonly ConcurrentDictionary<string, CacheEntry> _cache =
             new ConcurrentDictionary<string, CacheEntry>();
-        private readonly IObservable<ICacheNotification> _combinedNotifications;
+        //private readonly IObservable<ICacheNotification> _combinedNotifications;
         private readonly IEvictionStrategy _evictionStrategy;
         private readonly IScheduler _scheduler;
         private readonly Subject<ICacheNotification> _notificationsSubject;
@@ -36,7 +36,7 @@ namespace Nemcache.Service
             _scheduler = scheduler;
             Capacity = capacity;
             _notificationsSubject = new Subject<ICacheNotification>();
-            _combinedNotifications = Observable.Defer(CreateNotifications);
+            //_combinedNotifications = Observable.Defer(CreateNotifications);
 
             var lruStrategy = new LruEvictionStrategy(this);
             _evictionStrategy = lruStrategy;
@@ -293,12 +293,12 @@ namespace Nemcache.Service
                    select KeyValuePair.Create(key, _cache[key]);
         }
 
-        public IObservable<ICacheNotification> FullStateNotifications
+        /*public IObservable<ICacheNotification> FullStateNotifications
         {
             get { return _combinedNotifications; }
-        }
+        }*/
 
-        public IObservable<ICacheNotification> NewNotifications
+        public IObservable<ICacheNotification> Notifications
         {
             get { return _notificationsSubject; }
         }
@@ -308,8 +308,17 @@ namespace Nemcache.Service
             get { return _cache.Keys; }
         }
 
-
-        private IObservable<ICacheNotification> CreateNotifications()
+        public Tuple<int, KeyValuePair<string, CacheEntry>[]> CurrentState
+        {
+            get
+            {
+                // TODO: make this atomic...
+                var contents = _cache.ToArray();
+                return Tuple.Create(_currentSequenceId, contents);
+            }
+        }
+    
+        /*private IObservable<ICacheNotification> CreateNotifications()
         {
             var currentCache = _cache.ToArray();
             var addOperations = currentCache.Select(e =>
@@ -325,7 +334,7 @@ namespace Nemcache.Service
                                                         });
 
             return addOperations.ToObservable().Combine(_notificationsSubject);
-        }
+        }*/
 
         public void MakeSpaceForNewEntry(int length)
         {

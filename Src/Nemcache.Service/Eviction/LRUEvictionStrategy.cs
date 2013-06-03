@@ -16,7 +16,7 @@ namespace Nemcache.Service.Eviction
         public LruEvictionStrategy(MemCache cache)
         {
             _cache = cache;
-            var notifications = _cache.FullStateNotifications;
+            var notifications = _cache.Notifications;
 
             var removeSubscription = notifications.OfType<RemoveNotification>().Subscribe(n => Remove(n.Key));
             var touchSubscription = notifications.OfType<IKeyCacheNotification>().Where(n => !(n is RemoveNotification)).Subscribe(n => Use(n.Key));

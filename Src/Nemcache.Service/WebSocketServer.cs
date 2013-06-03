@@ -14,12 +14,12 @@ namespace Nemcache.Service
 {
     class WebSocketServer
     {
-        private readonly Func<IObserver<string>, WebSocketSubscriptionHandler> _handlerFactory;
+        private readonly Func<IObserver<string>, CacheEntrySubscriptionHandler> _handlerFactory;
         private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
         private readonly HttpListener _listener = new HttpListener();
         private readonly TaskFactory _taskFactory;
 
-        public WebSocketServer(IEnumerable<string> prefixes, Func<IObserver<String>, WebSocketSubscriptionHandler> handlerFactory)
+        public WebSocketServer(IEnumerable<string> prefixes, Func<IObserver<String>, CacheEntrySubscriptionHandler> handlerFactory)
         {
             _handlerFactory = handlerFactory;
             _taskFactory = new TaskFactory(_cancellationTokenSource.Token);
@@ -28,7 +28,6 @@ namespace Nemcache.Service
                 _listener.Prefixes.Add(prefix);
             }
         }
-
 
         public void Start()
         {
@@ -82,7 +81,7 @@ namespace Nemcache.Service
             }
         }
 
-        private async Task ReceiveLoop(WebSocket webSocket, WebSocketSubscriptionHandler handler)
+        private async Task ReceiveLoop(WebSocket webSocket, CacheEntrySubscriptionHandler handler)
         {
             var receiveBuffer = new byte[4096];
             while (webSocket.State == WebSocketState.Open)

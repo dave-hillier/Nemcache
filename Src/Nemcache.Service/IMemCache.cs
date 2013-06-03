@@ -32,7 +32,8 @@ namespace Nemcache.Service
 
         bool Mutate(string key, ulong incr, out byte[] resultDataOut, bool positive);
 
-        IObservable<ICacheNotification> FullStateNotifications { get; }
+        //IObservable<ICacheNotification> FullStateNotifications { get; }
+        IObservable<ICacheNotification> Notifications { get; }
 
         CacheEntry Get(string s);
 
