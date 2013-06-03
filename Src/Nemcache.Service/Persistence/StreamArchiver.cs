@@ -65,8 +65,8 @@ namespace Nemcache.Service.Persistence
 
         private void CompactCache()
         {
-            var path = Path.GetTempFileName();
-            using (var newCache = _fileSystem.File.Open(path, FileMode.CreateNew, FileAccess.Write))
+            var tempFileName = Path.GetTempFileName();
+            using (var newCache = _fileSystem.File.Open(tempFileName, FileMode.CreateNew, FileAccess.Write))
             {
                 var currentState = _memCache.CurrentState;
                 var archiveEntries = currentState.Item2.Select(e => CreateArchiveEntry(e.Key, e.Value));
@@ -75,7 +75,7 @@ namespace Nemcache.Service.Persistence
             }
             var destinationBackupFileName = _cacheArchivePath + ".bak";
             _fileSystem.File.Delete(destinationBackupFileName);
-            _fileSystem.File.Replace(path, _cacheArchivePath, destinationBackupFileName, true);
+            _fileSystem.File.Replace(tempFileName, _cacheArchivePath, destinationBackupFileName, true);
             _outputStream = _fileSystem.File.Open(_cacheArchivePath, FileMode.OpenOrCreate, FileAccess.Write);
         }
 
@@ -86,10 +86,9 @@ namespace Nemcache.Service.Persistence
                     Store = new StoreNotification
                         {
                             Data = entry.Data,
-                            EventId = 0,
+                            EventId = entry.EventId,
                             Expiry = entry.Expiry,
                             Flags = entry.Flags,
-                            IsSnapshot = true, // TODO: remove this field?
                             Key = key,
                             Operation = StoreOperation.Add
                         }
@@ -109,7 +108,9 @@ namespace Nemcache.Service.Persistence
             Serializer.SerializeWithLengthPrefix(_outputStream, archiveEntry, PrefixStyle.Fixed32);
             _outputStream.FlushAsync();
         }
+        
         private long CompactThreshold { get; set; }
+        
         private bool Full
         {
             get { return _outputStream.Length > CompactThreshold; }

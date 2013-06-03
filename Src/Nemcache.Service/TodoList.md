@@ -1,6 +1,7 @@
 In no particular order:
 
 - [x] Implement web socket/subscription handler
+- [ ] Extract the persistent store to self contained library. Create tests around persistent behaviour. Change interface to be more like Dictionary?
 - [ ] Queuing!
 - [ ] Examples of HTTP features
 - [ ] Examples of Websocket subscription features
@@ -8,7 +9,6 @@ In no particular order:
 - [ ] Examples of WebSocket queuing
 - [ ] Fix up the client
 - [ ] Configuration of the server - perhaps autofac or similar...
-- [ ] Extract the persistent store to self contained library.
 - [ ] Consider using the message queue of the archiver to do the compacting.
 - [ ] Metadata for individual keys. Probably need to be persistent - but might be worth turning off persistence for keys.
 - [ ] WebSocketServer alternative protocol for the CacheEntrySubscriptionHandler. Perhaps decouple from JSON in the CacheEntrySub...

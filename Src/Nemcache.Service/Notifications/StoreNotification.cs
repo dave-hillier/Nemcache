@@ -28,10 +28,6 @@ namespace Nemcache.Service.Notifications
         [DefaultValue(0)]
         public ulong Flags { get; set; }
 
-        [ProtoMember(7)]
-        [DefaultValue(false)]
-        public bool IsSnapshot { get; set; }
-
         [ProtoMember(1, IsRequired = true)]
         public int EventId { get; set; }
 

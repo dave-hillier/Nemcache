@@ -9,7 +9,6 @@ using System.Text;
 namespace Nemcache.Service
 {
     // TODO: replace dictionaries with classes
-    // TODO: extract interface and rename
     class CacheEntrySubscriptionHandler : IDisposable
     {
         private readonly IMemCache _cache;

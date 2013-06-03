@@ -42,7 +42,6 @@ namespace Nemcache.Tests
             Assert.AreEqual((ulong) 123, store.Flags);
             Assert.AreEqual(StoreOperation.Add, store.Operation);
             Assert.AreEqual(new DateTime(1999, 1, 1), store.Expiry);
-            Assert.IsFalse(store.IsSnapshot);
         }
 
         private void CreateObserverAndSubscribe()

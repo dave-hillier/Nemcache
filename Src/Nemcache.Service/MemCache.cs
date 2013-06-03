@@ -10,7 +10,6 @@ using System.Text;
 using System.Threading;
 using Nemcache.Service.Eviction;
 using Nemcache.Service.Notifications;
-using Nemcache.Service.Reactive;
 
 namespace Nemcache.Service
 {
@@ -18,7 +17,6 @@ namespace Nemcache.Service
     {
         private readonly ConcurrentDictionary<string, CacheEntry> _cache =
             new ConcurrentDictionary<string, CacheEntry>();
-        //private readonly IObservable<ICacheNotification> _combinedNotifications;
         private readonly IEvictionStrategy _evictionStrategy;
         private readonly IScheduler _scheduler;
         private readonly Subject<ICacheNotification> _notificationsSubject;
@@ -36,7 +34,6 @@ namespace Nemcache.Service
             _scheduler = scheduler;
             Capacity = capacity;
             _notificationsSubject = new Subject<ICacheNotification>();
-            //_combinedNotifications = Observable.Defer(CreateNotifications);
 
             var lruStrategy = new LruEvictionStrategy(this);
             _evictionStrategy = lruStrategy;
@@ -293,11 +290,6 @@ namespace Nemcache.Service
                    select KeyValuePair.Create(key, _cache[key]);
         }
 
-        /*public IObservable<ICacheNotification> FullStateNotifications
-        {
-            get { return _combinedNotifications; }
-        }*/
-
         public IObservable<ICacheNotification> Notifications
         {
             get { return _notificationsSubject; }
@@ -318,24 +310,6 @@ namespace Nemcache.Service
             }
         }
     
-        /*private IObservable<ICacheNotification> CreateNotifications()
-        {
-            var currentCache = _cache.ToArray();
-            var addOperations = currentCache.Select(e =>
-                                                    new StoreNotification
-                                                        {
-                                                            Key = e.Key,
-                                                            Data = e.Value.Data,
-                                                            Expiry = e.Value.Expiry,
-                                                            Flags = e.Value.Flags,
-                                                            Operation = StoreOperation.Add,
-                                                            EventId = e.Value.EventId,
-                                                            IsSnapshot = true
-                                                        });
-
-            return addOperations.ToObservable().Combine(_notificationsSubject);
-        }*/
-
         public void MakeSpaceForNewEntry(int length)
         {
             while (!HasAvailableSpace((ulong) length))
