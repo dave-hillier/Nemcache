@@ -3,6 +3,7 @@ using System.Text;
 
 namespace Nemcache.Service.RequestHandlers
 {
+    // TODO: dont bother with this??
     internal class CasHandler : IRequestHandler
     {
         private readonly IMemCache _cache;

@@ -2,6 +2,7 @@ In no particular order:
 
 - [x] Implement web socket/subscription handler
 - [ ] Extract the persistent store to self contained library. Create tests around persistent behaviour. Change interface to be more like Dictionary?
+	- Perhaps persistent dictionary first. Then persistent cache on top of that. 
 - [ ] Queuing!
 - [ ] Examples of HTTP features
 - [ ] Examples of Websocket subscription features
