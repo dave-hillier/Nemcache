@@ -1,38 +1,29 @@
-﻿using System.Configuration;
-using Topshelf;
+using System.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace Nemcache.Service
 {
     internal class Program
     {
-        private static void Main()
+        private static void Main(string[] args)
         {
             var capacitySetting = ConfigurationManager.AppSettings["Capacity"];
-            ulong capacity = capacitySetting != null ? ulong.Parse(capacitySetting) : 1024*1024*1024*4L; // 4GB
+            ulong capacity = capacitySetting != null ? ulong.Parse(capacitySetting) : 1024UL * 1024 * 1024 * 4;
 
             var portSetting = ConfigurationManager.AppSettings["Port"];
             uint port = portSetting != null ? uint.Parse(portSetting) : 11222;
 
-            var cacheFileName = ConfigurationManager.AppSettings["CacheFile"] ?? "cache.bin";
-
-            var partitionSizeSetting = ConfigurationManager.AppSettings["Port"];
-            uint partitionSize = partitionSizeSetting != null ? uint.Parse(partitionSizeSetting) : 512*1024*1024;
-
-            HostFactory.Run(hc =>
+            var host = Host.CreateDefaultBuilder(args)
+                .UseWindowsService()
+                .ConfigureServices(services =>
                 {
-                    hc.Service<Service>(s =>
-                        {
-                            s.ConstructUsing(() => new Service(capacity, port));
-                            s.WhenStarted(xs => xs.Start());
-                            s.WhenStopped(xs => xs.Stop());
-                        });
-                    hc.RunAsNetworkService();
-                    hc.SetDescription("Simple .NET implementation of Memcache; an in memory key-value cache.");
+                    services.AddSingleton(new Service(capacity, port));
+                    services.AddHostedService<Worker>();
+                })
+                .Build();
 
-                    hc.SetDisplayName("Nemcache");
-                    hc.SetServiceName("Nemcache");
-                    hc.SetInstanceName("Nemcache Single Instance");
-                });
+            host.Run();
         }
     }
 }
