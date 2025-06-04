@@ -4,7 +4,7 @@ using Microsoft.Extensions.Hosting;
 
 namespace Nemcache.Service
 {
-    public class Worker : IHostedService
+    internal class Worker : IHostedService
     {
         private readonly Service _service;
 
