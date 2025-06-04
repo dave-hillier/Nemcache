@@ -1,0 +1,27 @@
+name: .NET Framework Build
+
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v1.1
+
+      - name: Restore NuGet packages
+        run: nuget restore Src/Nemcache.sln
+
+      - name: Build
+        run: msbuild Src/Nemcache.sln /p:Configuration=Release
+
+      - name: Run tests
+        run: |
+          vstest.console.exe Src/Nemcache.Tests/bin/Release/Nemcache.Tests.dll
+
