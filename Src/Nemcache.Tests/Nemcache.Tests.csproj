@@ -38,8 +38,8 @@
     <Reference Include="Microsoft.Reactive.Testing">
       <HintPath>..\packages\Rx-Testing.2.1.30214.0\lib\Net45-Full\Microsoft.Reactive.Testing.dll</HintPath>
     </Reference>
-    <Reference Include="Moq">
-      <HintPath>..\packages\Moq.4.0.10827\lib\NET40\Moq.dll</HintPath>
+    <Reference Include="NSubstitute">
+      <HintPath>..\packages\NSubstitute.1.4.3\lib\NET40\NSubstitute.dll</HintPath>
     </Reference>
     <Reference Include="protobuf-net, Version=2.0.0.621, Culture=neutral, PublicKeyToken=257b51d87d2e4d67, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>

@@ -1,5 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
+using NSubstitute;
 using Nemcache.Service;
 using Nemcache.Service.IO;
 using Nemcache.Service.Persistence;
@@ -15,28 +15,26 @@ namespace Nemcache.Tests.Persistence
     {
         private MemCache _originalCache;
         private StreamArchiver _streamArchiver;
-        private Mock<IFile> _mockFile;
+        private IFile _mockFile;
         private MemoryStream _writeStream;
-        private Mock<IFileSystem> _mockFileSystem;
+        private IFileSystem _mockFileSystem;
 
         [TestInitialize]
         public void Setup()
         {
             // TODO: test the archiver without a cache
             _originalCache = new MemCache(1000);
-            _mockFile = new Mock<IFile>();
+            _mockFile = Substitute.For<IFile>();
 
             _writeStream = new MemoryStream();
-            _mockFile.Setup(s => s.Open(
-                It.IsAny<string>(),
-                It.Is<FileMode>(fm => fm == FileMode.OpenOrCreate),
-                It.Is<FileAccess>(fa => fa == FileAccess.Write))).Returns(_writeStream);
+            _mockFile.Open(Arg.Any<string>(), FileMode.OpenOrCreate, FileAccess.Write)
+                     .Returns(_writeStream);
 
-            _mockFileSystem = new Mock<IFileSystem>();
-            _mockFileSystem.SetupGet(fs => fs.File).Returns(_mockFile.Object);
+            _mockFileSystem = Substitute.For<IFileSystem>();
+            _mockFileSystem.File.Returns(_mockFile);
 
 
-            _streamArchiver = new StreamArchiver(_mockFileSystem.Object, "path", _originalCache, 1000);
+            _streamArchiver = new StreamArchiver(_mockFileSystem, "path", _originalCache, 1000);
             _originalCache.Notifications.Subscribe(_streamArchiver);
         }
 

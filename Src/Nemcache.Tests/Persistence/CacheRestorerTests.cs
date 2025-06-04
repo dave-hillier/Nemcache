@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
+using NSubstitute;
 using Nemcache.Service;
 using Nemcache.Service.IO;
 using Nemcache.Service.Notifications;
@@ -14,9 +14,9 @@ namespace Nemcache.Tests.Persistence
     [TestClass]
     public class CacheRestorerTests
     {
-        private Mock<IFileSystem> _mockFileSystem;
-        private Mock<IFile> _mockFile;
-        private Mock<IMemCache> _mockCache;
+        private IFileSystem _mockFileSystem;
+        private IFile _mockFile;
+        private IMemCache _mockCache;
         private CacheRestorer _cacheRestorer;
         private MemoryStream _readStream;
         private MemoryStream _writeStream;
@@ -24,20 +24,18 @@ namespace Nemcache.Tests.Persistence
         [TestInitialize]
         public void Setup()
         {
-            _mockCache = new Mock<IMemCache>();
-            _mockFile = new Mock<IFile>();
+            _mockCache = Substitute.For<IMemCache>();
+            _mockFile = Substitute.For<IFile>();
 
             _readStream = new MemoryStream();
             _writeStream = new MemoryStream();
-            _mockFile.Setup(s => s.Open(
-                It.IsAny<string>(),
-                It.Is<FileMode>(fm => fm == FileMode.OpenOrCreate),
-                It.Is<FileAccess>(fa => fa == FileAccess.Write))).Returns(_writeStream);
+            _mockFile.Open(Arg.Any<string>(), FileMode.OpenOrCreate, FileAccess.Write)
+                     .Returns(_writeStream);
 
-            _mockFileSystem = new Mock<IFileSystem>();
-            _mockFileSystem.SetupGet(fs => fs.File).Returns(_mockFile.Object);
+            _mockFileSystem = Substitute.For<IFileSystem>();
+            _mockFileSystem.File.Returns(_mockFile);
 
-            _cacheRestorer = new CacheRestorer(_mockCache.Object, _mockFileSystem.Object, "log");
+            _cacheRestorer = new CacheRestorer(_mockCache, _mockFileSystem, "log");
         }
 
         [TestMethod]
@@ -48,8 +46,8 @@ namespace Nemcache.Tests.Persistence
             _cacheRestorer.RestoreCache();
 
             // Then nothing happens
-            _mockCache.Verify(c => c.Add(It.IsAny<string>(), It.IsAny<ulong>(), It.IsAny<DateTime>(), It.IsAny<byte[]>()), Times.Never());
-            _mockCache.Verify(c => c.Store(It.IsAny<string>(), It.IsAny<ulong>(),  It.IsAny<byte[]>(), It.IsAny<DateTime>()), Times.Never());
+            _mockCache.DidNotReceive().Add(Arg.Any<string>(), Arg.Any<ulong>(), Arg.Any<DateTime>(), Arg.Any<byte[]>());
+            _mockCache.DidNotReceive().Store(Arg.Any<string>(), Arg.Any<ulong>(), Arg.Any<byte[]>(), Arg.Any<DateTime>());
         }
 
         [TestMethod]
@@ -59,8 +57,8 @@ namespace Nemcache.Tests.Persistence
 
             _cacheRestorer.RestoreCache();
 
-            _mockCache.Verify(c => c.Add(It.Is<string>(key => key == "key"), 
-                It.IsAny<ulong>(), It.IsAny<DateTime>(), It.IsAny<byte[]>()), Times.Once());
+            _mockCache.Received(1).Add(Arg.Is<string>(key => key == "key"),
+                Arg.Any<ulong>(), Arg.Any<DateTime>(), Arg.Any<byte[]>());
         }
 
         [TestMethod]
@@ -70,10 +68,10 @@ namespace Nemcache.Tests.Persistence
 
             _cacheRestorer.RestoreCache();
 
-            _mockCache.Verify(c => c.Add(It.Is<string>(key => key == "touched"),
-                It.IsAny<ulong>(), 
-                It.Is<DateTime>(dt => dt == DateTime.MaxValue), 
-                It.IsAny<byte[]>()), Times.Once());
+            _mockCache.Received(1).Add(Arg.Is<string>(key => key == "touched"),
+                Arg.Any<ulong>(),
+                Arg.Is<DateTime>(dt => dt == DateTime.MaxValue),
+                Arg.Any<byte[]>());
         }
 
 
@@ -84,8 +82,8 @@ namespace Nemcache.Tests.Persistence
 
             _cacheRestorer.RestoreCache();
 
-            _mockCache.Verify(c => c.Add(It.Is<string>(key => key == "deleted"),
-                It.IsAny<ulong>(), It.IsAny<DateTime>(), It.IsAny<byte[]>()), Times.Never());
+            _mockCache.DidNotReceive().Add(Arg.Is<string>(key => key == "deleted"),
+                Arg.Any<ulong>(), Arg.Any<DateTime>(), Arg.Any<byte[]>());
         }
 
         [TestMethod]
@@ -95,8 +93,8 @@ namespace Nemcache.Tests.Persistence
 
             _cacheRestorer.RestoreCache();
 
-            _mockCache.Verify(c => c.Add(It.Is<string>(key => key == "expired"),
-                It.IsAny<ulong>(), It.IsAny<DateTime>(), It.IsAny<byte[]>()), Times.Never());
+            _mockCache.DidNotReceive().Add(Arg.Is<string>(key => key == "expired"),
+                Arg.Any<ulong>(), Arg.Any<DateTime>(), Arg.Any<byte[]>());
         }
 
         [TestMethod]
@@ -106,8 +104,8 @@ namespace Nemcache.Tests.Persistence
 
             _cacheRestorer.RestoreCache();
 
-            _mockCache.Verify(c => c.Add(It.Is<string>(key => key == "pre-clear"),
-                It.IsAny<ulong>(), It.IsAny<DateTime>(), It.IsAny<byte[]>()), Times.Never());
+            _mockCache.DidNotReceive().Add(Arg.Is<string>(key => key == "pre-clear"),
+                Arg.Any<ulong>(), Arg.Any<DateTime>(), Arg.Any<byte[]>());
         }
 
         [TestMethod]
@@ -117,9 +115,9 @@ namespace Nemcache.Tests.Persistence
 
             _cacheRestorer.RestoreCache();
 
-            _mockCache.Verify(c => c.Add(It.Is<string>(key => key == "updated"),
-                It.IsAny<ulong>(), It.IsAny<DateTime>(), 
-                It.Is<byte[]>(bytes => bytes.SequenceEqual(new byte[] {4, 5, 6, 7, 8}))), Times.Once());
+            _mockCache.Received(1).Add(Arg.Is<string>(key => key == "updated"),
+                Arg.Any<ulong>(), Arg.Any<DateTime>(),
+                Arg.Is<byte[]>(bytes => bytes.SequenceEqual(new byte[] {4, 5, 6, 7, 8})));
         }
 
 
@@ -128,20 +126,18 @@ namespace Nemcache.Tests.Persistence
         public void LogIsReplacedWithCompacted() 
         {
             // TODO: test that temp file name is same in open and replace
-            _mockFile.Setup(s => s.Open(
-                It.IsAny<string>(),
-                It.Is<FileMode>(fm => fm == FileMode.OpenOrCreate),
-                It.Is<FileAccess>(fa => fa == FileAccess.Write))).Returns(_writeStream);
+            _mockFile.Open(Arg.Any<string>(), FileMode.OpenOrCreate, FileAccess.Write)
+                     .Returns(_writeStream);
 
             GivenLogFile("log", CreateLogStream());
 
             _cacheRestorer.RestoreCache();
 
-            _mockFile.Verify(file => file.Replace(
-                It.IsAny<string>(), 
-                It.Is<string>(d => d == "log"), 
-                It.IsAny<string>(), 
-                It.IsAny<bool>()), Times.Once());
+            _mockFile.Received(1).Replace(
+                Arg.Any<string>(),
+                Arg.Is<string>(d => d == "log"),
+                Arg.Any<string>(),
+                Arg.Any<bool>());
 
             var entries = CacheRestorer.ReadLog(new MemoryStream(_writeStream.ToArray()));
             Assert.AreEqual(3, entries.Count());
@@ -266,16 +262,17 @@ namespace Nemcache.Tests.Persistence
 
         private void GivenNoLogFile()
         {
-            _mockFile.Setup(f => f.Exists(It.IsAny<string>())).Returns(false);
-            _mockFile.Setup(f => f.Open(It.IsAny<string>(), It.IsAny<FileMode>(), It.IsAny<FileAccess>()))
-                     .Throws(new FileNotFoundException());
+            _mockFile.Exists(Arg.Any<string>()).Returns(false);
+            _mockFile
+                .When(f => f.Open(Arg.Any<string>(), Arg.Any<FileMode>(), Arg.Any<FileAccess>()))
+                .Do(_ => { throw new FileNotFoundException(); });
         }
 
 
         private void GivenLogFile(string name, Stream contents)
         {
-            _mockFile.Setup(f => f.Exists(It.Is<string>(s => s == name))).Returns(true);
-            _mockFile.Setup(f => f.Open(It.Is<string>(fn => fn == name), It.Is<FileMode>(fm => fm == FileMode.Open), It.Is<FileAccess>(fa => fa == FileAccess.Read)))
+            _mockFile.Exists(Arg.Is<string>(s => s == name)).Returns(true);
+            _mockFile.Open(Arg.Is<string>(fn => fn == name), FileMode.Open, FileAccess.Read)
                      .Returns(contents);
         }
     }
