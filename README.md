@@ -11,7 +11,11 @@ First, clone the repository:
 git clone https://github.com/dave-hillier/nemcache.git
 ```
 
-After cloning the repository, run either `msbuild` or open `Nemcache.Sln` in Visual Studio and build. 
+After cloning the repository, run either `msbuild` or open `Nemcache.Sln` in Visual Studio and build.
+Before building, make sure to restore NuGet packages:
+```
+nuget restore Nemcache.sln
+```
 
 To start the service as a command line application, simply run `Nemcache.Service.exe` 
 
