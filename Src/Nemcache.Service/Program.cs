@@ -1,38 +1,80 @@
-﻿using System.Configuration;
-using Topshelf;
+using System.Collections.Generic;
+using System.Configuration;
+using System.Net;
+using System.Reactive.Concurrency;
+using Nemcache.Service.IO;
+using Nemcache.Service.Persistence;
+using Nemcache.Service.RequestHandlers;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace Nemcache.Service
 {
     internal class Program
     {
-        private static void Main()
+        private static void Main(string[] args)
         {
             var capacitySetting = ConfigurationManager.AppSettings["Capacity"];
-            ulong capacity = capacitySetting != null ? ulong.Parse(capacitySetting) : 1024*1024*1024*4L; // 4GB
+            ulong capacity = capacitySetting != null ? ulong.Parse(capacitySetting) : 1024UL * 1024 * 1024 * 4;
 
             var portSetting = ConfigurationManager.AppSettings["Port"];
             uint port = portSetting != null ? uint.Parse(portSetting) : 11222;
 
-            var cacheFileName = ConfigurationManager.AppSettings["CacheFile"] ?? "cache.bin";
-
-            var partitionSizeSetting = ConfigurationManager.AppSettings["Port"];
-            uint partitionSize = partitionSizeSetting != null ? uint.Parse(partitionSizeSetting) : 512*1024*1024;
-
-            HostFactory.Run(hc =>
+            var host = Host.CreateDefaultBuilder(args)
+                .UseWindowsService()
+                .ConfigureServices(services =>
                 {
-                    hc.Service<Service>(s =>
+                    services.AddSingleton<IMemCache>(sp => new MemCache(capacity, Scheduler.Default));
+                    services.AddSingleton(sp =>
+                    {
+                        var scheduler = Scheduler.Default;
+                        var cache = (IMemCache)sp.GetRequiredService<IMemCache>();
+                        var handlers = Service.GetRequestHandlers(scheduler, cache);
+                        return new RequestDispatcher(scheduler, cache, handlers);
+                    });
+                    services.AddSingleton(sp =>
+                    {
+                        var dispatcher = sp.GetRequiredService<RequestDispatcher>();
+                        return new RequestResponseTcpServer(IPAddress.Any, (int)port, dispatcher);
+                    });
+                    services.AddSingleton(sp =>
+                    {
+                        var cache = sp.GetRequiredService<IMemCache>();
+                        var handlers = new Dictionary<string, IHttpHandler>
                         {
-                            s.ConstructUsing(() => new Service(capacity, port));
-                            s.WhenStarted(xs => xs.Start());
-                            s.WhenStopped(xs => xs.Stop());
+                            {"/cache/(.+)", new CacheRestHttpHandler(cache)},
+                            {"/static/(.+)", new StaticFileHttpHandler()}
+                        };
+                        return new CacheRestServer(handlers, new[]
+                        {
+                            "http://localhost:8222/cache/",
+                            "http://localhost:8222/static/"
                         });
-                    hc.RunAsNetworkService();
-                    hc.SetDescription("Simple .NET implementation of Memcache; an in memory key-value cache.");
+                    });
+                    services.AddSingleton(sp =>
+                    {
+                        var cache = sp.GetRequiredService<IMemCache>();
+                        return new WebSocketServer(new[] {"http://localhost:8222/sub/"}, o => new CacheEntrySubscriptionHandler(cache, o));
+                    });
+                    services.AddSingleton<IFileSystem, FileSystemWrapper>();
+                    services.AddSingleton(sp =>
+                    {
+                        var cache = sp.GetRequiredService<IMemCache>();
+                        var fs = sp.GetRequiredService<IFileSystem>();
+                        return new CacheRestorer(cache, fs, "cachelog.bin");
+                    });
+                    services.AddSingleton(sp =>
+                    {
+                        var fs = sp.GetRequiredService<IFileSystem>();
+                        var cache = (MemCache)sp.GetRequiredService<IMemCache>();
+                        return new StreamArchiver(fs, "cachelog.bin", cache, 10000);
+                    });
+                    services.AddSingleton<Service>();
+                    services.AddHostedService<Worker>();
+                })
+                .Build();
 
-                    hc.SetDisplayName("Nemcache");
-                    hc.SetServiceName("Nemcache");
-                    hc.SetInstanceName("Nemcache Single Instance");
-                });
+            host.Run();
         }
     }
 }

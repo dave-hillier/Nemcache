@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Net;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using Nemcache.Service.IO;
@@ -10,41 +9,35 @@ using Nemcache.Service.RequestHandlers;
 
 namespace Nemcache.Service
 {
-    public class Service : IDisposable
+    internal class Service : IDisposable
     {
         private readonly MemCache _memCache;
         private readonly RequestDispatcher _requestDispatcher;
         private readonly RequestResponseTcpServer _server;
         private readonly CacheRestorer _restorer;
-        private StreamArchiver _archiver;
-        private readonly FileSystemWrapper _fileSystem;
+        private readonly StreamArchiver _archiver;
+        private readonly IFileSystem _fileSystem;
         private readonly CacheRestServer _restListener;
         private readonly WebSocketServer _websocketServer;
 
-        public Service(ulong capacity, uint port)
+        public Service(
+            MemCache memCache,
+            RequestDispatcher requestDispatcher,
+            RequestResponseTcpServer server,
+            CacheRestServer restListener,
+            WebSocketServer websocketServer,
+            IFileSystem fileSystem,
+            CacheRestorer restorer,
+            StreamArchiver archiver)
         {
-            _memCache = new MemCache(capacity, Scheduler.Default);
-
-            IScheduler scheduler = Scheduler.Default;
-
-            var requestHandlers = GetRequestHandlers(scheduler, _memCache);
-            _requestDispatcher = new RequestDispatcher(scheduler, _memCache, requestHandlers);
-            _server = new RequestResponseTcpServer(IPAddress.Any, (int)port, _requestDispatcher);
-            _restListener = new CacheRestServer(new Dictionary<string, IHttpHandler>
-                    {
-                        {"/cache/(.+)", new CacheRestHttpHandler(_memCache)},
-                        {"/static/(.+)", new StaticFileHttpHandler()}
-                    }, 
-                    new[]
-                        {
-                            "http://localhost:8222/cache/",
-                            "http://localhost:8222/static/"
-                        });
-            _websocketServer = new WebSocketServer(new [] { "http://localhost:8222/sub/" },
-                o => new CacheEntrySubscriptionHandler(_memCache, o) );
-            _fileSystem = new FileSystemWrapper();
-            const string cachelogBin = "cachelog.bin";
-            _restorer = new CacheRestorer(_memCache, _fileSystem, cachelogBin);
+            _memCache = memCache;
+            _requestDispatcher = requestDispatcher;
+            _server = server;
+            _restListener = restListener;
+            _websocketServer = websocketServer;
+            _fileSystem = fileSystem;
+            _restorer = restorer;
+            _archiver = archiver;
         }
 
         public static Dictionary<string, IRequestHandler> GetRequestHandlers(IScheduler scheduler, IMemCache cache)
@@ -61,11 +54,6 @@ namespace Nemcache.Service
         public void Start()
         {
             _restorer.RestoreCache();
-
-            _archiver = new StreamArchiver(_fileSystem,
-                "cachelog.bin",
-                _memCache,
-                10000);
 
             _memCache.Notifications.ObserveOn(Scheduler.Default).Subscribe(_archiver);
 

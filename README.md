@@ -5,7 +5,9 @@ It is client compatible with [Memcache](http://memcached.org/) (an in-memory key
 
 ## Installation
 
-Nemcache uses [TopShelf](http://topshelf-project.com/) to handle service installation. 
+Nemcache now relies on the built in .NET generic host. The service can run
+either as a console application or as a Windows service when installed via the
+standard `sc` tooling.
 First, clone the repository:
 ```
 git clone https://github.com/dave-hillier/nemcache.git
@@ -21,17 +23,14 @@ To start the service as a command line application, simply run:
 dotnet run --project Src/Nemcache.Service
 ```
 
-To install as a windows service:
+To install as a Windows service publish the project and register it with `sc`:
 ```
-dotnet run --project Src/Nemcache.Service -- install
+dotnet publish -c Release -o out Src/Nemcache.Service/Nemcache.Service.csproj
+sc create Nemcache binPath= "<path>\Nemcache.Service.exe"
 ```
-Followed by this to start:
+After installation start the service with:
 ```
-dotnet run --project Src/Nemcache.Service -- start
-```
-For more information about the command line parameters use help:
-```
-dotnet run --project Src/Nemcache.Service -- help
+sc start Nemcache
 ```
 
 ## Status
