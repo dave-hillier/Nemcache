@@ -17,6 +17,7 @@ namespace Nemcache.Service
     {
         public static bool TryUpdate<TKey, TValue>(this ConcurrentDictionary<TKey, TValue> dict,
                                                    TKey key, Func<TValue, TValue> updateFactory)
+            where TKey : notnull
         {
             TValue curValue;
             while (dict.TryGetValue(key, out curValue))

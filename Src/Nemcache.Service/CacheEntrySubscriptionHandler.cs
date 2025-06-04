@@ -69,7 +69,7 @@ namespace Nemcache.Service
                     {"subscription", key},
                     {"response", "OK"}
                 };
-            responseObserver.OnNext(response.ToJson());
+            responseObserver.OnNext(JsonSerializer.SerializeToString(response));
         }
 
         private void Subscribe(IObserver<string> responseObserver, string key)
@@ -128,7 +128,7 @@ namespace Nemcache.Service
                         {"value", keyCacheNotification.Key},
                         {"data", Encoding.UTF8.GetString(data)}
                     };
-            return responseValue.ToJson();
+            return JsonSerializer.SerializeToString(responseValue);
         }
 
         public void Dispose()
