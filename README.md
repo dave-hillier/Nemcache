@@ -1,32 +1,26 @@
 # Nemcache
 
-Nemcache is a persistent, key-value store implemented in C# 4.5. 
-It is client compatible with [Memcache](http://memcached.org/) (an in-memory key-value store).
+Nemcache is a persistent, key-value store implemented in C# and now targets .NET 6. It is client compatible with [Memcache](http://memcached.org/) (an in-memory key-value store).
 
 ## Installation
 
-Nemcache uses [TopShelf](http://topshelf-project.com/) to handle service installation. 
 First, clone the repository:
 ```
 git clone https://github.com/dave-hillier/nemcache.git
 ```
 
-After cloning the repository, run either `msbuild` or open `Nemcache.Sln` in Visual Studio and build. 
+After cloning the repository, run `dotnet build` inside the `Src` directory.
 
-To start the service as a command line application, simply run `Nemcache.Service.exe` 
+To start the service as a command line application, execute:
+```
+dotnet run --project Src/Nemcache.Service
+```
 
-To install as a windows service:
-```
-Nemcache.Service.exe install
-```
-Followed by this to start:
-```
-Nemcache.Service.exe start
-```
-For more information about the command line parameters use help:
-```
-Nemcache.Service.exe help
-```
+## Continuous Integration
+
+This repository uses GitHub Actions to build and test the solution on each push
+and pull request. The workflow definition can be found in
+[.github/workflows/dotnet.yml](.github/workflows/dotnet.yml).
 
 ## Status
 
