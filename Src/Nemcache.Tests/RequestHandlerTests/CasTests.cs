@@ -1,9 +1,9 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using NUnit.Framework;
 using Nemcache.Client.Builders;
 
 namespace Nemcache.Tests.RequestHandlerIntegrationTests
 {
-    [TestClass]
+    [TestFixture]
     public class CasTests
     {
         private IClient _client;
@@ -13,14 +13,14 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             return _client.Send(p);
         }
 
-        [TestInitialize]
+        [SetUp]
         public void Setup()
         {
             _client = new LocalRequestHandlerWithTestScheduler();
         }
 
         // TODO: cas capacity checks
-        [TestMethod]
+        [Test]
         public void CasNoPrevious()
         {
             var casBuilder = new CasRequestBuilder("key", "value");
@@ -35,7 +35,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             Assert.AreEqual("VALUE key 0 5 123\r\nvalue\r\nEND\r\n", getResponse.ToAsciiString());
         }
 
-        [TestMethod]
+        [Test]
         public void CasUpdatePreviousResponse()
         {
             var casBuilder1 = new CasRequestBuilder("key", "value1");
@@ -50,7 +50,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             Assert.AreEqual("STORED\r\n", response2.ToAsciiString());
         }
 
-        [TestMethod]
+        [Test]
         public void CasUpdatePreviousModifiedResponse()
         {
             var casBuilder1 = new CasRequestBuilder("key", "value1");
@@ -65,7 +65,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
         }
 
 
-        [TestMethod]
+        [Test]
         public void CasUpdatePreviousValue()
         {
             var casBuilder1 = new CasRequestBuilder("key", "value1");
@@ -82,7 +82,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             Assert.AreEqual("VALUE key 0 6 567\r\nvalue2\r\nEND\r\n", getResponse.ToAsciiString());
         }
 
-        [TestMethod]
+        [Test]
         public void CasUpdatePreviousModifiedValue()
         {
             var casBuilder1 = new CasRequestBuilder("key", "value1");

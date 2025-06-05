@@ -1,12 +1,12 @@
 using System;
 using System.IO;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NUnit.Framework;
 using Nemcache.Service.IO;
 using Nemcache.Service.Persistence;
 
 namespace Nemcache.Tests.Persistence
 {
-    [TestClass]
+    [TestFixture]
     public class BitcaskStoreTests
     {
         private string _dir;
@@ -28,7 +28,7 @@ namespace Nemcache.Tests.Persistence
                 => File.Replace(sourceFileName, destinationFileName, destinationBackupFileName, ignoreMetadataErrors);
         }
 
-        [TestInitialize]
+        [SetUp]
         public void Setup()
         {
             _dir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
@@ -36,14 +36,14 @@ namespace Nemcache.Tests.Persistence
             _fs = new SharedFileSystem();
         }
 
-        [TestCleanup]
+        [TearDown]
         public void Cleanup()
         {
             if (Directory.Exists(_dir))
                 Directory.Delete(_dir, true);
         }
 
-        [TestMethod]
+        [Test]
         public void PutAndGetRoundtrip()
         {
             using (var store = new BitcaskStore(_fs, _dir, 1000))
@@ -61,7 +61,7 @@ namespace Nemcache.Tests.Persistence
             }
         }
 
-        [TestMethod]
+        [Test]
         public void PersistAndReload()
         {
             using (var store = new BitcaskStore(_fs, _dir, 1000))
@@ -76,7 +76,7 @@ namespace Nemcache.Tests.Persistence
             }
         }
 
-        [TestMethod]
+        [Test]
         public void DeleteRemovesItem()
         {
             using (var store = new BitcaskStore(_fs, _dir, 1000))

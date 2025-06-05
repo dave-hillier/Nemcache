@@ -1,20 +1,20 @@
 ﻿using System;
 using System.Text;
 using Microsoft.Reactive.Testing;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NUnit.Framework;
 using Nemcache.Service;
 using Nemcache.Service.Notifications;
 
 namespace Nemcache.Tests
 {
-    [TestClass]
+    [TestFixture]
     public class MemcacheNotifcationsTest : ReactiveTest
     {
         private MemCache _cache;
         private ITestableObserver<ICacheNotification> _testObserver;
         private TestScheduler _testScheduler;
 
-        [TestInitialize]
+        [SetUp]
         public void Setup()
         {
             _cache = new MemCache(1000);
@@ -28,7 +28,7 @@ namespace Nemcache.Tests
             return notification;
         }
 
-        [TestMethod]
+        [Test]
         public void EnsureAddStoreNotification()
         {
             _cache.Add("key", 123, new DateTime(1999, 1, 1), Encoding.ASCII.GetBytes("TestData"));
@@ -50,7 +50,7 @@ namespace Nemcache.Tests
             _cache.Notifications.Subscribe(_testObserver);
         }
 
-        [TestMethod]
+        [Test]
         public void EnsureStoreNotification()
         {
             _cache.Store("key", 123, Encoding.ASCII.GetBytes("TestData"), new DateTime(1999, 1, 1));
@@ -65,19 +65,19 @@ namespace Nemcache.Tests
             Assert.AreEqual(new DateTime(1999, 1, 1), store.Expiry);
         }
 
-        [TestMethod]
+        [Test]
         public void Deleted()
         {
             _cache.Store("key", 123, Encoding.ASCII.GetBytes("Some stuff in here..."), new DateTime(1999, 1, 1));
             _cache.Remove("key");
 
             var storeNotification = GetNotification();
-            Assert.IsInstanceOfType(storeNotification, typeof (StoreNotification));
+            Assert.IsInstanceOf<StoreNotification>(storeNotification);
             var removeNotifaction = GetNotification(1);
-            Assert.IsInstanceOfType(removeNotifaction, typeof (RemoveNotification));
+            Assert.IsInstanceOf<RemoveNotification>(removeNotifaction);
         }
 
-        [TestMethod]
+        [Test]
         public void Append()
         {
             _cache.Store("key", 123, Encoding.ASCII.GetBytes("12345"), new DateTime(1999, 1, 1));
@@ -85,12 +85,12 @@ namespace Nemcache.Tests
 
             Assert.AreEqual(2, _testObserver.Messages.Count);
             var storeNotification1 = GetNotification();
-            Assert.IsInstanceOfType(storeNotification1, typeof (StoreNotification));
+            Assert.IsInstanceOf<StoreNotification>(storeNotification1);
             var storeNotification2 = GetNotification();
-            Assert.IsInstanceOfType(storeNotification2, typeof (StoreNotification));
+            Assert.IsInstanceOf<StoreNotification>(storeNotification2);
         }
 
-        [TestMethod]
+        [Test]
         public void Replace()
         {
             _cache.Store("key", 123, Encoding.ASCII.GetBytes("12345"), new DateTime(1999, 1, 1));
@@ -98,12 +98,12 @@ namespace Nemcache.Tests
 
             Assert.AreEqual(2, _testObserver.Messages.Count);
             var storeNotification1 = GetNotification();
-            Assert.IsInstanceOfType(storeNotification1, typeof (StoreNotification));
+            Assert.IsInstanceOf<StoreNotification>(storeNotification1);
             var storeNotification2 = GetNotification(1);
-            Assert.IsInstanceOfType(storeNotification2, typeof (StoreNotification));
+            Assert.IsInstanceOf<StoreNotification>(storeNotification2);
         }
 
-        [TestMethod]
+        [Test]
         public void Clear()
         {
             _cache.Store("key", 123, Encoding.ASCII.GetBytes("12345"), new DateTime(1999, 1, 1));
@@ -111,12 +111,12 @@ namespace Nemcache.Tests
 
             Assert.AreEqual(2, _testObserver.Messages.Count);
             var storeNotification = GetNotification();
-            Assert.IsInstanceOfType(storeNotification, typeof (StoreNotification));
+            Assert.IsInstanceOf<StoreNotification>(storeNotification);
             var clearNotification = GetNotification(1);
-            Assert.IsInstanceOfType(clearNotification, typeof (ClearNotification));
+            Assert.IsInstanceOf<ClearNotification>(clearNotification);
         }
 
-        [TestMethod]
+        [Test]
         public void Touch()
         {
             _cache.Store("key", 123, Encoding.ASCII.GetBytes("12345"), new DateTime(1999, 1, 1));
@@ -124,9 +124,9 @@ namespace Nemcache.Tests
 
             Assert.AreEqual(2, _testObserver.Messages.Count);
             var storeNotification1 = GetNotification();
-            Assert.IsInstanceOfType(storeNotification1, typeof (StoreNotification));
+            Assert.IsInstanceOf<StoreNotification>(storeNotification1);
             var storeNotification2 = GetNotification(1);
-            Assert.IsInstanceOfType(storeNotification2, typeof (TouchNotification));
+            Assert.IsInstanceOf<TouchNotification>(storeNotification2);
         }
 
         // TODO: Cas tests

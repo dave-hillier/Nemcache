@@ -1,17 +1,17 @@
 ﻿using System.Net;
 using System.Net.Sockets;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NUnit.Framework;
 using Nemcache.Service;
 
 namespace Nemcache.Comms.IntegrationTest
 {
 
-    [TestClass]
+    [TestFixture]
     public class RequestResponseTcpServerTests
     {
         private RequestResponseTcpServer _server;
 
-        [TestInitialize]
+        [SetUp]
         public void Setup()
         {
             var address = IPAddress.Any;
@@ -20,7 +20,7 @@ namespace Nemcache.Comms.IntegrationTest
             _server.Start();
         }
 
-        [TestMethod]
+        [Test]
         public void CanConnectClientAndDisconnect()
         {
             var tcpClient = new TcpClient();
@@ -32,7 +32,7 @@ namespace Nemcache.Comms.IntegrationTest
         }
 
 
-        [TestCleanup]
+        [TearDown]
         public void Cleanup()
         {
             _server.Stop();

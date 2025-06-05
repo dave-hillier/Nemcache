@@ -5,7 +5,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NUnit.Framework;
 using Nemcache.Client.Builders;
 using Nemcache.Tests.RequestHandlerIntegrationTests;
 
@@ -38,7 +38,7 @@ namespace Nemcache.IntegrationTestRunner
             var initializer = from instance in tests
                               let type = instance.GetType()
                               from method in type.GetMethods()
-                              where method.GetCustomAttributes(typeof (TestInitializeAttribute), false).Any()
+                              where method.GetCustomAttributes(typeof (SetUpAttribute), false).Any()
                               select new Action(() =>
                                   {
                                       try
@@ -59,7 +59,7 @@ namespace Nemcache.IntegrationTestRunner
             var actions = from instance in tests
                           let type = instance.GetType()
                           from method in type.GetMethods()
-                          where method.GetCustomAttributes(typeof (TestMethodAttribute), false).Any()
+                          where method.GetCustomAttributes(typeof (TestAttribute), false).Any()
                           select new Action(() =>
                               {
                                   try

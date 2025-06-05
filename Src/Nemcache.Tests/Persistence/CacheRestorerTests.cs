@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NUnit.Framework;
 using Moq;
 using Nemcache.Service;
 using Nemcache.Service.IO;
@@ -11,7 +11,7 @@ using ProtoBuf;
 
 namespace Nemcache.Tests.Persistence
 {
-    [TestClass]
+    [TestFixture]
     public class CacheRestorerTests
     {
         private Mock<IFileSystem> _mockFileSystem;
@@ -21,7 +21,7 @@ namespace Nemcache.Tests.Persistence
         private MemoryStream _readStream;
         private MemoryStream _writeStream;
 
-        [TestInitialize]
+        [SetUp]
         public void Setup()
         {
             _mockCache = new Mock<IMemCache>();
@@ -40,7 +40,7 @@ namespace Nemcache.Tests.Persistence
             _cacheRestorer = new CacheRestorer(_mockCache.Object, _mockFileSystem.Object, "log");
         }
 
-        [TestMethod]
+        [Test]
         public void NoLogFile()
         {
             GivenNoLogFile();
@@ -52,7 +52,7 @@ namespace Nemcache.Tests.Persistence
             _mockCache.Verify(c => c.Store(It.IsAny<string>(), It.IsAny<ulong>(),  It.IsAny<byte[]>(), It.IsAny<DateTime>()), Times.Never());
         }
 
-        [TestMethod]
+        [Test]
         public void KeyIsAdded()
         {
             GivenLogFile("log", CreateLogStream());
@@ -63,7 +63,7 @@ namespace Nemcache.Tests.Persistence
                 It.IsAny<ulong>(), It.IsAny<DateTime>(), It.IsAny<byte[]>()), Times.Once());
         }
 
-        [TestMethod]
+        [Test]
         public void TouchedIsSaved()
         {
             GivenLogFile("log", CreateLogStream());
@@ -77,7 +77,7 @@ namespace Nemcache.Tests.Persistence
         }
 
 
-        [TestMethod]
+        [Test]
         public void DontRestoreDeleted()
         {
             GivenLogFile("log", CreateLogStream());
@@ -88,7 +88,7 @@ namespace Nemcache.Tests.Persistence
                 It.IsAny<ulong>(), It.IsAny<DateTime>(), It.IsAny<byte[]>()), Times.Never());
         }
 
-        [TestMethod]
+        [Test]
         public void DontRestoreExpired()
         {
             GivenLogFile("log", CreateLogStream());
@@ -99,7 +99,7 @@ namespace Nemcache.Tests.Persistence
                 It.IsAny<ulong>(), It.IsAny<DateTime>(), It.IsAny<byte[]>()), Times.Never());
         }
 
-        [TestMethod]
+        [Test]
         public void DontRestoreBeforeClear()
         {
             GivenLogFile("log", CreateLogStream());
@@ -110,7 +110,7 @@ namespace Nemcache.Tests.Persistence
                 It.IsAny<ulong>(), It.IsAny<DateTime>(), It.IsAny<byte[]>()), Times.Never());
         }
 
-        [TestMethod]
+        [Test]
         public void OnlyLastUpdate()
         {
             GivenLogFile("log", CreateLogStream());
@@ -124,7 +124,7 @@ namespace Nemcache.Tests.Persistence
 
 
 
-        [TestMethod]
+        [Test]
         public void LogIsReplacedWithCompacted() 
         {
             // TODO: test that temp file name is same in open and replace

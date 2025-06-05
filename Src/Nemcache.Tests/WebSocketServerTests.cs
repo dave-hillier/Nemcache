@@ -2,12 +2,12 @@
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NUnit.Framework;
 using Nemcache.Service;
 
 namespace Nemcache.Tests
 {
-    [TestClass]
+    [TestFixture]
     public class WebSocketServerTests
     {
         private WebSocketServer _webSocketServer;
@@ -15,7 +15,7 @@ namespace Nemcache.Tests
         private Uri _wsUri;
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
 
-        [TestInitialize]
+        [SetUp]
         public void Setup()
         {
             const string baseUrl = "localhost:8688/websocket/";
@@ -30,7 +30,7 @@ namespace Nemcache.Tests
             _clientWebSocket.ConnectAsync(_wsUri, _cts.Token).Wait();
         }
         
-        [TestCleanup]
+        [TearDown]
         public void Cleanup()
         {
             _clientWebSocket.Abort();
@@ -38,7 +38,7 @@ namespace Nemcache.Tests
         }
 
         // TODO: Immediate response test
-        [TestMethod]
+        [Test]
         public void ClientSubscribesToKey()
         {
             // Send subscribe as text/json
@@ -55,7 +55,7 @@ namespace Nemcache.Tests
             Assert.AreEqual("{\"subscription\":\"mykey\",\"response\":\"OK\"}", responseString.Trim('\0'));
         }
 
-        [TestMethod]
+        [Test]
         public void SendInTwoParts()
         {
             // Send subscribe as text/json

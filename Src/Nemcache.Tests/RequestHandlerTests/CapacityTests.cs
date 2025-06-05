@@ -1,9 +1,9 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using NUnit.Framework;
 using Nemcache.Client.Builders;
 
 namespace Nemcache.Tests.RequestHandlerIntegrationTests
 {
-    [TestClass]
+    [TestFixture]
     public class CapacityTests
     {
         private IClient _client;
@@ -13,7 +13,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             return _client.Send(p);
         }
 
-        [TestInitialize]
+        [SetUp]
         public void Setup()
         {
             var client = new LocalRequestHandlerWithTestScheduler();
@@ -21,7 +21,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             _client = client;
         }
 
-        [TestMethod]
+        [Test]
         public void StoreInCapacity()
         {
             var setBuilder = new StoreRequestBuilder("set", "key", "1234567890");
@@ -31,7 +31,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             Assert.AreEqual("STORED\r\n", response.ToAsciiString());
         }
 
-        [TestMethod]
+        [Test]
         public void StoreCasInCapacity()
         {
             var setBuilder = new StoreRequestBuilder("set", "s", "12345");
@@ -51,7 +51,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             Assert.AreEqual("STORED\r\n", response2.ToAsciiString());
         }
 
-        [TestMethod]
+        [Test]
         public void StoreOverCapacity()
         {
             var setBuilder = new StoreRequestBuilder("set", "key", "12345678901");
@@ -62,7 +62,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
         }
 
 
-        [TestMethod]
+        [Test]
         public void StoreEvictOverCapacity()
         {
             var setBuilder1 = new StoreRequestBuilder("set", "key1", "1234567890");
@@ -77,7 +77,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             Assert.AreEqual("END\r\n", response2.ToAsciiString());
         }
 
-        [TestMethod]
+        [Test]
         public void StoreMultipleEvictOverCapacity()
         {
             var setBuilder1 = new StoreRequestBuilder("set", "key1", "12345");

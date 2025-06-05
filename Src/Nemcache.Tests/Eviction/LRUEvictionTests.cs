@@ -1,22 +1,22 @@
 ﻿using System;
 using System.Linq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NUnit.Framework;
 using Nemcache.Service;
 
 namespace Nemcache.Tests.Eviction
 {
-    [TestClass]
+    [TestFixture]
     public class LRUEvictionTests
     {
         private MemCache _cache;
 
-        [TestInitialize]
+        [SetUp]
         public void Setup()
         {
             _cache = new MemCache(10);
         }
 
-        [TestMethod]
+        [Test]
         public void EvictsEarliestAdded()
         {
             _cache.Add("key1", 0, DateTime.MaxValue, new byte[] {0, 1, 2, 3, 4});
@@ -30,7 +30,7 @@ namespace Nemcache.Tests.Eviction
             Assert.IsTrue(keys.Contains("key3"));
         }
 
-        [TestMethod]
+        [Test]
         public void EvictsEarliestStored()
         {
             _cache.Store("key1", 0, new byte[] {0, 1, 2, 3, 4}, DateTime.MaxValue);
@@ -44,7 +44,7 @@ namespace Nemcache.Tests.Eviction
             Assert.IsTrue(keys.Contains("key3"));
         }
 
-        [TestMethod]
+        [Test]
         public void ReplacePreventsEvict()
         {
             _cache.Store("key1", 0, new byte[] {0, 1, 2, 3}, DateTime.MaxValue);
@@ -60,7 +60,7 @@ namespace Nemcache.Tests.Eviction
             Assert.IsTrue(keys.Contains("key3"));
         }
 
-        [TestMethod]
+        [Test]
         public void TouchPreventsEvict()
         {
             _cache.Store("key1", 0, new byte[] {0, 1, 2, 3, 4}, DateTime.MaxValue);
@@ -76,7 +76,7 @@ namespace Nemcache.Tests.Eviction
             Assert.IsTrue(keys.Contains("key3"));
         }
 
-        [TestMethod]
+        [Test]
         public void RetrievePreventsEvict()
         {
             _cache.Store("key1", 0, new byte[] {0, 1, 2, 3, 4}, DateTime.MaxValue);
@@ -92,7 +92,7 @@ namespace Nemcache.Tests.Eviction
             Assert.IsTrue(keys.Contains("key3"));
         }
 
-        [TestMethod]
+        [Test]
         public void DoesntTryToEvictRemoved()
         {
             _cache.Add("key1", 0, DateTime.MaxValue, new byte[] {0, 1, 2, 3, 4});
