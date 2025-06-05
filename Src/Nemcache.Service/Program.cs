@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Net;
@@ -57,18 +58,38 @@ namespace Nemcache.Service
                         return new WebSocketServer(new[] {"http://localhost:8222/sub/"}, o => new CacheEntrySubscriptionHandler(cache, o));
                     });
                     services.AddSingleton<IFileSystem, FileSystemWrapper>();
-                    services.AddSingleton(sp =>
+                    var useBitcask = Environment.GetEnvironmentVariable("NEMCACHE_USE_BITCASK") == "1";
+                    if (useBitcask)
                     {
-                        var cache = sp.GetRequiredService<IMemCache>();
-                        var fs = sp.GetRequiredService<IFileSystem>();
-                        return new CacheRestorer(cache, fs, "cachelog.bin");
-                    });
-                    services.AddSingleton(sp =>
+                        services.AddSingleton(sp =>
+                        {
+                            var fs = sp.GetRequiredService<IFileSystem>();
+                            return new BitcaskStore(fs, "data", 10_000_000);
+                        });
+                        services.AddSingleton<ICachePersistence>(sp =>
+                        {
+                            var cache = (MemCache)sp.GetRequiredService<IMemCache>();
+                            var store = sp.GetRequiredService<BitcaskStore>();
+                            return new BitcaskPersistence(store, cache);
+                        });
+                    }
+                    else
                     {
-                        var fs = sp.GetRequiredService<IFileSystem>();
-                        var cache = (MemCache)sp.GetRequiredService<IMemCache>();
-                        return new StreamArchiver(fs, "cachelog.bin", cache, 10000);
-                    });
+                        services.AddSingleton(sp =>
+                        {
+                            var cache = sp.GetRequiredService<IMemCache>();
+                            var fs = sp.GetRequiredService<IFileSystem>();
+                            return new CacheRestorer(cache, fs, "cachelog.bin");
+                        });
+                        services.AddSingleton<ICachePersistence>(sp =>
+                        {
+                            var fs = sp.GetRequiredService<IFileSystem>();
+                            var cache = (MemCache)sp.GetRequiredService<IMemCache>();
+                            var archiver = new StreamArchiver(fs, "cachelog.bin", cache, 10000);
+                            var restorer = sp.GetRequiredService<CacheRestorer>();
+                            return new StreamPersistence(archiver, restorer);
+                        });
+                    }
                     services.AddSingleton<Service>();
                     services.AddHostedService<Worker>();
                 })
