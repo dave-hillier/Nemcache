@@ -43,5 +43,19 @@ Currently only TCP is supported including the noreply mode.
 
 Flags support up-to 64 bit values, although this is a divergence from the original spec and therefore might not be supported by your client.
 
-The cache is persisted to file so state can be maintained across cache restarts. 
+The cache is persisted to file so state can be maintained across cache restarts.
+
+## React client
+
+The `client` folder contains a small React application that replicates the
+behaviour of `test.html`. It opens a WebSocket connection and sends `PUT`
+requests when the button is pressed. To run the client in development mode:
+
+```bash
+cd client
+yarn
+yarn dev
+```
+
+To create a production build run `yarn build`.
 
