@@ -51,6 +51,11 @@ For environments with large data sets, Nemcache can switch to a Bitcask-inspired
 Set `NEMCACHE_USE_BITCASK=1` before starting the service to enable this mode.
 A design overview is available in [docs/bitcask-notes.md](docs/bitcask-notes.md).
 
+The default persistence records each cache operation to a log and replays the log
+on startup. In Bitcask mode, updates are written as raw key/value pairs to
+numbered data files while an in-memory directory tracks the latest value offset
+for each key. Compaction merges the most recent entries into new files.
+
 ### Trade-offs
 
 The existing persistence layer logs cache notifications to a stream. Recovery
