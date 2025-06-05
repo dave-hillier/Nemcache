@@ -44,3 +44,29 @@ Flags support up-to 64 bit values, although this is a divergence from the origin
 
 The cache is persisted to file so state can be maintained across cache restarts. 
 
+
+## Bitcask-style persistence
+
+For environments with large data sets, Nemcache can switch to a Bitcask-inspired store.
+Set `NEMCACHE_USE_BITCASK=1` before starting the service to enable this mode.
+A design overview is available in [docs/bitcask-notes.md](docs/bitcask-notes.md).
+
+### Trade-offs
+
+The existing persistence layer logs cache notifications to a stream. Recovery
+replays this log in order to rebuild the cache. The Bitcask approach instead
+writes raw key/value pairs and keeps an in-memory index of offsets. Each
+strategy has strengths:
+
+* **Write pattern and disk layout** – Both append to a log, but Bitcask stores
+  the actual data with offsets while the stream stores serialized notifications.
+* **Read and recovery performance** – The Bitcask index allows direct lookup and
+  faster restarts. Stream-based recovery must replay the entire log.
+* **Memory usage** – Bitcask uses memory proportional to the number of keys for
+  its index. The original stream approach avoids that overhead.
+* **Storage overhead** – StreamArchiver keeps every notification until
+  compaction, whereas Bitcask compaction keeps only the latest values, typically
+  using less space.
+* **Complexity** – The stream approach is simple to implement. Bitcask adds file
+  management and indexing logic in exchange for improved performance on large
+  data sets.

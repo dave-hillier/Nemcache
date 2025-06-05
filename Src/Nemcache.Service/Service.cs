@@ -14,8 +14,7 @@ namespace Nemcache.Service
         private readonly MemCache _memCache;
         private readonly RequestDispatcher _requestDispatcher;
         private readonly RequestResponseTcpServer _server;
-        private readonly CacheRestorer _restorer;
-        private readonly StreamArchiver _archiver;
+        private readonly ICachePersistence _persistence;
         private readonly IFileSystem _fileSystem;
         private readonly CacheRestServer _restListener;
         private readonly WebSocketServer _websocketServer;
@@ -27,8 +26,7 @@ namespace Nemcache.Service
             CacheRestServer restListener,
             WebSocketServer websocketServer,
             IFileSystem fileSystem,
-            CacheRestorer restorer,
-            StreamArchiver archiver)
+            ICachePersistence persistence)
         {
             _memCache = memCache;
             _requestDispatcher = requestDispatcher;
@@ -36,8 +34,7 @@ namespace Nemcache.Service
             _restListener = restListener;
             _websocketServer = websocketServer;
             _fileSystem = fileSystem;
-            _restorer = restorer;
-            _archiver = archiver;
+            _persistence = persistence;
         }
 
         public static Dictionary<string, IRequestHandler> GetRequestHandlers(IScheduler scheduler, IMemCache cache)
@@ -53,9 +50,9 @@ namespace Nemcache.Service
         }
         public void Start()
         {
-            _restorer.RestoreCache();
+            _persistence.Restore();
 
-            _memCache.Notifications.ObserveOn(Scheduler.Default).Subscribe(_archiver);
+            _memCache.Notifications.ObserveOn(Scheduler.Default).Subscribe(_persistence);
 
             _server.Start();
 

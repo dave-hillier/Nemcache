@@ -167,7 +167,7 @@ namespace Nemcache.Tests
                 OnNext(2L, new DummyNotification {EventId = 2}),
                 OnNext(3L, new DummyNotification {EventId = 3}),
                 OnNext(4L, new DummyNotification {EventId = 4}),
-                OnCompleted(new DummyNotification(), 5L));
+                OnCompleted<DummyNotification>(5L));
 
             var live = testScheduler.CreateHotObservable(
                 OnNext(1L, new DummyNotification {EventId = 3}),
