@@ -1,9 +1,9 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using NUnit.Framework;
 using Nemcache.Client.Builders;
 
 namespace Nemcache.Tests.RequestHandlerIntegrationTests
 {
-    [TestClass]
+    [TestFixture]
     public class DeleteTests
     {
         private IClient _client;
@@ -15,14 +15,14 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             return _client.Send(p);
         }
 
-        [TestInitialize]
+        [SetUp]
         public void Setup()
         {
             _client = Client ?? new LocalRequestHandlerWithTestScheduler();
         }
 
 
-        [TestMethod]
+        [Test]
         public void DeleteNotFound()
         {
             var delBuilder = new DeleteRequestBuilder("key");
@@ -31,7 +31,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             Assert.AreEqual("NOT_FOUND\r\n", response.ToAsciiString());
         }
 
-        [TestMethod]
+        [Test]
         public void DeleteExisting()
         {
             var storageBuilder = new StoreRequestBuilder("set", "key", "value");
@@ -43,7 +43,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             Assert.AreEqual("DELETED\r\n", response.ToAsciiString());
         }
 
-        [TestMethod]
+        [Test]
         public void DeleteExistingGetNotFound()
         {
             var storageBuilder = new StoreRequestBuilder("set", "key", "value");

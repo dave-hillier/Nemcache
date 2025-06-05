@@ -1,9 +1,9 @@
 ﻿using System.Text;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NUnit.Framework;
 
 namespace Nemcache.Tests.RequestHandlerIntegrationTests
 {
-    [TestClass]
+    [TestFixture]
     public class VersionRequestTests
     {
         private IClient _client;
@@ -15,13 +15,13 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             return _client.Send(p);
         }
 
-        [TestInitialize]
+        [SetUp]
         public void Setup()
         {
             _client = Client ?? new LocalRequestHandlerWithTestScheduler();
         }
 
-        [TestMethod]
+        [Test]
         public void Version()
         {
             var flushRequest = Encoding.ASCII.GetBytes("version\r\n");

@@ -5,13 +5,15 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <StartupObject>Nemcache.IntegrationTestRunner.Program</StartupObject>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Nemcache.Service\Nemcache.Service.csproj" />
+    <ProjectReference Include="..\Nemcache.Client\Nemcache.Client.csproj" />
+    <ProjectReference Include="..\Nemcache.Tests\Nemcache.Tests.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.7.2" />
-    <PackageReference Include="MSTest.TestAdapter" Version="3.1.2" />
-    <PackageReference Include="MSTest.TestFramework" Version="3.1.2" />
+    <PackageReference Include="NUnit" Version="3.13.2" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.5.0" />
   </ItemGroup>
 </Project>

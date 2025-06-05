@@ -1,9 +1,9 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using NUnit.Framework;
 using Nemcache.Client.Builders;
 
 namespace Nemcache.Tests.RequestHandlerIntegrationTests
 {
-    [TestClass]
+    [TestFixture]
     public class AppendTests
     {
         private IClient _client;
@@ -15,13 +15,13 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             return _client.Send(p);
         }
 
-        [TestInitialize]
+        [SetUp]
         public void Setup()
         {
             _client = Client ?? new LocalRequestHandlerWithTestScheduler();
         }
 
-        [TestMethod]
+        [Test]
         public void AppendToEmpty()
         {
             var appendBuilder = new StoreRequestBuilder("append", "key", "value");
@@ -32,7 +32,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
         }
 
 
-        [TestMethod]
+        [Test]
         public void AppendNoReply()
         {
             var appendBuilder = new StoreRequestBuilder("append", "key", "value");
@@ -44,7 +44,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
         }
 
 
-        [TestMethod]
+        [Test]
         public void AppendToExisting()
         {
             var setBuilder = new StoreRequestBuilder("set", "key", "value");
@@ -56,7 +56,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
         }
 
         // TODO: get value of no reply
-        /*[TestMethod]
+        /*[Test]
         public void GetValueOfAppendToEmpty()
         {
             var appendBuilder = new StoreRequestBuilder("append", "key", "value");
@@ -67,7 +67,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             Assert.AreEqual("VALUE key 0 5\r\nvalue\r\nEND\r\n", response.ToAsciiString());
         }*/
 
-        [TestMethod]
+        [Test]
         public void GetValueOfAppendToExisting()
         {
             var setBuilder = new StoreRequestBuilder("set", "key", "first");
@@ -82,7 +82,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
         }
 
 
-        [TestMethod]
+        [Test]
         public void PrependToEmpty()
         {
             var prependBuilder = new StoreRequestBuilder("prepend", "key", "value");
@@ -92,7 +92,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             Assert.AreEqual("NOT_STORED\r\n", response.ToAsciiString());
         }
 
-        [TestMethod]
+        [Test]
         public void PrependNoReply()
         {
             var prependBuilder = new StoreRequestBuilder("prepend", "key", "value");
@@ -103,7 +103,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             Assert.AreEqual("", response.ToAsciiString());
         }
 
-        [TestMethod]
+        [Test]
         public void PrependToExisting()
         {
             var setBuilder = new StoreRequestBuilder("set", "key", "value");
@@ -118,7 +118,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
         }
 
         /*
-        [TestMethod]
+        [Test]
         public void GetValueOfPrependToEmpty()
         {
             var prependBuilder = new StoreRequestBuilder("prepend", "key", "value");
@@ -132,7 +132,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
         */
         // TODO: prepend ignores existing flags and exp
 
-        [TestMethod]
+        [Test]
         public void GetValueOfPrependToExisting()
         {
             var setBuilder = new StoreRequestBuilder("set", "key", "first");

@@ -5,13 +5,13 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Text;
 using Microsoft.Reactive.Testing;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NUnit.Framework;
 using Nemcache.Service;
 
 namespace Nemcache.Tests
 {
     // TODO: these tests are fragile as they depend on Json structure
-    [TestClass]
+    [TestFixture]
     public class WebSocketSubscriptionHandlerTests : ReactiveTest
     {
         private Client _client;
@@ -63,7 +63,7 @@ namespace Nemcache.Tests
                               Encoding.UTF8.GetBytes(i.ToString(CultureInfo.InvariantCulture)), DateTime.MaxValue));
         }
 
-        [TestInitialize]
+        [SetUp]
         public void Setup()
         {
             _testScheduler = new TestScheduler();
@@ -73,7 +73,7 @@ namespace Nemcache.Tests
             _client = new Client(_subscriptionHandler);
         }
 
-        [TestMethod]
+        [Test]
         public void SubscribeToNonExistentKeyTest()
         {
             var command = "{\"command\":\"subscribe\",\"key\":\"nosuchkey\"}";
@@ -83,7 +83,7 @@ namespace Nemcache.Tests
                 OnNext(0, "{\"subscription\":\"nosuchkey\",\"response\":\"OK\"}"));
         }
 
-        [TestMethod]
+        [Test]
         public void SubscribeToEmptyKey()
         {
             var command = "{\"command\":\"subscribe\",\"key\":\"\"}"; 
@@ -93,7 +93,7 @@ namespace Nemcache.Tests
                 OnNext(0, "{\"subscription\":\"\",\"response\":\"ERROR\"}"));
         }
 
-        [TestMethod]
+        [Test]
         public void SubscribeHasCurrentValue()
         {
             SetupValueKey();
@@ -107,7 +107,7 @@ namespace Nemcache.Tests
                 );
         }
 
-        [TestMethod]
+        [Test]
         public void SubscribeHasTickingValue()
         {
             SetupTickingKey();
@@ -125,7 +125,7 @@ namespace Nemcache.Tests
         }
 
 
-        [TestMethod]
+        [Test]
         public void Unsubscribe()
         {
             SetupTickingKey(); 
@@ -144,7 +144,7 @@ namespace Nemcache.Tests
                 );            
         }
 
-        [TestMethod]
+        [Test]
         public void MultiplexedSubscriptions()
         {
             SetupTickingKey();
@@ -165,7 +165,7 @@ namespace Nemcache.Tests
         }
 
 
-        [TestMethod]
+        [Test]
         public void UnsubscribeOneStillGetValues()
         {
             SetupTickingKey();

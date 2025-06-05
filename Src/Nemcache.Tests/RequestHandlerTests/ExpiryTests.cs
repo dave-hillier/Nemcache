@@ -1,11 +1,11 @@
 ﻿using System;
 using Microsoft.Reactive.Testing;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NUnit.Framework;
 using Nemcache.Client.Builders;
 
 namespace Nemcache.Tests.RequestHandlerIntegrationTests
 {
-    [TestClass]
+    [TestFixture]
     public class ExpiryTests
     {
         private IClient _client;
@@ -18,7 +18,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             return _client.Send(p);
         }
 
-        [TestInitialize]
+        [SetUp]
         public void Setup()
         {
             var client = new LocalRequestHandlerWithTestScheduler();
@@ -26,7 +26,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             _testScheduler = client.TestScheduler;
         }
 
-        [TestMethod]
+        [Test]
         public void SetExpiryThenGet()
         {
             var storageBuilder = new StoreRequestBuilder("set", "key", "value");
@@ -39,7 +39,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             Assert.AreEqual("VALUE key 0 5\r\nvalue\r\nEND\r\n", response.ToAsciiString());
         }
 
-        [TestMethod]
+        [Test]
         public void SetExpiryThenGetGone()
         {
             var storageBuilder = new StoreRequestBuilder("set", "key", "value");
@@ -54,7 +54,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             Assert.AreEqual("END\r\n", response.ToAsciiString());
         }
 
-        [TestMethod]
+        [Test]
         public void AbsoluteLongExpiry()
         {
             var unixEpoc = new DateTime(1970, 1, 1);

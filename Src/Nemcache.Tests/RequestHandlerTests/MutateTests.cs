@@ -1,9 +1,9 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using NUnit.Framework;
 using Nemcache.Client.Builders;
 
 namespace Nemcache.Tests.RequestHandlerIntegrationTests
 {
-    [TestClass]
+    [TestFixture]
     public class MutateTests
     {
         private IClient _client;
@@ -15,13 +15,13 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             return _client.Send(p);
         }
 
-        [TestInitialize]
+        [SetUp]
         public void Setup()
         {
             _client = Client ?? new LocalRequestHandlerWithTestScheduler();
         }
 
-        [TestMethod]
+        [Test]
         public void IncrNotFound()
         {
             var builder = new MutateRequestBuilder("incr", "key", 1);
@@ -30,7 +30,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             Assert.AreEqual("NOT_FOUND\r\n", response.ToAsciiString());
         }
 
-        [TestMethod]
+        [Test]
         public void DecrNotFound()
         {
             var builder = new MutateRequestBuilder("decr", "key", 1);
@@ -39,7 +39,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             Assert.AreEqual("NOT_FOUND\r\n", response.ToAsciiString());
         }
 
-        [TestMethod]
+        [Test]
         public void Incr()
         {
             var storageBuilder = new StoreRequestBuilder("set", "key", "123");
@@ -49,7 +49,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             Assert.AreEqual("124\r\n", response.ToAsciiString());
         }
 
-        [TestMethod]
+        [Test]
         public void Decr()
         {
             var storageBuilder = new StoreRequestBuilder("set", "key", "123");

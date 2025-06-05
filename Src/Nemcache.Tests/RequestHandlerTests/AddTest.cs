@@ -1,9 +1,9 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using NUnit.Framework;
 using Nemcache.Client.Builders;
 
 namespace Nemcache.Tests.RequestHandlerIntegrationTests
 {
-    [TestClass]
+    [TestFixture]
     public class AddTest
     {
         private IClient _client;
@@ -15,7 +15,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             return _client.Send(p);
         }
 
-        [TestInitialize]
+        [SetUp]
         public void Setup()
         {
             _client = Client ?? new LocalRequestHandlerWithTestScheduler();
@@ -23,7 +23,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
 
         #region Add
 
-        [TestMethod]
+        [Test]
         public void AddToEmpty()
         {
             var addBuilder = new StoreRequestBuilder("add", "key", "value");
@@ -33,7 +33,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             Assert.AreEqual("STORED\r\n", response.ToAsciiString());
         }
 
-        [TestMethod]
+        [Test]
         public void AddNoReply()
         {
             var addBuilder = new StoreRequestBuilder("add", "key", "value");
@@ -44,7 +44,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             Assert.AreEqual("", response.ToAsciiString());
         }
 
-        [TestMethod]
+        [Test]
         public void AddToExisting()
         {
             var setBuilder = new StoreRequestBuilder("set", "key", "value");
@@ -58,7 +58,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             Assert.AreEqual("NOT_STORED\r\n", response.ToAsciiString());
         }
 
-        [TestMethod]
+        [Test]
         public void GetValueOfAddToEmpty()
         {
             var addBuilder = new StoreRequestBuilder("add", "key", "value");

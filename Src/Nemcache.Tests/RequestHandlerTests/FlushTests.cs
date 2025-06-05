@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Text;
 using Microsoft.Reactive.Testing;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NUnit.Framework;
 using Nemcache.Client.Builders;
 
 namespace Nemcache.Tests.RequestHandlerIntegrationTests
 {
-    [TestClass]
+    [TestFixture]
     public class FlushTests
     {
         private IClient _client;
@@ -17,7 +17,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             return _client.Send(p);
         }
 
-        [TestInitialize]
+        [SetUp]
         public void Setup()
         {
             var client = new LocalRequestHandlerWithTestScheduler();
@@ -25,7 +25,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             _testScheduler = client.TestScheduler;
         }
 
-        [TestMethod]
+        [Test]
         public void FlushResponse()
         {
             var storageBuilder = new StoreRequestBuilder("set", "key", "value");
@@ -37,7 +37,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             Assert.AreEqual("OK\r\n", response.ToAsciiString());
         }
 
-        [TestMethod]
+        [Test]
         public void FlushDelayResponse()
         {
             var storageBuilder = new StoreRequestBuilder("set", "key", "value");
@@ -49,7 +49,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             Assert.AreEqual("OK\r\n", response.ToAsciiString());
         }
 
-        [TestMethod]
+        [Test]
         public void FlushClearsCache()
         {
             var storageBuilder = new StoreRequestBuilder("set", "key", "value");
@@ -63,7 +63,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             Assert.AreEqual("END\r\n", response.ToAsciiString());
         }
 
-        [TestMethod]
+        [Test]
         public void FlushClearsCacheMultiple()
         {
             var storageBuilder1 = new StoreRequestBuilder("set", "key", "value");
@@ -79,7 +79,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             Assert.AreEqual("END\r\n", response.ToAsciiString());
         }
 
-        [TestMethod]
+        [Test]
         public void FlushWithDelayNoEffect()
         {
             var storageBuilder = new StoreRequestBuilder("set", "key", "value");
@@ -96,7 +96,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
         }
 
 
-        [TestMethod]
+        [Test]
         public void FlushWithDelayEmpty()
         {
             var storageBuilder = new StoreRequestBuilder("set", "key", "value");

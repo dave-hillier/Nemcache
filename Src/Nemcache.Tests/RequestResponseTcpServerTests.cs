@@ -3,13 +3,13 @@ using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Reactive.Concurrency;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NUnit.Framework;
 using Nemcache.Service;
 using Nemcache.Service.RequestHandlers;
 
 namespace Nemcache.Tests
 {
-    [TestClass]
+    [TestFixture]
     public class RequestResponseTcpServerTests
     {
         private RequestResponseTcpServer _server;
@@ -24,7 +24,7 @@ namespace Nemcache.Tests
                 }
             }
         }
-        [TestInitialize]
+        [SetUp]
         public void Setup()
         {
             var address = IPAddress.Any;
@@ -40,7 +40,7 @@ namespace Nemcache.Tests
             _server.Start();
         }
 
-        [TestMethod]
+        [Test]
         public void CanConnectClientAndDisconnect()
         {
             var tcpClient = new TcpClient();
@@ -51,7 +51,7 @@ namespace Nemcache.Tests
             RequestResponseTest();
         }
 
-        [TestMethod]
+        [Test]
         public void RequestResponseTest()
         {
             var tcpClient = new TcpClient();
@@ -67,7 +67,7 @@ namespace Nemcache.Tests
             }
         }
 
-        [TestCleanup]
+        [TearDown]
         public void Cleanup()
         {
             _server.Stop();

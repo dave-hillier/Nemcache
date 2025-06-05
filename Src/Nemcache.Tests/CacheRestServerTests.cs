@@ -3,17 +3,17 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NUnit.Framework;
 using Nemcache.Service;
 
 namespace Nemcache.Tests
 {
-    [TestClass]
+    [TestFixture]
     public class CacheRestServerTests
     {
         private CacheRestServer _server;
 
-        [TestInitialize]
+        [SetUp]
         public void Setup()
         {
             var testHandler = new TestHandler();
@@ -28,13 +28,13 @@ namespace Nemcache.Tests
             _server.Start();
         }
 
-        [TestCleanup]
+        [TearDown]
         public void Cleanup()
         {
             _server.Stop();
         }
 
-        [TestMethod]
+        [Test]
         public void GetTest()
         {
             var webClient = new WebClient();
@@ -42,7 +42,7 @@ namespace Nemcache.Tests
             Assert.AreEqual("Response", response);
         }
 
-        [TestMethod]
+        [Test]
         public void GetRegexTest()
         {
             var webClient = new WebClient();
@@ -52,7 +52,7 @@ namespace Nemcache.Tests
             Assert.AreEqual("123", TestHandler.LastParams[1]);
         }
 
-        [TestMethod]
+        [Test]
         public void PutTest()
         {
             var webClient = new WebClient();
@@ -62,7 +62,7 @@ namespace Nemcache.Tests
             Assert.AreEqual("data", TestHandler.LastRequest);
         }
 
-        [TestMethod]
+        [Test]
         public void PostTest()
         {
             var webClient = new WebClient();
@@ -72,7 +72,7 @@ namespace Nemcache.Tests
             Assert.AreEqual("body", TestHandler.LastRequest);
         }
 
-        [TestMethod]
+        [Test]
         public void DeleteTest()
         {
             var webClient = new WebClient();
@@ -82,7 +82,7 @@ namespace Nemcache.Tests
             Assert.AreEqual("thing!", TestHandler.LastRequest);
         }
 
-        [TestMethod]
+        [Test]
         public void Test404()
         {
             var webClient = new WebClient();

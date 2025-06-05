@@ -1,12 +1,12 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using NUnit.Framework;
 using Nemcache.Service.Eviction;
 
 namespace Nemcache.Tests.Eviction
 {
-    [TestClass]
+    [TestFixture]
     public class NullEvictionTests
     {
-        [TestMethod]
+        [Test]
         public void EvictDoesNothing()
         {
             var strategy = new NullEvictionStrategy();

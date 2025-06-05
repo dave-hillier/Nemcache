@@ -2,23 +2,23 @@
 using System.Reactive;
 using System.Reactive.Linq;
 using Microsoft.Reactive.Testing;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NUnit.Framework;
 using Nemcache.Service.Notifications;
 using Nemcache.Service.Reactive;
 
 namespace Nemcache.Tests
 {
-    [TestClass]
+    [TestFixture]
     public class CombineCurrentStateWithUpdatesTests : ReactiveTest
     {
-        [TestMethod]
+        [Test]
         public void DummyToString()
         {
             var s = new DummyNotification {EventId = 123}.ToString();
             Assert.AreEqual("Notification: 123", s);
         }
 
-        [TestMethod]
+        [Test]
         public void HistoryDoesNotCompletes()
         {
             var ts = new TestScheduler();
@@ -37,7 +37,7 @@ namespace Nemcache.Tests
                 observer.Messages);
         }
 
-        [TestMethod]
+        [Test]
         public void HistoryCompletes()
         {
             var ts = new TestScheduler();
@@ -61,7 +61,7 @@ namespace Nemcache.Tests
         }
 
 
-        [TestMethod]
+        [Test]
         public void HistoryMultipleValues()
         {
             var ts = new TestScheduler();
@@ -88,7 +88,7 @@ namespace Nemcache.Tests
                 observer.Messages);
         }
 
-        [TestMethod]
+        [Test]
         public void NoLiveValuesIfHistoryHasntCompleted()
         {
             var ts = new TestScheduler();
@@ -108,7 +108,7 @@ namespace Nemcache.Tests
                 observer.Messages);
         }
 
-        [TestMethod]
+        [Test]
         public void PassLiveThroughWhenHistoryCompleted()
         {
             var ts = new TestScheduler();
@@ -130,7 +130,7 @@ namespace Nemcache.Tests
                 observer.Messages);
         }
 
-        [TestMethod]
+        [Test]
         public void BufferLiveUntilHistoryCompletes()
         {
             var ts = new TestScheduler();
@@ -157,26 +157,26 @@ namespace Nemcache.Tests
                 observer.Messages);
         }
 
-        [TestMethod]
+        [Test]
         public void CombineTest()
         {
             var testScheduler = new TestScheduler();
 
             var history = testScheduler.CreateColdObservable(
-                OnNext(1L, new DummyNotification {EventId = 1}),
-                OnNext(2L, new DummyNotification {EventId = 2}),
-                OnNext(3L, new DummyNotification {EventId = 3}),
-                OnNext(4L, new DummyNotification {EventId = 4}),
-                OnCompleted(new DummyNotification(), 5L));
+                OnNext<ICacheNotification>(1L, new DummyNotification {EventId = 1}),
+                OnNext<ICacheNotification>(2L, new DummyNotification {EventId = 2}),
+                OnNext<ICacheNotification>(3L, new DummyNotification {EventId = 3}),
+                OnNext<ICacheNotification>(4L, new DummyNotification {EventId = 4}),
+                OnCompleted<ICacheNotification>(5L));
 
             var live = testScheduler.CreateHotObservable(
-                OnNext(1L, new DummyNotification {EventId = 3}),
-                OnNext(2L, new DummyNotification {EventId = 4}),
-                OnNext(3L, new DummyNotification {EventId = 5}),
-                OnNext(4L, new DummyNotification {EventId = 6}),
-                OnNext(5L, new DummyNotification {EventId = 7}),
-                OnNext(6L, new DummyNotification {EventId = 8}),
-                OnNext(7L, new DummyNotification {EventId = 9})
+                OnNext<ICacheNotification>(1L, new DummyNotification {EventId = 3}),
+                OnNext<ICacheNotification>(2L, new DummyNotification {EventId = 4}),
+                OnNext<ICacheNotification>(3L, new DummyNotification {EventId = 5}),
+                OnNext<ICacheNotification>(4L, new DummyNotification {EventId = 6}),
+                OnNext<ICacheNotification>(5L, new DummyNotification {EventId = 7}),
+                OnNext<ICacheNotification>(6L, new DummyNotification {EventId = 8}),
+                OnNext<ICacheNotification>(7L, new DummyNotification {EventId = 9})
                 );
 
             var observer = testScheduler.CreateObserver<ICacheNotification>();
