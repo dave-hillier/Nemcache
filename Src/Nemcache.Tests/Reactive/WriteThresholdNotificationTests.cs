@@ -2,15 +2,15 @@
 using System.Reactive;
 using System.Reactive.Linq;
 using Microsoft.Reactive.Testing;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NUnit.Framework;
 using Nemcache.Service.Reactive;
 
 namespace Nemcache.Tests.Reactive
 {
-    [TestClass]
+    [TestFixture]
     public class WriteThresholdNotificationTests : ReactiveTest
     {
-        [TestMethod]
+        [Test]
         public void NoWritesNoCompacts()
         {
             var testScheduler = new TestScheduler();
@@ -24,7 +24,7 @@ namespace Nemcache.Tests.Reactive
             Assert.AreEqual(0, results.Messages.Count);
         }
 
-        [TestMethod]
+        [Test]
         public void SingleWriteBelowThresholdNoCompacts()
         {
             var testScheduler = new TestScheduler();
@@ -43,7 +43,7 @@ namespace Nemcache.Tests.Reactive
         }
 
 
-        [TestMethod]
+        [Test]
         public void AccumulateAboveThresholdCompacts()
         {
             var testScheduler = new TestScheduler();
@@ -64,7 +64,7 @@ namespace Nemcache.Tests.Reactive
             ReactiveAssert.AreElementsEqual(new[] {OnNext<Unit>(102, _ => true)}, results.Messages);
         }
 
-        [TestMethod]
+        [Test]
         public void DontCompactTooFrequently()
         {
             var testScheduler = new TestScheduler();
@@ -87,7 +87,7 @@ namespace Nemcache.Tests.Reactive
             ReactiveAssert.AreElementsEqual(new[] {OnNext<Unit>(102, _ => true)}, results.Messages);
         }
 
-        [TestMethod]
+        [Test]
         public void EventsSeparatedByInterval()
         {
             var testScheduler = new TestScheduler();

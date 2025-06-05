@@ -1,11 +1,11 @@
 ﻿using System.Linq;
 using System.Reactive.Disposables;
 using System.Text;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NUnit.Framework;
 
 namespace Nemcache.Tests.RequestHandlerIntegrationTests
 {
-    [TestClass]
+    [TestFixture]
     public class RequestHandlerTests
     {
         private IClient _client;
@@ -17,13 +17,13 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             return _client.Send(p);
         }
 
-        [TestInitialize]
+        [SetUp]
         public void Setup()
         {
             _client = Client ?? new LocalRequestHandlerWithTestScheduler();
         }
 
-        [TestMethod]
+        [Test]
         public void UnknownCommand()
         {
             var error = Dispatch(Encoding.ASCII.GetBytes("NotACommand\r\n"));
@@ -31,7 +31,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             Assert.AreEqual("ERROR Unknown command: NotACommand\r\n", Encoding.ASCII.GetString(error));
         }
 
-        [TestMethod]
+        [Test]
         public void MalformedCommand()
         {
             var error = Dispatch(Encoding.ASCII.GetBytes("malformed command").Concat(new byte[512]).ToArray());
@@ -39,7 +39,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             Assert.AreEqual("SERVER ERROR New line not found\r\n", Encoding.ASCII.GetString(error));
         }
 
-        [TestMethod]
+        [Test]
         public void TestExceptionCommand()
         {
             var error = Dispatch(Encoding.ASCII.GetBytes("exception\r\n"));
@@ -47,7 +47,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             Assert.AreEqual("SERVER ERROR test exception\r\n", Encoding.ASCII.GetString(error));
         }
 
-        [TestMethod]
+        [Test]
         public void Quit()
         {
             // TODO:
@@ -57,14 +57,14 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             Assert.AreEqual(disposed, true);
         }
 
-        [TestMethod]
+        [Test]
         public void Stats()
         {
             // TODO: implement
             var result = Dispatch(Encoding.ASCII.GetBytes("stats\r\n"));
         }
 
-        [TestMethod]
+        [Test]
         public void StatsSettings()
         {
             // TODO: implement

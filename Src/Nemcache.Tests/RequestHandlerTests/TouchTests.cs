@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reactive.Concurrency;
 using Microsoft.Reactive.Testing;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NUnit.Framework;
 using Nemcache.Client.Builders;
 using Nemcache.Service;
 using Nemcache.Service.RequestHandlers;
 
 namespace Nemcache.Tests.RequestHandlerIntegrationTests
 {
-    [TestClass]
+    [TestFixture]
     public class TouchTests
     {
         private RequestDispatcher _requestDispatcher;
@@ -23,7 +23,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             return memoryStream.ToArray();
         }
 
-        [TestInitialize]
+        [SetUp]
         public void Setup()
         {
             _testScheduler = new TestScheduler();
@@ -34,7 +34,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
 
         #region touch
 
-        [TestMethod]
+        [Test]
         public void TouchOk()
         {
             var storageBuilder = new StoreRequestBuilder("set", "key", "value");
@@ -48,7 +48,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             Assert.AreEqual("OK\r\n", response.ToAsciiString());
         }
 
-        [TestMethod]
+        [Test]
         public void TouchNotFound()
         {
             var touchBuilder = new TouchRequestBuilder("key");
@@ -58,7 +58,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             Assert.AreEqual("NOT_FOUND\r\n", response.ToAsciiString());
         }
 
-        [TestMethod]
+        [Test]
         public void SetTouchExpiryThenGetGone()
         {
             var storageBuilder = new StoreRequestBuilder("set", "key", "value");

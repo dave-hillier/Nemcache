@@ -1,14 +1,14 @@
 ﻿using System.IO;
 using System.Text;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NUnit.Framework;
 using Nemcache.Service.IO;
 
 namespace Nemcache.Tests.IO
 {
-    [TestClass]
+    [TestFixture]
     public class PartitioningFileStreamTests
     {
-        [TestMethod]
+        [Test]
         public void CanRead()
         {
             var memoryStream = new MemoryStream(Encoding.ASCII.GetBytes("Hello, World!"));
@@ -18,7 +18,7 @@ namespace Nemcache.Tests.IO
             Assert.IsTrue(partitioningStream.CanRead);
         }
 
-        [TestMethod]
+        [Test]
         public void CanWrite()
         {
             var memoryStream = new MemoryStream(Encoding.ASCII.GetBytes("Hello, World!"));
@@ -28,7 +28,7 @@ namespace Nemcache.Tests.IO
             Assert.IsTrue(partitioningStream.CanWrite);
         }
 
-        [TestMethod]
+        [Test]
         public void CanWriteAndCanRead()
         {
             var memoryStream = new MemoryStream(Encoding.ASCII.GetBytes("Hello, World!"));
@@ -39,7 +39,7 @@ namespace Nemcache.Tests.IO
             Assert.IsTrue(partitioningStream.CanWrite);
         }
 
-        [TestMethod]
+        [Test]
         public void Read()
         {
             const string helloWorld = "Hello, World!";
@@ -53,7 +53,7 @@ namespace Nemcache.Tests.IO
             Assert.AreEqual(helloWorld, Encoding.ASCII.GetString(buffer));
         }
 
-        [TestMethod]
+        [Test]
         public void ReadSingleFile()
         {
             const string helloWorld = "Hello, World!!";
@@ -69,7 +69,7 @@ namespace Nemcache.Tests.IO
             Assert.AreEqual(helloWorld, Encoding.ASCII.GetString(buffer));
         }
 
-        [TestMethod]
+        [Test]
         public void ReadAcrossTwoFiles()
         {
             var memoryStream1 = new MemoryStream(Encoding.ASCII.GetBytes("12345"));
@@ -83,7 +83,7 @@ namespace Nemcache.Tests.IO
             Assert.AreEqual("1234567890", Encoding.ASCII.GetString(buffer));
         }
 
-        [TestMethod]
+        [Test]
         public void ReadAcrossThreeFiles()
         {
             var memoryStream1 = new MemoryStream(Encoding.ASCII.GetBytes("12345"));
@@ -98,7 +98,7 @@ namespace Nemcache.Tests.IO
             Assert.AreEqual("1234567890ab", Encoding.ASCII.GetString(buffer));
         }
 
-        [TestMethod]
+        [Test]
         public void FlushWillFlushInnerStream()
         {
             var stream = new TestStream();
@@ -110,7 +110,7 @@ namespace Nemcache.Tests.IO
             Assert.IsTrue(stream.HasCalledFlush);
         }
 
-        [TestMethod]
+        [Test]
         public void DisposeWillCloseInnerStream()
         {
             var stream = new TestStream();
@@ -124,7 +124,7 @@ namespace Nemcache.Tests.IO
 
         // TODO: check the filename for read
 
-        [TestMethod]
+        [Test]
         public void Write()
         {
             var memoryStream = new MemoryStream();
@@ -140,7 +140,7 @@ namespace Nemcache.Tests.IO
             Assert.AreEqual(helloWorld, Encoding.ASCII.GetString(memoryStream.ToArray()));
         }
 
-        [TestMethod]
+        [Test]
         public void WriteTwoFiles()
         {
             var memoryStream1 = new MemoryStream();
@@ -163,7 +163,7 @@ namespace Nemcache.Tests.IO
 
         // TODO: position (changes on read or write), length (only changes on write)
 
-        [TestMethod]
+        [Test]
         public void LengthZero()
         {
             var fileSystem = new FakeFileSystem(null, null, null);
@@ -172,7 +172,7 @@ namespace Nemcache.Tests.IO
             Assert.AreEqual(0, partitioningStream.Length);
         }
 
-        [TestMethod]
+        [Test]
         public void Length()
         {
             var memoryStream1 = new MemoryStream(new byte[10]);
@@ -184,7 +184,7 @@ namespace Nemcache.Tests.IO
             Assert.AreEqual(20, partitioningStream.Length);
         }
 
-        [TestMethod]
+        [Test]
         public void ExpandLengthOneFile()
         {
             var memoryStream1 = new MemoryStream();
@@ -196,7 +196,7 @@ namespace Nemcache.Tests.IO
             Assert.AreEqual(5, partitioningStream.Length);
         }
 
-        [TestMethod]
+        [Test]
         public void ExpandLengthTwoFiles()
         {
             var memoryStream1 = new MemoryStream();
@@ -208,7 +208,7 @@ namespace Nemcache.Tests.IO
             Assert.AreEqual(15, partitioningStream.Length);
         }
 
-        [TestMethod]
+        [Test]
         public void StartPosition()
         {
             var fileSystem = new FakeFileSystem(null, null, null);
@@ -217,7 +217,7 @@ namespace Nemcache.Tests.IO
             Assert.AreEqual(0, partitioningStream.Position);
         }
 
-        [TestMethod]
+        [Test]
         public void PositionAfterRead()
         {
             var memoryStream1 = new MemoryStream(new byte[10]);
@@ -229,7 +229,7 @@ namespace Nemcache.Tests.IO
             Assert.AreEqual(9, partitioningStream.Position);
         }
 
-        [TestMethod]
+        [Test]
         public void PositionAfterWrite()
         {
             var memoryStream1 = new MemoryStream();
@@ -242,7 +242,7 @@ namespace Nemcache.Tests.IO
             Assert.AreEqual(9, partitioningStream.Position);
         }
 
-        [TestMethod]
+        [Test]
         public void PositionAfterReadThenWrite()
         {
             var memoryStream1 = new MemoryStream(new byte[20]);
@@ -257,7 +257,7 @@ namespace Nemcache.Tests.IO
             Assert.AreEqual(13, partitioningStream.Position);
         }
 
-        [TestMethod]
+        [Test]
         public void PositionAfterReadThenWriteIntoSecondFile()
         {
             var memoryStream1 = new MemoryStream(new byte[20]);
@@ -272,7 +272,7 @@ namespace Nemcache.Tests.IO
             Assert.AreEqual(30, partitioningStream.Position);
         }
 
-        [TestMethod]
+        [Test]
         public void OverwriteDoesntChangeLength()
         {
             var memoryStream1 = new MemoryStream(new byte[10]);
@@ -284,7 +284,7 @@ namespace Nemcache.Tests.IO
             Assert.AreEqual(20, partitioningStream.Length);
         }
 
-        [TestMethod]
+        [Test]
         public void FilesAreClosed()
         {
             var stream1 = new TestStream();

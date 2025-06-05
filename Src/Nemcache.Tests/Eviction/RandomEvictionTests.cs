@@ -1,16 +1,16 @@
 ﻿using System;
 using System.Linq;
 using System.Reactive.Concurrency;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NUnit.Framework;
 using Nemcache.Service;
 using Nemcache.Service.Eviction;
 
 namespace Nemcache.Tests.Eviction
 {
-    [TestClass]
+    [TestFixture]
     public class RandomEvictionTests
     {
-        [TestMethod]
+        [Test]
         public void EvictEmpty()
         {
             var memCache = new MemCache(100, Scheduler.Default); //Consider using mock
@@ -19,7 +19,7 @@ namespace Nemcache.Tests.Eviction
             Assert.IsFalse(memCache.Keys.Any());
         }
 
-        [TestMethod]
+        [Test]
         public void EvictSingle()
         {
             var memCache = new MemCache(100); //Consider using mock
@@ -29,7 +29,7 @@ namespace Nemcache.Tests.Eviction
             Assert.AreEqual(0, memCache.Keys.Count());
         }
 
-        [TestMethod]
+        [Test]
         public void Evict2()
         {
             var memCache = new MemCache(100); //Consider using mock

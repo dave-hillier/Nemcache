@@ -1,9 +1,9 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using NUnit.Framework;
 using Nemcache.Client.Builders;
 
 namespace Nemcache.Tests.RequestHandlerIntegrationTests
 {
-    [TestClass]
+    [TestFixture]
     public class GetAndSetTests
     {
         private IClient _client;
@@ -15,14 +15,14 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             return _client.Send(p);
         }
 
-        [TestInitialize]
+        [SetUp]
         public void Setup()
         {
             _client = Client ?? new LocalRequestHandlerWithTestScheduler();
         }
 
 
-        [TestMethod]
+        [Test]
         public void Set()
         {
             var setBuilder = new StoreRequestBuilder("set", "key", "value");
@@ -32,7 +32,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             Assert.AreEqual("STORED\r\n", response.ToAsciiString());
         }
 
-        [TestMethod]
+        [Test]
         public void SetNoReply()
         {
             var setBuilder = new StoreRequestBuilder("set", "key", "value");
@@ -43,7 +43,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             Assert.AreEqual("", response.ToAsciiString());
         }
 
-        [TestMethod]
+        [Test]
         public void SetTwice()
         {
             var storageBuilder = new StoreRequestBuilder("set", "key", "value");
@@ -55,7 +55,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             Assert.AreEqual("STORED\r\n", response.ToAsciiString());
         }
 
-        [TestMethod]
+        [Test]
         public void SetThenGet()
         {
             var storageBuilder = new StoreRequestBuilder("set", "key", "value");
@@ -66,7 +66,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             Assert.AreEqual("VALUE key 0 5\r\nvalue\r\nEND\r\n", response.ToAsciiString());
         }
 
-        [TestMethod]
+        [Test]
         public void FlagsSetAndGet()
         {
             var storageBuilder = new StoreRequestBuilder("set", "key", "value");
@@ -78,7 +78,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             Assert.AreEqual("VALUE key 1234567890 5\r\nvalue\r\nEND\r\n", response.ToAsciiString());
         }
 
-        [TestMethod]
+        [Test]
         public void FlagsMaxValueSetAndGet()
         {
             var storageBuilder = new StoreRequestBuilder("set", "key", "value");
@@ -92,7 +92,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
                             response.ToAsciiString());
         }
 
-        [TestMethod]
+        [Test]
         public void SetAndSetNewThenGet()
         {
             var storageBuilder = new StoreRequestBuilder("set", "key", "value");
@@ -106,7 +106,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             Assert.AreEqual("VALUE key 0 9\r\nnew value\r\nEND\r\n", response.ToAsciiString());
         }
 
-        [TestMethod]
+        [Test]
         public void SetThenGetMultiple()
         {
             var storageBuilder1 = new StoreRequestBuilder("set", "key1", "111111");
@@ -121,7 +121,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             Assert.AreEqual("VALUE key1 0 6\r\n111111\r\nVALUE key2 0 3\r\n222\r\nEND\r\n", response.ToAsciiString());
         }
 
-        [TestMethod]
+        [Test]
         public void GetNotFound()
         {
             var getBuilder = new GetRequestBuilder("get", "key");

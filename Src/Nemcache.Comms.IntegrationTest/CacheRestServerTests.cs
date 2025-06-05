@@ -3,17 +3,17 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NUnit.Framework;
 using Nemcache.Service;
 
 namespace Nemcache.Comms.IntegrationTest
 {
-    [TestClass]
+    [TestFixture]
     public class CacheRestServerTests
     {
         private CacheRestServer _server;
 
-        [TestInitialize]
+        [SetUp]
         public void Setup()
         {
             var testHandler = new TestHandler();
@@ -29,13 +29,13 @@ namespace Nemcache.Comms.IntegrationTest
             _server.Start();
         }
 
-        [TestCleanup]
+        [TearDown]
         public void Cleanup()
         {
             _server.Stop();
         }
 
-        [TestMethod]
+        [Test]
         public void GetTest()
         {
             
@@ -44,7 +44,7 @@ namespace Nemcache.Comms.IntegrationTest
             Assert.AreEqual("Response", response);
         }
 
-        [TestMethod]
+        [Test]
         public void Test404()
         {
 

@@ -1,4 +1,4 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using NUnit.Framework;
 using Moq;
 using Nemcache.Service;
 using Nemcache.Service.IO;
@@ -10,7 +10,7 @@ using System.Text;
 
 namespace Nemcache.Tests.Persistence
 {
-    [TestClass]
+    [TestFixture]
     public class StreamArchiverTests
     {
         private MemCache _originalCache;
@@ -19,7 +19,7 @@ namespace Nemcache.Tests.Persistence
         private MemoryStream _writeStream;
         private Mock<IFileSystem> _mockFileSystem;
 
-        [TestInitialize]
+        [SetUp]
         public void Setup()
         {
             // TODO: test the archiver without a cache
@@ -40,7 +40,7 @@ namespace Nemcache.Tests.Persistence
             _originalCache.Notifications.Subscribe(_streamArchiver);
         }
 
-        [TestMethod]
+        [Test]
         public void EnsureStoreWritesToJournal()
         {
             _originalCache.Store("my_key", 911, Encoding.ASCII.GetBytes("Payload"), new DateTime(2013, 04, 26));
@@ -54,14 +54,14 @@ namespace Nemcache.Tests.Persistence
             // TODO: rest of the data
         }
 
-        [TestMethod]
+        [Test]
         public void CompleteWillDisposeStream()
         {
             _streamArchiver.OnCompleted();
             Assert.IsFalse(_writeStream.CanWrite); // TODO: Replace with a test double?
         }
 
-        [TestMethod]
+        [Test]
         public void ErrorWillDisposeStream()
         {
             _streamArchiver.OnError(new Exception());

@@ -1,9 +1,9 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using NUnit.Framework;
 using Nemcache.Client.Builders;
 
 namespace Nemcache.Tests.RequestHandlerIntegrationTests
 {
-    [TestClass]
+    [TestFixture]
     public class ReplaceTests
     {
         private IClient _client;
@@ -15,13 +15,13 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             return _client.Send(p);
         }
 
-        [TestInitialize]
+        [SetUp]
         public void Setup()
         {
             _client = Client ?? new LocalRequestHandlerWithTestScheduler();
         }
 
-        [TestMethod]
+        [Test]
         public void ReplaceToEmpty()
         {
             var replaceBuilder = new StoreRequestBuilder("replace", "key", "value");
@@ -31,7 +31,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             Assert.AreEqual("NOT_STORED\r\n", response.ToAsciiString());
         }
 
-        [TestMethod]
+        [Test]
         public void ReplaceNoReply()
         {
             var replaceBuilder = new StoreRequestBuilder("replace", "key", "value");
@@ -42,7 +42,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             Assert.AreEqual("", response.ToAsciiString());
         }
 
-        [TestMethod]
+        [Test]
         public void ReplaceToExisting()
         {
             var setBuilder = new StoreRequestBuilder("set", "key", "value");
@@ -55,7 +55,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
 
         // TODO: replace ignores existing flags and exp
 
-        [TestMethod]
+        [Test]
         public void GetValueOfReplaceToExisting()
         {
             var setBuilder = new StoreRequestBuilder("set", "key", "first");
