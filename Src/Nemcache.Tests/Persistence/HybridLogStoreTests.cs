@@ -1,8 +1,8 @@
 using System;
 using System.IO;
 using NUnit.Framework;
-using Nemcache.Service.IO;
-using Nemcache.Service.Persistence;
+using Nemcache.Storage.IO;
+using Nemcache.Storage.Persistence;
 
 namespace Nemcache.Tests.Persistence
 {

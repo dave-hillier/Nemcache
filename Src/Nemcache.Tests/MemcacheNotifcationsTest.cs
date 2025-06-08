@@ -2,8 +2,8 @@
 using System.Text;
 using Microsoft.Reactive.Testing;
 using NUnit.Framework;
-using Nemcache.Service;
-using Nemcache.Service.Notifications;
+using Nemcache.Storage;
+using Nemcache.Storage.Notifications;
 
 namespace Nemcache.Tests
 {

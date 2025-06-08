@@ -1,8 +1,9 @@
-﻿using Nemcache.Service.Notifications;
-using Nemcache.Service.Reactive;
+﻿using Nemcache.Storage.Notifications;
+using Nemcache.Storage.Reactive;
 using ServiceStack.Text;
 using System;
 using System.Collections.Generic;
+using Nemcache.Storage;
 using System.Reactive.Linq;
 using System.Text;
 

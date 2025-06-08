@@ -1,3 +1,4 @@
+using Nemcache.Storage;
 ﻿using System.Linq;
 using System.Reactive.Concurrency;
 using System.Text;

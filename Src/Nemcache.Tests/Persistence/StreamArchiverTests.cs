@@ -1,8 +1,8 @@
 ﻿using NUnit.Framework;
 using Moq;
-using Nemcache.Service;
-using Nemcache.Service.IO;
-using Nemcache.Service.Persistence;
+using Nemcache.Storage;
+using Nemcache.Storage.IO;
+using Nemcache.Storage.Persistence;
 using ProtoBuf;
 using System;
 using System.IO;

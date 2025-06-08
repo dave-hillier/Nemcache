@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Nemcache.Storage;
 using System.Reactive.Concurrency;
 using System.Text;
 using System.Threading.Tasks;

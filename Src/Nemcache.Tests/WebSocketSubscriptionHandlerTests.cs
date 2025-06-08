@@ -6,8 +6,9 @@ using System.Reactive.Subjects;
 using System.Text;
 using Microsoft.Reactive.Testing;
 using NUnit.Framework;
-using Nemcache.Service;
+using Nemcache.Storage;
 
+using Nemcache.Service;
 namespace Nemcache.Tests
 {
     // TODO: these tests are fragile as they depend on Json structure

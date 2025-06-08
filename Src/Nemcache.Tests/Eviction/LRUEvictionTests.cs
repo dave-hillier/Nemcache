@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using NUnit.Framework;
-using Nemcache.Service;
+using Nemcache.Storage;
 
 namespace Nemcache.Tests.Eviction
 {

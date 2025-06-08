@@ -5,9 +5,10 @@ using System.Reactive.Concurrency;
 using Microsoft.Reactive.Testing;
 using NUnit.Framework;
 using Nemcache.Client.Builders;
-using Nemcache.Service;
+using Nemcache.Storage;
 using Nemcache.Service.RequestHandlers;
 
+using Nemcache.Service;
 namespace Nemcache.Tests.RequestHandlerIntegrationTests
 {
     [TestFixture]

@@ -15,5 +15,6 @@
   <ItemGroup>
     <ProjectReference Include="..\Nemcache.Service\Nemcache.Service.csproj" />
     <ProjectReference Include="..\Nemcache.Client\Nemcache.Client.csproj" />
+    <ProjectReference Include="..\Nemcache.Storage\Nemcache.Storage.csproj" />
   </ItemGroup>
 </Project>

@@ -1,3 +1,4 @@
+using Nemcache.Storage;
 ﻿using System;
 
 namespace Nemcache.Service.RequestHandlers

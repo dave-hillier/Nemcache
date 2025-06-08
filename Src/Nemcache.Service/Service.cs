@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
-using Nemcache.Service.IO;
-using Nemcache.Service.Persistence;
+using Nemcache.Storage.IO;
+using Nemcache.Storage.Persistence;
 using Nemcache.Service.RequestHandlers;
+using Nemcache.Storage;
 
 namespace Nemcache.Service
 {

@@ -2,8 +2,8 @@
 using System.Linq;
 using System.Reactive.Concurrency;
 using NUnit.Framework;
-using Nemcache.Service;
-using Nemcache.Service.Eviction;
+using Nemcache.Storage;
+using Nemcache.Storage.Eviction;
 
 namespace Nemcache.Tests.Eviction
 {
