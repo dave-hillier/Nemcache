@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Microsoft.Reactive.Testing;
 using NUnit.Framework;
-using Nemcache.Service;
+using Nemcache.Storage;
 
 namespace Nemcache.Tests
 {

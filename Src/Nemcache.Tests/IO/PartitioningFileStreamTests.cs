@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using System.Text;
 using NUnit.Framework;
-using Nemcache.Service.IO;
+using Nemcache.Storage.IO;
 
 namespace Nemcache.Tests.IO
 {

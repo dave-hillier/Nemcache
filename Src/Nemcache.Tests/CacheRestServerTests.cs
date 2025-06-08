@@ -4,7 +4,9 @@ using System.IO;
 using System.Net;
 using System.Threading.Tasks;
 using NUnit.Framework;
+using Nemcache.Storage;
 using Nemcache.Service;
+using Nemcache.Service.RequestHandlers;
 
 namespace Nemcache.Tests
 {

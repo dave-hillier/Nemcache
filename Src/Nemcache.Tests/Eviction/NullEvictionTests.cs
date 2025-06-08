@@ -1,5 +1,5 @@
 ﻿using NUnit.Framework;
-using Nemcache.Service.Eviction;
+using Nemcache.Storage.Eviction;
 
 namespace Nemcache.Tests.Eviction
 {

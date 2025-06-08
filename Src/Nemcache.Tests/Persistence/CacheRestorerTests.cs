@@ -3,10 +3,10 @@ using System.IO;
 using System.Linq;
 using NUnit.Framework;
 using Moq;
-using Nemcache.Service;
-using Nemcache.Service.IO;
-using Nemcache.Service.Notifications;
-using Nemcache.Service.Persistence;
+using Nemcache.Storage;
+using Nemcache.Storage.IO;
+using Nemcache.Storage.Notifications;
+using Nemcache.Storage.Persistence;
 using ProtoBuf;
 
 namespace Nemcache.Tests.Persistence

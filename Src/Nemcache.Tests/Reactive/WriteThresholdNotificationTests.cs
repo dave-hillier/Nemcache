@@ -3,7 +3,7 @@ using System.Reactive;
 using System.Reactive.Linq;
 using Microsoft.Reactive.Testing;
 using NUnit.Framework;
-using Nemcache.Service.Reactive;
+using Nemcache.Storage.Reactive;
 
 namespace Nemcache.Tests.Reactive
 {

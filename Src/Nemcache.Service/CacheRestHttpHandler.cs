@@ -5,6 +5,7 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
+using Nemcache.Storage;
 namespace Nemcache.Service
 {
     class CacheRestHttpHandler : HttpHandlerBase

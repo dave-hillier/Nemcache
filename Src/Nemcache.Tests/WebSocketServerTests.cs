@@ -3,8 +3,9 @@ using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using NUnit.Framework;
-using Nemcache.Service;
+using Nemcache.Storage;
 
+using Nemcache.Service;
 namespace Nemcache.Tests
 {
     [TestFixture]

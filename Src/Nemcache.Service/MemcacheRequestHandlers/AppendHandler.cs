@@ -1,3 +1,4 @@
+using Nemcache.Storage;
 ﻿namespace Nemcache.Service.RequestHandlers
 {
     internal class AppendHandler : SetHandler
