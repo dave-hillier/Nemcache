@@ -35,8 +35,24 @@ namespace Nemcache.Service
             while (!_cancellationTokenSource.IsCancellationRequested &&
                    _listener.IsListening)
             {
-                var httpContext = await _listener.GetContextAsync();
-                await _taskFactory.StartNew(() => OnClientConnection(httpContext));
+                HttpListenerContext? httpContext = null;
+                try
+                {
+                    httpContext = await _listener.GetContextAsync();
+                }
+                catch (ObjectDisposedException)
+                {
+                    break;
+                }
+                catch (HttpListenerException)
+                {
+                    break;
+                }
+
+                if (httpContext != null)
+                {
+                    await _taskFactory.StartNew(() => OnClientConnection(httpContext));
+                }
             }
         }
 

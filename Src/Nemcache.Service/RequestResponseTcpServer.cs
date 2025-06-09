@@ -37,10 +37,25 @@ namespace Nemcache.Service
         {
             while (!_cancellationTokenSource.IsCancellationRequested)
             {
-                var tcpClient = await _listener.AcceptTcpClientAsync();
-                tcpClient.NoDelay = true;
+                TcpClient? tcpClient = null;
+                try
+                {
+                    tcpClient = await _listener.AcceptTcpClientAsync();
+                }
+                catch (ObjectDisposedException)
+                {
+                    break;
+                }
+                catch (SocketException)
+                {
+                    break;
+                }
 
-                await _taskFactory.StartNew(() => OnClientConnection(tcpClient));
+                if (tcpClient != null)
+                {
+                    tcpClient.NoDelay = true;
+                    await _taskFactory.StartNew(() => OnClientConnection(tcpClient));
+                }
             }
         }
 
@@ -60,6 +75,10 @@ namespace Nemcache.Service
                             }));
                     }
                 }
+            }
+            catch (ObjectDisposedException)
+            {
+                // ignore disposal during shutdown
             }
             catch (IOException exception)
             {
