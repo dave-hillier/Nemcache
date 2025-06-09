@@ -6,6 +6,7 @@ using Nemcache.Storage.IO;
 using Nemcache.Storage.Persistence;
 using Nemcache.DynamoService.Grains;
 using Nemcache.DynamoService.Routing;
+using Nemcache.DynamoService.Services;
 
 var host = Host.CreateDefaultBuilder(args)
     .UseOrleans(siloBuilder =>
@@ -14,24 +15,13 @@ var host = Host.CreateDefaultBuilder(args)
     })
     .ConfigureServices(services =>
     {
-        services.AddSingleton<IMemCache>(sp =>
-            new MemCache(1024UL * 1024 * 1024, System.Reactive.Concurrency.Scheduler.Default));
+        services.AddSingleton<IMemCacheFactory>(sp =>
+            new MemCacheFactory(1024UL * 1024 * 1024,
+                System.Reactive.Concurrency.Scheduler.Default));
         services.AddSingleton(new RingProvider(partitionCount: 32, replicaCount: 3));
         services.AddSingleton<IFileSystem, FileSystemWrapper>();
-        services.AddSingleton(sp => new StreamArchiver(
-            sp.GetRequiredService<IFileSystem>(),
-            "dynamo.log",
-            (MemCache)sp.GetRequiredService<IMemCache>(),
-            10_000));
-        services.AddSingleton<ICachePersistence>(sp =>
-        {
-            var cache = (MemCache)sp.GetRequiredService<IMemCache>();
-            var fs = sp.GetRequiredService<IFileSystem>();
-            var restorer = new CacheRestorer(cache, fs, "dynamo.log");
-            return new StreamPersistence(sp.GetRequiredService<StreamArchiver>(), restorer);
-        });
+        // Persistence is handled per partition grain
     })
     .Build();
 
-host.Services.GetRequiredService<ICachePersistence>().Restore();
 host.Run();
