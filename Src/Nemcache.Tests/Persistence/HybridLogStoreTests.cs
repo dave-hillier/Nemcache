@@ -16,11 +16,11 @@ namespace Nemcache.Tests.Persistence
         {
             public IFile File => this;
             public Stream Open(string path, FileMode mode, FileAccess access) => new FileStream(path, mode, access, FileShare.ReadWrite);
-            public bool Exists(string path) => File.Exists(path);
+            public bool Exists(string path) => System.IO.File.Exists(path);
             public long Size(string filename) => new FileInfo(filename).Length;
-            public void Delete(string path) => File.Delete(path);
+            public void Delete(string path) => System.IO.File.Delete(path);
             public void Replace(string sourceFileName, string destinationFileName, string destinationBackupFileName, bool ignoreMetadataErrors)
-                => File.Replace(sourceFileName, destinationFileName, destinationBackupFileName, ignoreMetadataErrors);
+                => System.IO.File.Replace(sourceFileName, destinationFileName, destinationBackupFileName, ignoreMetadataErrors);
         }
 
         [SetUp]
