@@ -64,8 +64,7 @@ namespace Nemcache.DynamoService.Grains
 
         public async Task<byte[]?> GetAsync(string key)
         {
-            var entry = _cache!.Get(key);
-            if (entry.Data != null)
+            if (_cache.TryGet(key, out var entry) && entry.Data != null)
             {
                 return entry.Data;
             }
@@ -97,8 +96,12 @@ namespace Nemcache.DynamoService.Grains
 
         public Task<byte[]?> GetReplicaAsync(string key)
         {
-            var entry = _cache!.Get(key);
-            return Task.FromResult<byte[]?>(entry.Data);
+            if (_cache.TryGet(key, out var entry))
+            {
+                return Task.FromResult<byte[]?>(entry.Data);
+            }
+
+            return Task.FromResult<byte[]?>(null);
         }
     }
 }
