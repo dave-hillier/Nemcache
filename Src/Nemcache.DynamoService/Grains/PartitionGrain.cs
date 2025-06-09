@@ -71,13 +71,24 @@ namespace Nemcache.DynamoService.Grains
                 return entry.Data;
             }
 
-            var replicas = _ring.GetReplicas(key).Skip(1);
-            foreach (var replicaKey in replicas)
+            var replicaKeys = _ring.GetReplicas(key).ToArray();
+            // Skip the local partition when querying replicas
+            foreach (var replicaKey in replicaKeys.Where(k => k != this.GetPrimaryKeyString()))
             {
                 var replica = GrainFactory.GetGrain<IPartitionGrain>(replicaKey);
                 var value = await replica.GetReplicaAsync(key);
                 if (value != null)
                 {
+                    // Store locally for read-repair
+                    _cache.Store(key, 0, value, DateTime.MaxValue);
+
+                    // Forward to the remaining replicas for full repair
+                    foreach (var forwardKey in replicaKeys.Where(k => k != replicaKey && k != this.GetPrimaryKeyString()))
+                    {
+                        var forwardReplica = GrainFactory.GetGrain<IPartitionGrain>(forwardKey);
+                        await forwardReplica.PutReplicaAsync(key, value);
+                    }
+
                     return value;
                 }
             }
