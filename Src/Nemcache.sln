@@ -13,6 +13,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{2E97F31A
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nemcache.Storage", "Nemcache.Storage\Nemcache.Storage.csproj", "{A12B36A5-82C7-444A-B90A-0E22F0B77064}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nemcache.DynamoService", "Nemcache.DynamoService\Nemcache.DynamoService.csproj", "{24E39828-1085-4DC2-90B3-600C57A0CB62}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{A12B36A5-82C7-444A-B90A-0E22F0B77064}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A12B36A5-82C7-444A-B90A-0E22F0B77064}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A12B36A5-82C7-444A-B90A-0E22F0B77064}.Release|Any CPU.Build.0 = Release|Any CPU
+		{24E39828-1085-4DC2-90B3-600C57A0CB62}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{24E39828-1085-4DC2-90B3-600C57A0CB62}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{24E39828-1085-4DC2-90B3-600C57A0CB62}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{24E39828-1085-4DC2-90B3-600C57A0CB62}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
