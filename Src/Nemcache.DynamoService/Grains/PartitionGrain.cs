@@ -11,7 +11,6 @@ namespace Nemcache.DynamoService.Grains
     {
         private readonly IMemCache _cache;
         private readonly RingProvider _ring;
-        private const int ReplicaCount = 3;
 
         public PartitionGrain(IMemCache cache, RingProvider ring)
         {

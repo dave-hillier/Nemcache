@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Orleans.Hosting;
 using Nemcache.Storage;
 using Nemcache.Storage.IO;
@@ -16,7 +17,20 @@ var host = Host.CreateDefaultBuilder(args)
     {
         services.AddSingleton<IMemCache>(sp =>
             new MemCache(1024UL * 1024 * 1024, System.Reactive.Concurrency.Scheduler.Default));
-        services.AddSingleton(new RingProvider(partitionCount: 32, replicaCount: 3));
+
+        services.AddOptions<RingProviderOptions>()
+            .Configure(options =>
+            {
+                options.PartitionCount = 32;
+                options.ReplicaCount = 3;
+            });
+
+        services.AddSingleton<RingProvider>(sp =>
+        {
+            var opts = sp.GetRequiredService<IOptions<RingProviderOptions>>().Value;
+            return new RingProvider(opts.PartitionCount, opts.ReplicaCount);
+        });
+
         services.AddSingleton<IFileSystem, FileSystemWrapper>();
         services.AddSingleton(sp => new StreamArchiver(
             sp.GetRequiredService<IFileSystem>(),
