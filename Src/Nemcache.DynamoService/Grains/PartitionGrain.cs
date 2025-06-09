@@ -64,7 +64,7 @@ namespace Nemcache.DynamoService.Grains
 
         public async Task<byte[]?> GetAsync(string key)
         {
-            if (_cache.TryGet(key, out var entry) && entry.Data != null)
+            if (_cache!.TryGet(key, out var entry) && entry.Data != null)
             {
                 return entry.Data;
             }
