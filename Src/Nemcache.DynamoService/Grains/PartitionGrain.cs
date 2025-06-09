@@ -12,7 +12,6 @@ namespace Nemcache.DynamoService.Grains
 {
     public class PartitionGrain : Grain, IPartitionGrain
     {
-        private IMemCache? _cache;
         private readonly RingProvider _ring;
         private readonly IMemCacheFactory _cacheFactory;
         private readonly IFileSystem _fileSystem;
