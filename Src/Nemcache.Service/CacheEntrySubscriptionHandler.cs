@@ -45,8 +45,12 @@ namespace Nemcache.Service
             {
                 _subscriptions[key].Dispose();
                 _subscriptions.Remove(key);
+                SendUnsubscriptionConfirmation(_responseObserver, key);
             }
-            // TODO: unsubscribe success?
+            else
+            {
+                SendUnsubscriptionError(_responseObserver, key);
+            }
         }
 
         private void Subscribe(JsonObject cmd)
@@ -118,18 +122,48 @@ namespace Nemcache.Service
 
         private string JsonFromNotifications(IKeyCacheNotification keyCacheNotification)
         {
-            var data = new byte[0];
             var store = keyCacheNotification as StoreNotification;
             if (store != null)
-                data = store.Data;
-            // TODO: removes
-
-            var responseValue = new Dictionary<string, string>
+            {
+                var responseValue = new Dictionary<string, string>
                     {
-                        {"value", keyCacheNotification.Key},
-                        {"data", Encoding.UTF8.GetString(data)}
+                        {"value", store.Key},
+                        {"data", Encoding.UTF8.GetString(store.Data)}
                     };
-            return JsonSerializer.SerializeToString(responseValue);
+                return JsonSerializer.SerializeToString(responseValue);
+            }
+
+            var remove = keyCacheNotification as RemoveNotification;
+            if (remove != null)
+            {
+                var responseValue = new Dictionary<string, string>
+                    {
+                        {"remove", remove.Key}
+                    };
+                return JsonSerializer.SerializeToString(responseValue);
+            }
+
+            return string.Empty;
+        }
+
+        private static void SendUnsubscriptionConfirmation(IObserver<string> responseObserver, string key)
+        {
+            var response = new Dictionary<string, string>
+                {
+                    {"subscription", key},
+                    {"response", "UNSUBSCRIBED"}
+                };
+            responseObserver.OnNext(JsonSerializer.SerializeToString(response));
+        }
+
+        private static void SendUnsubscriptionError(IObserver<string> responseObserver, string key)
+        {
+            var response = new Dictionary<string, string>
+                {
+                    {"subscription", key},
+                    {"response", "ERROR"}
+                };
+            responseObserver.OnNext(JsonSerializer.SerializeToString(response));
         }
 
         public void Dispose()
