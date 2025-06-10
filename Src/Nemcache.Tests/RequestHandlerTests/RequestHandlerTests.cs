@@ -60,15 +60,20 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
         [Test]
         public void Stats()
         {
-            // TODO: implement
             var result = Dispatch(Encoding.ASCII.GetBytes("stats\r\n"));
+            var text = result.ToAsciiString();
+            StringAssert.Contains("STAT version", text);
+            StringAssert.Contains("STAT uptime", text);
+            StringAssert.EndsWith("END\r\n", text);
         }
 
         [Test]
         public void StatsSettings()
         {
-            // TODO: implement
             var result = Dispatch(Encoding.ASCII.GetBytes("stats settings\r\n"));
+            var text = result.ToAsciiString();
+            StringAssert.Contains("STAT maxbytes", text);
+            StringAssert.EndsWith("END\r\n", text);
         }
     }
 }

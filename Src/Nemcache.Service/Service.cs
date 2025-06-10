@@ -45,7 +45,23 @@ namespace Nemcache.Service
             var mutateHandler = new MutateHandler(helpers, cache, scheduler);
             return new Dictionary<string, IRequestHandler>
                 {
-                    {"get", getHandler}, {"gets", getHandler}, {"set", new SetHandler(helpers, cache)}, {"append", new AppendHandler(helpers, cache)}, {"prepend", new PrependHandler(helpers, cache)}, {"add", new AddHandler(helpers, cache)}, {"replace", new ReplaceHandler(helpers, cache)}, {"cas", new CasHandler(helpers, cache)}, {"stats", new StatsHandler()}, {"delete", new DeleteHandler(helpers, cache)}, {"flush_all", new FlushHandler(cache, scheduler)}, {"quit", new QuitHandler()}, {"exception", new ExceptionHandler()}, {"version", new VersionHandler()}, {"touch", new TouchHandler(helpers, cache)}, {"incr", mutateHandler}, {"decr", mutateHandler},
+                    {"get", getHandler},
+                    {"gets", getHandler},
+                    {"set", new SetHandler(helpers, cache)},
+                    {"append", new AppendHandler(helpers, cache)},
+                    {"prepend", new PrependHandler(helpers, cache)},
+                    {"add", new AddHandler(helpers, cache)},
+                    {"replace", new ReplaceHandler(helpers, cache)},
+                    {"cas", new CasHandler(helpers, cache)},
+                    {"stats", new StatsHandler(cache)},
+                    {"delete", new DeleteHandler(helpers, cache)},
+                    {"flush_all", new FlushHandler(cache, scheduler)},
+                    {"quit", new QuitHandler()},
+                    {"exception", new ExceptionHandler()},
+                    {"version", new VersionHandler()},
+                    {"touch", new TouchHandler(helpers, cache)},
+                    {"incr", mutateHandler},
+                    {"decr", mutateHandler},
                 };
 
         }
