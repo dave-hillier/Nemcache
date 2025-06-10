@@ -32,6 +32,10 @@ var host = Host.CreateDefaultBuilder(args)
             return new RingProvider(opts.PartitionCount, opts.ReplicaCount);
         });
 
+        services.AddSingleton<IMemCacheFactory>(sp =>
+            new MemCacheFactory(1024UL * 1024 * 1024,
+                System.Reactive.Concurrency.Scheduler.Default));
+        services.AddSingleton(new RingProvider(partitionCount: 32, replicaCount: 3));
         services.AddSingleton<IFileSystem, FileSystemWrapper>();
         // Persistence is handled per partition grain
     })
