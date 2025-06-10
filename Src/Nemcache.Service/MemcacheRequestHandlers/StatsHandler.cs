@@ -9,12 +9,10 @@ namespace Nemcache.Service.RequestHandlers
     internal class StatsHandler : IRequestHandler
     {
         private readonly IMemCache _cache;
-        private readonly DateTime _startTime;
 
         public StatsHandler(IMemCache cache)
         {
             _cache = cache;
-            _startTime = DateTime.UtcNow;
         }
 
         public void HandleRequest(IRequestContext context)
@@ -30,7 +28,8 @@ namespace Nemcache.Service.RequestHandlers
             {
                 var sb = new StringBuilder();
                 sb.AppendFormat("STAT pid {0}\r\n", Process.GetCurrentProcess().Id);
-                var uptime = (int)(DateTime.UtcNow - _startTime).TotalSeconds;
+                var startTime = Process.GetCurrentProcess().StartTime.ToUniversalTime();
+                var uptime = (int)(DateTime.UtcNow - startTime).TotalSeconds;
                 sb.AppendFormat("STAT uptime {0}\r\n", uptime);
                 sb.AppendFormat("STAT time {0}\r\n", DateTimeOffset.UtcNow.ToUnixTimeSeconds());
                 sb.AppendFormat("STAT version {0}\r\n", GetType().Assembly.GetName().Version);

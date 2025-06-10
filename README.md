@@ -37,6 +37,7 @@ sc start Nemcache
 
 The following commands from the [Memcached specification](https://raw.github.com/memcached/memcached/master/doc/protocol.txt)
 are implemented: get (and gets), set, add, replace, delete, append, prepend, incr, decr, touch, flush_all, cas, quit, stats (including `stats settings`) and version.
+The `stats` command reports values such as the server's `pid`, `uptime`, `version`, `pointer_size`, current item count and memory usage.
  
 Currently only TCP is supported including the noreply mode. 
 
