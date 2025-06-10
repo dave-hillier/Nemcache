@@ -16,8 +16,9 @@ var host = Host.CreateDefaultBuilder(args)
     })
     .ConfigureServices(services =>
     {
-        services.AddSingleton<IMemCache>(sp =>
-            new MemCache(1024UL * 1024 * 1024, System.Reactive.Concurrency.Scheduler.Default));
+        services.AddSingleton<IMemCacheFactory>(sp =>
+            new MemCacheFactory(1024UL * 1024 * 1024,
+                System.Reactive.Concurrency.Scheduler.Default));
 
         services.AddOptions<RingProviderOptions>()
             .Configure(options =>
