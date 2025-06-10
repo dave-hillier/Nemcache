@@ -144,9 +144,55 @@ namespace Nemcache.Tests
                 OnNext(1, "{\"value\":\"tickingkey\",\"data\":\"0\"}"),
                 OnNext(1, "{\"subscription\":\"tickingkey\",\"response\":\"UNSUBSCRIBED\"}")
                 );
+                );
         }
 
         [Test]
+                OnNext(0, "{\"subscription\":\"valuekey\",\"response\":\"UNSUBSCRIBED\"}"),
+        [Test]
+        public void RemovalNotification()
+        {
+            SetupValueKey();
+            _client.Subscribe(_testObserver);
+            var cmd = "{\"command\":\"subscribe\",\"key\":\"valuekey\"}";
+            _client.OnNext(cmd);
+
+            _cache.Remove("valuekey");
+
+            _testObserver.Messages.AssertEqual(
+                OnNext(0, "{\"subscription\":\"valuekey\",\"response\":\"OK\"}"),
+                OnNext(0, "{\"value\":\"valuekey\",\"data\":\"1234567890\"}"),
+                OnNext(0, "{\"remove\":\"valuekey\"}")
+                );
+        }
+
+        [Test]
+        public void MultipleClientsReceiveUpdates()
+        {
+            SetupTickingKey();
+            var observer2 = _testScheduler.CreateObserver<string>();
+            var handler2 = new CacheEntrySubscriptionHandler(_cache, observer2);
+            var client2 = new Client(handler2);
+
+            _client.Subscribe(_testObserver);
+            client2.Subscribe(observer2);
+
+            var command = "{\"command\":\"subscribe\",\"key\":\"tickingkey\"}";
+            _client.OnNext(command);
+            client2.OnNext(command);
+
+            _testScheduler.AdvanceBy(1);
+
+            _testObserver.Messages.AssertEqual(
+                OnNext(0, "{\"subscription\":\"tickingkey\",\"response\":\"OK\"}"),
+                OnNext(1, "{\"value\":\"tickingkey\",\"data\":\"0\"}")
+                );
+            observer2.Messages.AssertEqual(
+                OnNext(0, "{\"subscription\":\"tickingkey\",\"response\":\"OK\"}"),
+                OnNext(1, "{\"value\":\"tickingkey\",\"data\":\"0\"}")
+                );
+        }
+
         public void MultiplexedSubscriptions()
         {
             SetupTickingKey();

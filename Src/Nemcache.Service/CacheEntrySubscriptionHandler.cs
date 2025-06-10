@@ -51,6 +51,10 @@ namespace Nemcache.Service
             {
                 SendUnsubscriptionError(_responseObserver, key);
             }
+            else
+            {
+                SendUnsubscriptionError(_responseObserver, key);
+            }
         }
 
         private void Subscribe(JsonObject cmd)
@@ -93,13 +97,43 @@ namespace Nemcache.Service
                     };
                 var combinedNotifications = Observable.Return(notification).Combine(_cache.Notifications); // TODO: must be a simpler way of doing this...
 
-                _subscriptions[key] = combinedNotifications.
-                                OfType<IKeyCacheNotification>().
-                                Where(k => k.Key == key).
-                                Select(JsonFromNotifications).
-                                Subscribe(responseObserver); 
+            {
+                var responseValue = new Dictionary<string, string>
+                    {
+                        {"value", store.Key},
+                        {"data", Encoding.UTF8.GetString(store.Data)}
+                    };
+                return JsonSerializer.SerializeToString(responseValue);
             }
-            else
+            var remove = keyCacheNotification as RemoveNotification;
+            if (remove != null)
+            {
+                var responseValue = new Dictionary<string, string>
+                        {"remove", remove.Key}
+                return JsonSerializer.SerializeToString(responseValue);
+            }
+
+            return string.Empty;
+        }
+
+        private static void SendUnsubscriptionConfirmation(IObserver<string> responseObserver, string key)
+        {
+            var response = new Dictionary<string, string>
+                {
+                    {"subscription", key},
+                    {"response", "UNSUBSCRIBED"}
+                };
+            responseObserver.OnNext(JsonSerializer.SerializeToString(response));
+        }
+
+        private static void SendUnsubscriptionError(IObserver<string> responseObserver, string key)
+        {
+            var response = new Dictionary<string, string>
+                {
+                    {"subscription", key},
+                    {"response", "ERROR"}
+                };
+            responseObserver.OnNext(JsonSerializer.SerializeToString(response));
             {
                 _subscriptions[key] = _cache.Notifications.
                                                 OfType<IKeyCacheNotification>().

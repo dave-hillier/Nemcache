@@ -8,18 +8,10 @@ using Nemcache.Storage.Persistence;
 using Nemcache.DynamoService.Grains;
 using Nemcache.DynamoService.Routing;
 using Nemcache.DynamoService.Services;
-
-var host = Host.CreateDefaultBuilder(args)
-    .UseOrleans(siloBuilder =>
-    {
-        siloBuilder.UseLocalhostClustering();
-    })
-    .ConfigureServices(services =>
-    {
-        services.AddSingleton<IMemCache>(sp =>
-            new MemCache(1024UL * 1024 * 1024, System.Reactive.Concurrency.Scheduler.Default));
-
-        services.AddOptions<RingProviderOptions>()
+        services.AddSingleton<IMemCacheFactory>(sp =>
+            new MemCacheFactory(1024UL * 1024 * 1024,
+                System.Reactive.Concurrency.Scheduler.Default));
+        // Persistence is handled per partition grain
             .Configure(options =>
             {
                 options.PartitionCount = 32;
