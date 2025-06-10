@@ -46,7 +46,8 @@ namespace Nemcache.Storage
 
         private void RemoveExpired()
         {
-            var expired = _cache.ToArray().Where(ce => ce.Value.IsExpired(_scheduler));
+            var expired = _cache.ToArray().Where(ce => ce.Value.IsExpired(_scheduler)).ToArray();
+
             foreach (var kv in expired)
             {
                 Remove(kv.Key);
@@ -59,23 +60,29 @@ namespace Nemcache.Storage
 
         public void Clear()
         {
-            var eventId = Interlocked.Increment(ref _currentSequenceId);
+            int eventId = Interlocked.Increment(ref _currentSequenceId);
             _cache.Clear();
+
             _notificationsSubject.OnNext(new ClearNotification {EventId = eventId});
         }
 
         public bool Touch(string key, DateTime exptime)
         {
             bool success = false;
+            int eventId = 0;
             CacheEntry entry;
             if (_cache.TryGetValue(key, out entry))
             {
-                var eventId = Interlocked.Increment(ref _currentSequenceId);
+                eventId = Interlocked.Increment(ref _currentSequenceId);
                 CacheEntry touched = entry;
                 touched.EventId = eventId;
                 touched.Expiry = exptime;
                 _cache.TryUpdate(key, touched, entry); // OK to fail if something else has updated?
                 success = true;
+            }
+
+            if (success)
+            {
                 _notificationsSubject.OnNext(new TouchNotification
                     {
                         Key = key,
@@ -117,7 +124,8 @@ namespace Nemcache.Storage
                     var spaceRequired = Math.Abs(newData.Length - entry.Data.Length);
                     if (spaceRequired > 0)
                         MakeSpaceForNewEntry(spaceRequired);
-                    var eventId = Interlocked.Increment(ref _currentSequenceId);
+
+                    int eventId = Interlocked.Increment(ref _currentSequenceId);
                     var newValue = new CacheEntry
                         {
                             CasUnique = casUnique,
@@ -126,8 +134,8 @@ namespace Nemcache.Storage
                             Flags = flags,
                             EventId = eventId,
                         };
-                    
-                    var updated = _cache.TryUpdate(key, newValue, entry);
+
+                    bool updated = _cache.TryUpdate(key, newValue, entry);
                     // notify cas update
                     return updated;
                 }
@@ -139,7 +147,6 @@ namespace Nemcache.Storage
 
         public bool Replace(string key, ulong flags, DateTime exptime, byte[] data)
         {
-            var eventId = Interlocked.Increment(ref _currentSequenceId);
             if (_cache.ContainsKey(key))
             {
                 var existingLength = _cache[key].Data.Length;
@@ -151,7 +158,8 @@ namespace Nemcache.Storage
                 MakeSpaceForNewEntry(data.Length);
             }
 
-            var replaced = _cache.TryUpdate(key, e => new CacheEntry
+            int eventId = Interlocked.Increment(ref _currentSequenceId);
+            bool replaced = _cache.TryUpdate(key, e => new CacheEntry
                 {
                     Data = data,
                     Expiry = exptime,
@@ -177,7 +185,7 @@ namespace Nemcache.Storage
         public bool Add(string key, ulong flags, DateTime exptime, byte[] data)
         {
             MakeSpaceForNewEntry(data.Length); // In the case of replace this could be offset by the existing value
-            var eventId = Interlocked.Increment(ref _currentSequenceId);
+            int eventId = Interlocked.Increment(ref _currentSequenceId);
             var entry = new CacheEntry
                 {
                     Data = data,
@@ -206,8 +214,8 @@ namespace Nemcache.Storage
         public bool Append(string key, ulong flags, DateTime exptime, byte[] data, bool prepend)
         {
             MakeSpaceForNewEntry(data.Length); // In the case of replace this could be offset by the existing value
-            var eventId = Interlocked.Increment(ref _currentSequenceId);
-            var exists = _cache.TryUpdate(key, e =>
+            int eventId = Interlocked.Increment(ref _currentSequenceId);
+            bool exists = _cache.TryUpdate(key, e =>
                 {
                     var newEntry = e;
                     newEntry.Data = prepend
@@ -237,8 +245,7 @@ namespace Nemcache.Storage
         public bool Store(string key, ulong flags, byte[] data, DateTime exptime)
         {
             MakeSpaceForNewEntry(data.Length); // In the case of replace this could be offset by the existing value
-            var eventId = Interlocked.Increment(ref _currentSequenceId);
-
+            int eventId = Interlocked.Increment(ref _currentSequenceId);
             int size = 0;
             if (_cache.ContainsKey(key))
             {
@@ -251,6 +258,7 @@ namespace Nemcache.Storage
                     Flags = flags,
                     EventId = eventId
                 };
+
             Interlocked.Add(ref _used, data.Length - size);
             _notificationsSubject.OnNext(
                 new StoreNotification
@@ -268,7 +276,7 @@ namespace Nemcache.Storage
         public bool Remove(string key)
         {
             CacheEntry entry;
-            var eventId = Interlocked.Increment(ref _currentSequenceId);
+            int eventId = Interlocked.Increment(ref _currentSequenceId);
             bool removed = _cache.TryRemove(key, out entry);
             if (removed)
             {
@@ -281,13 +289,16 @@ namespace Nemcache.Storage
         public IEnumerable<KeyValuePair<string, CacheEntry>> Retrieve(IEnumerable<string> keys)
         {
             var tmp = keys.ToArray();
+            var result = (from key in tmp
+                          where _cache.ContainsKey(key)
+                          select KeyValuePair.Create(key, _cache[key])).ToList();
+
             foreach (var key in tmp)
             {
                 Use(key);
             }
-            return from key in tmp
-                   where _cache.ContainsKey(key)
-                   select KeyValuePair.Create(key, _cache[key]);
+
+            return result;
         }
 
         public IObservable<ICacheNotification> Notifications
@@ -304,9 +315,9 @@ namespace Nemcache.Storage
         {
             get
             {
-                // TODO: make this atomic...
                 var contents = _cache.ToArray();
-                return Tuple.Create(_currentSequenceId, contents);
+                var seq = Volatile.Read(ref _currentSequenceId);
+                return Tuple.Create(seq, contents);
             }
         }
     
@@ -326,8 +337,7 @@ namespace Nemcache.Storage
         private void CasStore(string key, ulong flags, DateTime exptime, ulong casUnique, byte[] newData)
         {
             MakeSpaceForNewEntry(newData.Length); // In the case of replace this could be offset by the existing value
-            var eventId = Interlocked.Increment(ref _currentSequenceId);
-
+            int eventId = Interlocked.Increment(ref _currentSequenceId);
             int size = 0;
             if (_cache.ContainsKey(key))
             {
