@@ -86,5 +86,20 @@ namespace Nemcache.Tests.Persistence
                 Assert.IsFalse(store.TryGet("z", out _));
             }
         }
+
+        [Test]
+        public void PersistsAfterCrashSimulation()
+        {
+            var store1 = new BitcaskStore(_fs, _dir, 1000);
+            store1.Put("c", new byte[] {7, 8});
+
+            using (var store2 = new BitcaskStore(_fs, _dir, 1000))
+            {
+                Assert.IsTrue(store2.TryGet("c", out var value));
+                CollectionAssert.AreEqual(new byte[] {7, 8}, value);
+            }
+
+            store1.Dispose();
+        }
     }
 }

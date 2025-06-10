@@ -17,15 +17,17 @@ namespace Nemcache.Storage.Persistence
         private readonly string _directory;
         private readonly long _maxFileSize;
         private FileStream? _currentFile;
+        private readonly bool _flushAfterWrite;
         private int _currentFileId;
         private readonly Dictionary<string, (int fileId, long offset, int length)> _index = new();
         public IEnumerable<string> Keys => _index.Keys;
 
-        public BitcaskStore(IFileSystem fileSystem, string directory, long maxFileSize)
+        public BitcaskStore(IFileSystem fileSystem, string directory, long maxFileSize, bool flushAfterWrite = true)
         {
             _fileSystem = fileSystem;
             _directory = directory;
             _maxFileSize = maxFileSize;
+            _flushAfterWrite = flushAfterWrite;
             Directory.CreateDirectory(directory);
             LoadIndex();
         }
@@ -35,6 +37,8 @@ namespace Nemcache.Storage.Persistence
             EnsureFile();
             var offset = _currentFile!.Position;
             WriteEntry(_currentFile, key, value);
+            if (_flushAfterWrite)
+                _currentFile!.Flush();
             _index[key] = (_currentFileId, offset, value.Length);
         }
 
@@ -56,6 +60,8 @@ namespace Nemcache.Storage.Persistence
             _index.Remove(key);
             EnsureFile();
             WriteEntry(_currentFile!, key, Array.Empty<byte>()); // tombstone
+            if (_flushAfterWrite)
+                _currentFile!.Flush();
         }
 
         public IEnumerable<KeyValuePair<string, byte[]>> Entries()
