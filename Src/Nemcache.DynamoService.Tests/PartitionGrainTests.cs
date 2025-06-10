@@ -7,7 +7,10 @@ using Orleans.TestingHost;
 using Nemcache.DynamoService.Grains;
 using Nemcache.DynamoService.Routing;
 using Nemcache.Storage;
+using Nemcache.DynamoService.Services;
+using Nemcache.Storage.IO;
 using System.Reactive.Concurrency;
+using System.IO;
 
 namespace Nemcache.DynamoService.Tests;
 
@@ -34,13 +37,28 @@ public class PartitionGrainTests
         _cluster?.Dispose();
     }
 
+    private class SharedFileSystem : IFileSystem, IFile
+    {
+        public IFile File => this;
+
+        public Stream Open(string path, FileMode mode, FileAccess access)
+            => new FileStream(path, mode, access, FileShare.ReadWrite);
+
+        public bool Exists(string path) => System.IO.File.Exists(path);
+        public long Size(string filename) => new FileInfo(filename).Length;
+        public void Delete(string path) => System.IO.File.Delete(path);
+        public void Replace(string sourceFileName, string destinationFileName, string destinationBackupFileName, bool ignoreMetadataErrors)
+            => System.IO.File.Replace(sourceFileName, destinationFileName, destinationBackupFileName, ignoreMetadataErrors);
+    }
+
     private class SiloConfigurator : ISiloConfigurator
     {
         public void Configure(ISiloBuilder siloBuilder)
         {
             siloBuilder.ConfigureServices(services =>
             {
-                services.AddSingleton<IMemCache>(sp => new MemCache(1024 * 1024, Scheduler.Default));
+                services.AddSingleton<IMemCacheFactory>(sp => new MemCacheFactory(1024UL * 1024, Scheduler.Default));
+                services.AddSingleton<IFileSystem, SharedFileSystem>();
                 services.AddSingleton(new RingProvider(partitionCount: 4, replicaCount: 3));
             });
         }
