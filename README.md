@@ -61,7 +61,7 @@ To create a production build run `yarn build`.
 
 ## Persistence strategies
 
-Nemcache provides two persistence options for the on-disk cache log:
+Nemcache provides three persistence options for the on-disk cache log:
 
 * **Stream log (default)** – Each cache notification is serialized using
   protobuf and appended to `cachelog.bin`. On startup the log is replayed to
@@ -70,6 +70,9 @@ Nemcache provides two persistence options for the on-disk cache log:
   as raw key/value pairs to numbered data files while an in-memory directory
   tracks the latest offset for each key. A design overview is available in
   [docs/bitcask-notes.md](docs/bitcask-notes.md).
+* **Hybrid log** – A memory buffer temporarily holds updates before flushing
+  them to a single append-only file. An in-memory index maps keys to offsets in
+  either the buffer or the persisted log, allowing direct lookups.
 
 ### Trade-offs
 
@@ -77,6 +80,7 @@ Nemcache provides two persistence options for the on-disk cache log:
 | -------- | ------------ | -------------- | ------------ | ---------- | ---------- |
 | **Stream log** | Append protobuf notifications to a single log file | Must replay entire log on startup | Minimal | Grows until compacted | Simple |
 | **Bitcask** | Append raw key/value entries across numbered data files | Uses an index for direct lookup, enabling faster restarts | Index proportional to key count | Compaction keeps only latest values | Higher |
+| **Hybrid log** | Buffer writes in memory then append to a single log file | Scans log to rebuild index | Buffer size plus key index | Single file grows until compacted | Moderate |
 
 
 ## Running Tests
