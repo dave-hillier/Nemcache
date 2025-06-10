@@ -32,14 +32,15 @@ namespace Nemcache.Service
                 var contentKey = string.Format("content:{0}", key);
                 CacheEntry cacheEntry;
                 var hasContent = _cache.TryGet(contentKey, out cacheEntry);
-                
-                string contentType = httpContext.Request.ContentType;
-                if (hasContent)
+                if (!hasContent)
                 {
-                    var contentTypeBytes = cacheEntry.Data;
-                    //httpContext.Request.ContentType
-                    contentType = Encoding.UTF8.GetString(contentTypeBytes);
+                    httpContext.Response.StatusCode = 404;
+                    httpContext.Response.Close();
+                    return;
                 }
+
+                var contentTypeBytes = cacheEntry.Data;
+                var contentType = Encoding.UTF8.GetString(contentTypeBytes);
 
                 httpContext.Response.ContentType = contentType;
 
@@ -52,12 +53,15 @@ namespace Nemcache.Service
 
         public override async Task Put(HttpListenerContext context, params string[] matches)
         {
-            // TODO: content type...
             var key = matches[0];
             var streamReader = new StreamReader(context.Request.InputStream);
             var body = await streamReader.ReadToEndAsync();
 
             _cache.Store(key, 0, Encoding.UTF8.GetBytes(body), DateTime.MaxValue);
+
+            var contentType = context.Request.ContentType ?? string.Empty;
+            var contentKey = string.Format("content:{0}", key);
+            _cache.Store(contentKey, 0, Encoding.UTF8.GetBytes(contentType), DateTime.MaxValue);
 
             byte[] response = Encoding.UTF8.GetBytes("STORED\r\n");
             context.Response.StatusCode = 200;
