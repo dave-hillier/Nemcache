@@ -5,6 +5,7 @@ using System.Threading;
 using Nemcache.DynamoService.Routing;
 using Nemcache.DynamoService.Services;
 using Nemcache.Storage;
+using Nemcache.DynamoService.Services;
 using Nemcache.Storage.IO;
 using Nemcache.Storage.Persistence;
 using Orleans;

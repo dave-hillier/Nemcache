@@ -4,6 +4,8 @@ using Microsoft.Extensions.Options;
 using Orleans.Hosting;
 using Nemcache.Storage;
 using Nemcache.Storage.IO;
+using Nemcache.DynamoService.Services;
+using Nemcache.Storage.Persistence;
 using Nemcache.DynamoService.Grains;
 using Nemcache.DynamoService.Routing;
 using Nemcache.DynamoService.Services;

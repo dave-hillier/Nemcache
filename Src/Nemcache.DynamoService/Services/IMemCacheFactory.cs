@@ -6,4 +6,16 @@ namespace Nemcache.DynamoService.Services
     {
         IMemCache Create();
     }
+
+    public class DefaultMemCacheFactory : IMemCacheFactory
+    {
+        private readonly IMemCache _cache;
+
+        public DefaultMemCacheFactory(IMemCache cache)
+        {
+            _cache = cache;
+        }
+
+        public IMemCache Create() => _cache;
+    }
 }
