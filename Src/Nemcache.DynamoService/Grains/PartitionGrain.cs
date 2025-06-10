@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Threading;
 using Nemcache.DynamoService.Routing;
 using Nemcache.DynamoService.Services;
 using Nemcache.Storage;
@@ -25,7 +26,7 @@ namespace Nemcache.DynamoService.Grains
             _fileSystem = fileSystem;
         }
 
-        public override Task OnActivateAsync()
+        public override Task OnActivateAsync(CancellationToken cancellationToken)
         {
             _cache = _cacheFactory.Create();
             var logPath = $"{this.GetPrimaryKeyString()}.log";
@@ -34,14 +35,14 @@ namespace Nemcache.DynamoService.Grains
             _persistence = new StreamPersistence(archiver, restorer);
             _cache.Notifications.Subscribe(_persistence);
             _persistence.Restore();
-            return base.OnActivateAsync();
+            return base.OnActivateAsync(cancellationToken);
         }
 
-        public override Task OnDeactivateAsync()
+        public override Task OnDeactivateAsync(DeactivationReason reason, CancellationToken cancellationToken)
         {
             _persistence?.Dispose();
             _cache?.Dispose();
-            return base.OnDeactivateAsync();
+            return base.OnDeactivateAsync(reason, cancellationToken);
         }
 
         public async Task PutAsync(string key, byte[] value)
