@@ -29,7 +29,11 @@ namespace Nemcache.Service
         {
             if (key.Length > 250)
                 throw new InvalidOperationException("Key too long");
-            // TODO: no control chars
+            foreach (var c in key)
+            {
+                if (c < 0x20 || c == 0x7F)
+                    throw new InvalidOperationException("Key contains control characters");
+            }
             return key;
         }
 
