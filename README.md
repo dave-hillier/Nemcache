@@ -89,3 +89,12 @@ strategy has strengths:
 * **Complexity** – The stream approach is simple to implement. Bitcask adds file
   management and indexing logic in exchange for improved performance on large
   data sets.
+
+## Running Tests
+
+Run all unit tests with:
+
+```bash
+dotnet test Src/Nemcache.Tests/Nemcache.Tests.csproj
+dotnet test Src/Nemcache.DynamoService.Tests/Nemcache.DynamoService.Tests.csproj
+```
