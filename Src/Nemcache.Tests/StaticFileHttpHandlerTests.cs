@@ -25,7 +25,7 @@ namespace Nemcache.Tests
         [TearDown]
         public void TearDown()
         {
-            _server.Stop();
+            _server?.Stop();
             Directory.Delete(_rootDir, true);
         }
 

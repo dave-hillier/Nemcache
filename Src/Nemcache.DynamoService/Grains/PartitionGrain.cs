@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Nemcache.DynamoService.Routing;
 using Nemcache.Storage;
+using Nemcache.DynamoService.Services;
 using Orleans;
 
 namespace Nemcache.DynamoService.Grains
@@ -13,9 +14,9 @@ namespace Nemcache.DynamoService.Grains
         private readonly RingProvider _ring;
         private const int ReplicaCount = 3;
 
-        public PartitionGrain(IMemCache cache, RingProvider ring)
+        public PartitionGrain(IMemCacheFactory cacheFactory, RingProvider ring)
         {
-            _cache = cache;
+            _cache = cacheFactory.Create();
             _ring = ring;
         }
 
