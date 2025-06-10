@@ -19,4 +19,6 @@ jobs:
     - name: Build
       run: dotnet build Src/Nemcache.Service/Nemcache.Service.csproj --no-restore --configuration Release
     - name: Test
-      run: dotnet test Src/Nemcache.Tests/Nemcache.Tests.csproj --no-build --configuration Release
+      run: |
+        dotnet test Src/Nemcache.Tests/Nemcache.Tests.csproj --configuration Release
+        dotnet test Src/Nemcache.DynamoService.Tests/Nemcache.DynamoService.Tests.csproj --configuration Release

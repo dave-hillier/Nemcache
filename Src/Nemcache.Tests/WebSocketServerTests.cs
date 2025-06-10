@@ -75,6 +75,78 @@ namespace Nemcache.Tests
             Assert.AreEqual("{\"subscription\":\"mykey\",\"response\":\"OK\"}", responseString.Trim('\0'));
         }
 
+        [Test]
+        public void SendInThreeParts()
+        {
+            var part1 = new ArraySegment<byte>(Encoding.UTF8.GetBytes("{\"command\":\"sub"));
+            _clientWebSocket.SendAsync(part1, WebSocketMessageType.Text, false, _cts.Token).Wait();
+
+            var part2 = new ArraySegment<byte>(Encoding.UTF8.GetBytes("scribe\",\"key\":\"my"));
+            _clientWebSocket.SendAsync(part2, WebSocketMessageType.Text, false, _cts.Token).Wait();
+
+            var part3 = new ArraySegment<byte>(Encoding.UTF8.GetBytes("key\"}"));
+            _clientWebSocket.SendAsync(part3, WebSocketMessageType.Text, true, _cts.Token).Wait();
+
+            var buffer = new ArraySegment<byte>(new byte[1024]);
+            var response = _clientWebSocket.ReceiveAsync(buffer, _cts.Token).Result;
+            var responseString = Encoding.UTF8.GetString(buffer.Array);
+
+            Assert.AreEqual(WebSocketMessageType.Text, response.MessageType);
+            Assert.AreEqual("{\"subscription\":\"mykey\",\"response\":\"OK\"}", responseString.Trim('\0'));
+        }
+
+        [Test]
+        public void DisconnectAndReconnect()
+        {
+            const string subscribeRequest = "{\"command\":\"subscribe\", \"key\":\"mykey\"}";
+            var sendBuffer = new ArraySegment<byte>(Encoding.UTF8.GetBytes(subscribeRequest));
+            _clientWebSocket.SendAsync(sendBuffer, WebSocketMessageType.Text, true, _cts.Token).Wait();
+            var buffer = new ArraySegment<byte>(new byte[1024]);
+            _clientWebSocket.ReceiveAsync(buffer, _cts.Token).Wait();
+
+            _clientWebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "done", _cts.Token).Wait();
+            _clientWebSocket.Dispose();
+
+            _clientWebSocket = new ClientWebSocket();
+            _clientWebSocket.Options.AddSubProtocol("nemcache-0.1");
+            _clientWebSocket.ConnectAsync(_wsUri, _cts.Token).Wait();
+
+            _clientWebSocket.SendAsync(sendBuffer, WebSocketMessageType.Text, true, _cts.Token).Wait();
+            buffer = new ArraySegment<byte>(new byte[1024]);
+            var response = _clientWebSocket.ReceiveAsync(buffer, _cts.Token).Result;
+            var responseString = Encoding.UTF8.GetString(buffer.Array);
+
+            Assert.AreEqual(WebSocketMessageType.Text, response.MessageType);
+            Assert.AreEqual("{\"subscription\":\"mykey\",\"response\":\"OK\"}", responseString.Trim('\0'));
+        }
+
+        [Test]
+        public void MultipleClients()
+        {
+            using (var other = new ClientWebSocket())
+            {
+                other.Options.AddSubProtocol("nemcache-0.1");
+                other.ConnectAsync(_wsUri, _cts.Token).Wait();
+
+                var sendBuffer = new ArraySegment<byte>(Encoding.UTF8.GetBytes("{\"command\":\"subscribe\", \"key\":\"mykey\"}"));
+                _clientWebSocket.SendAsync(sendBuffer, WebSocketMessageType.Text, true, _cts.Token).Wait();
+                other.SendAsync(sendBuffer, WebSocketMessageType.Text, true, _cts.Token).Wait();
+
+                var buffer1 = new ArraySegment<byte>(new byte[1024]);
+                var resp1 = _clientWebSocket.ReceiveAsync(buffer1, _cts.Token).Result;
+                var str1 = Encoding.UTF8.GetString(buffer1.Array);
+
+                var buffer2 = new ArraySegment<byte>(new byte[1024]);
+                var resp2 = other.ReceiveAsync(buffer2, _cts.Token).Result;
+                var str2 = Encoding.UTF8.GetString(buffer2.Array);
+
+                Assert.AreEqual(WebSocketMessageType.Text, resp1.MessageType);
+                Assert.AreEqual(WebSocketMessageType.Text, resp2.MessageType);
+                Assert.AreEqual("{\"subscription\":\"mykey\",\"response\":\"OK\"}", str1.Trim('\0'));
+                Assert.AreEqual("{\"subscription\":\"mykey\",\"response\":\"OK\"}", str2.Trim('\0'));
+            }
+        }
+
         // TODO: sending message in multiple parts, endofmessage false, then true
         // TODO: delayed response test
         // TODO: multiple response test
