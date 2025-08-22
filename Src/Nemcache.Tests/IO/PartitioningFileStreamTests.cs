@@ -299,5 +299,83 @@ namespace Nemcache.Tests.IO
 
             Assert.IsTrue(stream1.HasCalledClose);
         }
+
+        [Test]
+        public void SeekAcrossPartitions()
+        {
+            var memoryStream1 = new MemoryStream(Encoding.ASCII.GetBytes("12345"));
+            var memoryStream2 = new MemoryStream(Encoding.ASCII.GetBytes("67890"));
+            var memoryStream3 = new MemoryStream(Encoding.ASCII.GetBytes("abcde"));
+
+            var fileSystem = new FakeFileSystem(memoryStream1, memoryStream2, memoryStream3);
+            var partitioningStream = new PartitioningFileStream(fileSystem, "FileName", "ext", 5, FileAccess.Read);
+
+            var buffer = new byte[1];
+
+            partitioningStream.Seek(7, SeekOrigin.Begin);
+            partitioningStream.Read(buffer, 0, 1);
+            Assert.AreEqual('8', buffer[0]);
+
+            partitioningStream.Seek(2, SeekOrigin.Current);
+            partitioningStream.Read(buffer, 0, 1);
+            Assert.AreEqual('a', buffer[0]);
+
+            partitioningStream.Seek(-3, SeekOrigin.End);
+            partitioningStream.Read(buffer, 0, 1);
+            Assert.AreEqual('c', buffer[0]);
+        }
+
+        [Test]
+        public void SetLengthShrinkAndExpand()
+        {
+            var memoryStream1 = new MemoryStream(Encoding.ASCII.GetBytes("12345"));
+            var memoryStream2 = new MemoryStream(Encoding.ASCII.GetBytes("67890"));
+            var memoryStream3 = new MemoryStream(new byte[5]);
+
+            var fileSystem = new FakeFileSystem(memoryStream1, memoryStream2, memoryStream3);
+            var partitioningStream = new PartitioningFileStream(fileSystem, "FileName", "ext", 5, FileAccess.ReadWrite);
+
+            partitioningStream.SetLength(7);
+            Assert.AreEqual(7, partitioningStream.Length);
+
+            var buffer = new byte[12];
+            partitioningStream.Seek(0, SeekOrigin.Begin);
+            partitioningStream.Read(buffer, 0, 12);
+            Assert.AreEqual("1234567", Encoding.ASCII.GetString(buffer, 0, 7));
+
+            partitioningStream.SetLength(12);
+            Assert.AreEqual(12, partitioningStream.Length);
+
+            partitioningStream.Seek(0, SeekOrigin.Begin);
+            partitioningStream.Read(buffer, 0, 12);
+            Assert.AreEqual("1234567", Encoding.ASCII.GetString(buffer, 0, 7));
+            for (int i = 7; i < 12; i++)
+            {
+                Assert.AreEqual(0, buffer[i]);
+            }
+        }
+
+        [Test]
+        public void ReadPastEndThrows()
+        {
+            var memoryStream1 = new MemoryStream(Encoding.ASCII.GetBytes("12345"));
+            var fileSystem = new FakeFileSystem(memoryStream1, null, null);
+            var partitioningStream = new PartitioningFileStream(fileSystem, "FileName", "ext", 5, FileAccess.Read);
+
+            partitioningStream.Seek(10, SeekOrigin.Begin);
+            var buffer = new byte[1];
+            Assert.Throws<EndOfStreamException>(() => partitioningStream.Read(buffer, 0, 1));
+        }
+
+        [Test]
+        public void WritePastEndThrows()
+        {
+            var memoryStream1 = new MemoryStream(new byte[5]);
+            var fileSystem = new FakeFileSystem(memoryStream1, null, null);
+            var partitioningStream = new PartitioningFileStream(fileSystem, "FileName", "ext", 5, FileAccess.Write);
+
+            partitioningStream.Seek(10, SeekOrigin.Begin);
+            Assert.Throws<EndOfStreamException>(() => partitioningStream.Write(new byte[1], 0, 1));
+        }
     }
 }
