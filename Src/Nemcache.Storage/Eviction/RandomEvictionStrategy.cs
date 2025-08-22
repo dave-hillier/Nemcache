@@ -6,11 +6,12 @@ namespace Nemcache.Storage.Eviction
     public class RandomEvictionStrategy : IEvictionStrategy
     {
         private readonly IMemCache _cache;
-        private readonly Random _rng = new Random();
+        private readonly Random _rng;
 
-        public RandomEvictionStrategy(IMemCache cache)
+        public RandomEvictionStrategy(IMemCache cache, Random rng = null)
         {
             _cache = cache;
+            _rng = rng ?? new Random();
         }
 
         public void EvictEntry()
