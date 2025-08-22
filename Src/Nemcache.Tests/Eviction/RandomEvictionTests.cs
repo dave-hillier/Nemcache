@@ -85,7 +85,9 @@ namespace Nemcache.Tests.Eviction
             {
                 Assert.That(count, Is.InRange(250, 400));
             }
+        }
 
+        [Test]
         public void EvictRepeatedlyRemovesAllOriginalKeysInDeterministicOrder()
         {
             var memCache = new MemCache(100);
