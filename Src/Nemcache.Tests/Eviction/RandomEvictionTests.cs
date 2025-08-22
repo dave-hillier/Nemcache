@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Concurrency;
 using NUnit.Framework;
@@ -38,6 +39,42 @@ namespace Nemcache.Tests.Eviction
             var strategy = new RandomEvictionStrategy(memCache);
             strategy.EvictEntry();
             Assert.AreEqual(1, memCache.Keys.Count());
+        }
+
+        [Test]
+        public void EvictsDeterministicKey()
+        {
+            var memCache = new MemCache(100);
+            memCache.Add("key1", 0, DateTime.MaxValue, Array.Empty<byte>());
+            memCache.Add("key2", 0, DateTime.MaxValue, Array.Empty<byte>());
+            var rng = new Random(0);
+            var strategy = new RandomEvictionStrategy(memCache, rng);
+            strategy.EvictEntry();
+            Assert.IsFalse(memCache.Keys.Contains("key2"));
+            Assert.IsTrue(memCache.Keys.Contains("key1"));
+        }
+
+        [Test]
+        public void EvictsFairlyOverManyRuns()
+        {
+            var rng = new Random(0);
+            var counts = new Dictionary<string, int> { {"a", 0}, {"b", 0}, {"c", 0} };
+            for (int i = 0; i < 1000; i++)
+            {
+                var cache = new MemCache(100);
+                cache.Add("a", 0, DateTime.MaxValue, Array.Empty<byte>());
+                cache.Add("b", 0, DateTime.MaxValue, Array.Empty<byte>());
+                cache.Add("c", 0, DateTime.MaxValue, Array.Empty<byte>());
+                var strategy = new RandomEvictionStrategy(cache, rng);
+                strategy.EvictEntry();
+                var removed = new[] { "a", "b", "c" }.Except(cache.Keys).Single();
+                counts[removed]++;
+            }
+
+            foreach (var count in counts.Values)
+            {
+                Assert.That(count, Is.InRange(250, 400));
+            }
         }
     }
 }

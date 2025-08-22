@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using Nemcache.Storage;
 
@@ -106,6 +107,63 @@ namespace Nemcache.Tests.Eviction
             Assert.AreEqual(2, keys.Length);
             Assert.IsTrue(keys.Contains("key3"));
             Assert.IsTrue(keys.Contains("key4"));
+        }
+
+        [Test]
+        public void StoresEntryLargerThanCapacity()
+        {
+            _cache.Add("small1", 0, DateTime.MaxValue, new byte[] {0, 1, 2, 3, 4});
+            _cache.Add("small2", 0, DateTime.MaxValue, new byte[] {0, 1, 2, 3, 4});
+
+            _cache.Add("huge", 0, DateTime.MaxValue, new byte[15]);
+
+            var keys = _cache.Keys.ToArray();
+
+            Assert.AreEqual(1, keys.Length);
+            Assert.IsTrue(keys.Contains("huge"));
+        }
+
+        [Test]
+        public void ConcurrentAccessMaintainsOrdering()
+        {
+            var data = new byte[] {0, 1, 2, 3, 4};
+            _cache.Add("key1", 0, DateTime.MaxValue, data);
+            _cache.Add("key2", 0, DateTime.MaxValue, data);
+
+            var read = Task.Run(() => _cache.Retrieve(new[] {"key1"}));
+            var write = Task.Run(() => _cache.Replace("key2", 0, DateTime.MaxValue, data));
+
+            Task.WaitAll(read, write);
+
+            _cache.Retrieve(new[] {"key1"});
+            _cache.Add("key3", 0, DateTime.MaxValue, data);
+
+            var keys = _cache.Keys.ToArray();
+
+            Assert.AreEqual(2, keys.Length);
+            Assert.IsTrue(keys.Contains("key1"));
+            Assert.IsTrue(keys.Contains("key3"));
+            Assert.IsFalse(keys.Contains("key2"));
+        }
+
+        [Test]
+        public void EvictionOrderAfterMixedOperations()
+        {
+            var data = new byte[] {0, 1, 2, 3, 4};
+            _cache.Add("a", 0, DateTime.MaxValue, data);
+            _cache.Add("b", 0, DateTime.MaxValue, data);
+            _cache.Touch("a", DateTime.MaxValue);
+            _cache.Remove("b");
+            _cache.Add("c", 0, DateTime.MaxValue, data);
+
+            _cache.Add("d", 0, DateTime.MaxValue, data);
+
+            var keys = _cache.Keys.ToArray();
+
+            Assert.AreEqual(2, keys.Length);
+            Assert.IsTrue(keys.Contains("c"));
+            Assert.IsTrue(keys.Contains("d"));
+            Assert.IsFalse(keys.Contains("a"));
         }
     }
 }

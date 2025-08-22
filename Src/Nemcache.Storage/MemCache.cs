@@ -325,6 +325,10 @@ namespace Nemcache.Storage
         {
             while (!HasAvailableSpace((ulong) length))
             {
+                if (!_cache.Any())
+                {
+                    break;
+                }
                 _evictionStrategy.EvictEntry();
             }
         }
