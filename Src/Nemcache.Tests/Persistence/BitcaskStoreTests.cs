@@ -1,5 +1,7 @@
 using System;
 using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using Nemcache.Storage.IO;
 using Nemcache.Storage.Persistence;
@@ -100,6 +102,77 @@ namespace Nemcache.Tests.Persistence
             }
 
             store1.Dispose();
+        }
+
+        [Test]
+        public void CompactionReducesFileSize()
+        {
+            using (var store = new BitcaskStore(_fs, _dir, 50))
+            {
+                for (int i = 0; i < 10; i++)
+                {
+                    var data = new byte[20];
+                    store.Put($"k{i}", data);
+                }
+                store.Put("k0", new byte[5]);
+            }
+
+            var originalSize = Directory.GetFiles(_dir, "data.*").Sum(f => new FileInfo(f).Length);
+
+            var compDir = Path.Combine(_dir, "compact");
+            Directory.CreateDirectory(compDir);
+            using (var source = new BitcaskStore(_fs, _dir, 50))
+            using (var dest = new BitcaskStore(_fs, compDir, 1000))
+            {
+                foreach (var entry in source.Entries())
+                    dest.Put(entry.Key, entry.Value);
+            }
+
+            var compactSize = Directory.GetFiles(compDir, "data.*").Sum(f => new FileInfo(f).Length);
+            Assert.Less(compactSize, originalSize);
+        }
+
+        [Test]
+        public void ParallelPutGetDeleteOperations()
+        {
+            using (var store = new BitcaskStore(_fs, _dir, 1000))
+            {
+                var gate = new object();
+                Parallel.For(0, 100, i =>
+                {
+                    var key = $"k{i}";
+                    lock (gate)
+                    {
+                        store.Put(key, new byte[] { 1 });
+                        Assert.IsTrue(store.TryGet(key, out _));
+                        store.Delete(key);
+                    }
+                });
+
+                Assert.IsEmpty(store.Keys);
+            }
+        }
+
+        [Test]
+        public void RecoversFromTruncatedLog()
+        {
+            using (var store = new BitcaskStore(_fs, _dir, 1000))
+            {
+                store.Put("good", new byte[] { 1, 2, 3 });
+                store.Put("bad", new byte[] { 4, 5, 6 });
+            }
+
+            var file = Directory.GetFiles(_dir, "data.*").OrderBy(f => f).Last();
+            using (var fs = new FileStream(file, FileMode.Open, FileAccess.Write))
+            {
+                fs.SetLength(fs.Length - 2);
+            }
+
+            using (var store = new BitcaskStore(_fs, _dir, 1000))
+            {
+                Assert.IsTrue(store.TryGet("good", out var val));
+                CollectionAssert.AreEqual(new byte[] { 1, 2, 3 }, val);
+            }
         }
     }
 }
