@@ -8,7 +8,7 @@ namespace Nemcache.DynamoService.Routing
     /// </summary>
     public class RingProvider
     {
-        private readonly ConsistentHashRing _ring;
+        private readonly IRing _ring;
         private readonly int _replicaCount;
 
         public RingProvider(int partitionCount, int replicaCount)
@@ -17,6 +17,12 @@ namespace Nemcache.DynamoService.Routing
             var nodes = Enumerable.Range(0, partitionCount)
                 .Select(i => $"partition-{i}");
             _ring = new ConsistentHashRing(nodes);
+        }
+
+        public RingProvider(IRing ring, int replicaCount)
+        {
+            _ring = ring;
+            _replicaCount = replicaCount;
         }
 
         public IEnumerable<string> GetReplicas(string key)
