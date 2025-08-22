@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using Nemcache.Storage;
 
@@ -106,6 +108,61 @@ namespace Nemcache.Tests.Eviction
             Assert.AreEqual(2, keys.Length);
             Assert.IsTrue(keys.Contains("key3"));
             Assert.IsTrue(keys.Contains("key4"));
+        }
+
+        [Test]
+        public void MultipleEvictionsLeaveMostRecentKeys()
+        {
+            for (int i = 0; i < 5; i++)
+            {
+                _cache.Store($"key{i}", 0, new byte[] {0, 1, 2, 3, 4}, DateTime.MaxValue);
+            }
+
+            var keys = _cache.Keys.ToArray();
+
+            Assert.AreEqual(2, keys.Length);
+            Assert.IsTrue(keys.Contains("key3"));
+            Assert.IsTrue(keys.Contains("key4"));
+        }
+
+        [Test]
+        public void ZeroCapacityStoresNothing()
+        {
+            var cache = new MemCache(0);
+            cache.Store("key1", 0, new byte[] {0}, DateTime.MaxValue);
+
+            Assert.IsFalse(cache.Keys.Any());
+        }
+
+        [Test]
+        public void CapacityOneEvictsOlderEntries()
+        {
+            var cache = new MemCache(1);
+            cache.Store("key1", 0, new byte[] {0}, DateTime.MaxValue);
+            cache.Store("key2", 0, new byte[] {0}, DateTime.MaxValue);
+
+            var keys = cache.Keys.ToArray();
+
+            Assert.AreEqual(1, keys.Length);
+            Assert.IsTrue(keys.Contains("key2"));
+        }
+
+        [Test]
+        public void ConcurrentStoreRetrieveMaintainsOrder()
+        {
+            _cache.Store("key1", 0, new byte[] {0, 1, 2, 3, 4}, DateTime.MaxValue);
+            _cache.Store("key2", 0, new byte[] {0, 1, 2, 3, 4}, DateTime.MaxValue);
+
+            Parallel.For(0, 20, i =>
+            {
+                _cache.Retrieve(new[] {"key1"});
+                _cache.Store($"key{i + 3}", 0, new byte[] {0, 1, 2, 3, 4}, DateTime.MaxValue);
+            });
+
+            var keys = _cache.Keys.ToArray();
+
+            Assert.AreEqual(2, keys.Length);
+            Assert.IsFalse(keys.Contains("key2"));
         }
     }
 }
