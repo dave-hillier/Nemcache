@@ -26,7 +26,8 @@ namespace Nemcache.Storage.Reactive
                     var disposable = new CompositeDisposable();
                     var notificationBuffer = new ConcurrentBag<ICacheNotification>();
 
-                    var liveSubscription = live.Subscribe(cacheNotification =>
+                    var liveSubscription = live.Subscribe(
+                        cacheNotification =>
                         {
                             if (notificationBuffer != null)
                             {
@@ -36,11 +37,13 @@ namespace Nemcache.Storage.Reactive
                             {
                                 obs.OnNext(cacheNotification);
                             }
-                        });
+                        },
+                        obs.OnError);
                     disposable.Add(liveSubscription);
 
                     var historicSubscription = historic.Subscribe(
                         n => { notificationBuffer.Add(n); },
+                        obs.OnError,
                         () =>
                             {
                                 var cacheNotifications = notificationBuffer.

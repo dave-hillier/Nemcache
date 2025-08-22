@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System;
+using System.Globalization;
 using System.Reactive;
 using System.Reactive.Linq;
 using Microsoft.Reactive.Testing;
@@ -197,6 +198,91 @@ namespace Nemcache.Tests
                         OnNext<ICacheNotification>(6, n => n.EventId == 8)
                     },
                 observer.Messages);
+        }
+
+        [Test]
+        public void HistoryErrorPropagates()
+        {
+            var ts = new TestScheduler();
+            var ex = new Exception("history fail");
+
+            var history = ts.CreateColdObservable(
+                OnError<ICacheNotification>(3, ex));
+
+            var observer = ts.CreateObserver<ICacheNotification>();
+
+            history.Combine(Observable.Never<ICacheNotification>()).Subscribe(observer);
+
+            ts.AdvanceTo(5);
+
+            ReactiveAssert.AreElementsEqual(
+                new[]
+                {
+                    OnError<ICacheNotification>(3, ex)
+                },
+                observer.Messages);
+        }
+
+        [Test]
+        public void LiveErrorPropagates()
+        {
+            var ts = new TestScheduler();
+            var ex = new Exception("live fail");
+
+            var live = ts.CreateHotObservable(
+                OnError<ICacheNotification>(4, ex));
+
+            var observer = ts.CreateObserver<ICacheNotification>();
+
+            Observable.Empty<ICacheNotification>().Combine(live).Subscribe(observer);
+
+            ts.AdvanceTo(5);
+
+            ReactiveAssert.AreElementsEqual(
+                new[]
+                {
+                    OnError<ICacheNotification>(4, ex)
+                },
+                observer.Messages);
+        }
+
+        [Test]
+        public void DisposeMidStreamStopsNotifications()
+        {
+            var ts = new TestScheduler();
+
+            var history = ts.CreateColdObservable(
+                OnNext<ICacheNotification>(1, new DummyNotification { EventId = 1 }),
+                OnCompleted<ICacheNotification>(3));
+
+            var live = ts.CreateHotObservable(
+                OnNext<ICacheNotification>(2, new DummyNotification { EventId = 2 }),
+                OnNext<ICacheNotification>(4, new DummyNotification { EventId = 3 }),
+                OnNext<ICacheNotification>(6, new DummyNotification { EventId = 4 }));
+
+            var observer = ts.CreateObserver<ICacheNotification>();
+            var subscription = history.Combine(live).Subscribe(observer);
+
+            ts.AdvanceTo(5);
+            subscription.Dispose();
+            ts.AdvanceTo(10);
+
+            ReactiveAssert.AreElementsEqual(
+                new[]
+                {
+                    OnNext<ICacheNotification>(3, n => n.EventId == 1),
+                    OnNext<ICacheNotification>(3, n => n.EventId == 2),
+                    OnNext<ICacheNotification>(4, n => n.EventId == 3)
+                },
+                observer.Messages);
+
+            ReactiveAssert.AreElementsEqual(
+                new[] { Subscribe(0, 5) },
+                history.Subscriptions);
+
+            ReactiveAssert.AreElementsEqual(
+                new[] { Subscribe(0, 5) },
+                live.Subscriptions);
         }
 
         private class DummyNotification : ICacheNotification

@@ -9,7 +9,7 @@ namespace Nemcache.DynamoService.Routing
     /// <summary>
     /// Simple consistent hash ring for mapping keys to nodes.
     /// </summary>
-    public class ConsistentHashRing
+    public class ConsistentHashRing : IRing
     {
         private readonly SortedDictionary<uint, string> _ring = new();
         private readonly int _virtualNodes;
