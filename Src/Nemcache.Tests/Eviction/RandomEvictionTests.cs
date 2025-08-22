@@ -52,7 +52,7 @@ namespace Nemcache.Tests.Eviction
         }
 
         [Test]
-        public void EvictRepeatedlyRemovesAllOriginalKeys()
+        public void EvictRepeatedlyRemovesAllOriginalKeysInDeterministicOrder()
         {
             var memCache = new MemCache(100);
             var keys = new[] { "a", "b", "c", "d", "e" };
@@ -62,24 +62,20 @@ namespace Nemcache.Tests.Eviction
             }
 
             var strategy = CreateStrategy(memCache, seed: 42);
-            var remaining = new HashSet<string>(keys);
-            var removed = new HashSet<string>();
+            var expectedOrder = new[] { "d", "a", "b", "e", "c" };
+            var removed = new List<string>();
 
             for (var i = 0; i < keys.Length; i++)
             {
-                var before = memCache.Keys.ToList();
+                var before = memCache.Keys.OrderBy(k => k).ToList();
                 strategy.EvictEntry();
-                var after = memCache.Keys.ToList();
+                var after = memCache.Keys.OrderBy(k => k).ToList();
 
                 var removedKey = before.Except(after).Single();
-                Assert.IsTrue(remaining.Contains(removedKey));
-                remaining.Remove(removedKey);
                 removed.Add(removedKey);
-
-                CollectionAssert.AreEquivalent(remaining, after);
             }
 
-            CollectionAssert.AreEquivalent(keys, removed);
+            CollectionAssert.AreEqual(expectedOrder, removed);
             Assert.IsFalse(memCache.Keys.Any());
         }
     }
