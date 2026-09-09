@@ -15,7 +15,7 @@ namespace Nemcache.Tests.IO
             var fileSystem = new FakeFileSystem(memoryStream, null, null);
             var partitioningStream = new PartitioningFileStream(fileSystem, "FileName", "ext", 100, FileAccess.Read);
 
-            Assert.IsTrue(partitioningStream.CanRead);
+            Assert.That(partitioningStream.CanRead, Is.True);
         }
 
         [Test]
@@ -25,7 +25,7 @@ namespace Nemcache.Tests.IO
             var fileSystem = new FakeFileSystem(memoryStream, null, null);
             var partitioningStream = new PartitioningFileStream(fileSystem, "FileName", "ext", 100, FileAccess.Write);
 
-            Assert.IsTrue(partitioningStream.CanWrite);
+            Assert.That(partitioningStream.CanWrite, Is.True);
         }
 
         [Test]
@@ -35,8 +35,8 @@ namespace Nemcache.Tests.IO
             var fileSystem = new FakeFileSystem(memoryStream, null, null);
             var partitioningStream = new PartitioningFileStream(fileSystem, "FileName", "ext", 100, FileAccess.ReadWrite);
 
-            Assert.IsTrue(partitioningStream.CanRead);
-            Assert.IsTrue(partitioningStream.CanWrite);
+            Assert.That(partitioningStream.CanRead, Is.True);
+            Assert.That(partitioningStream.CanWrite, Is.True);
         }
 
         [Test]
@@ -49,8 +49,8 @@ namespace Nemcache.Tests.IO
 
             var buffer = new byte[helloWorld.Length];
             var read = partitioningStream.Read(buffer, 0, helloWorld.Length);
-            Assert.AreEqual(helloWorld.Length, read);
-            Assert.AreEqual(helloWorld, Encoding.ASCII.GetString(buffer));
+            Assert.That(read, Is.EqualTo(helloWorld.Length));
+            Assert.That(Encoding.ASCII.GetString(buffer), Is.EqualTo(helloWorld));
         }
 
         [Test]
@@ -66,7 +66,7 @@ namespace Nemcache.Tests.IO
             {
                 partitioningStream.Read(buffer, i, 2);
             }
-            Assert.AreEqual(helloWorld, Encoding.ASCII.GetString(buffer));
+            Assert.That(Encoding.ASCII.GetString(buffer), Is.EqualTo(helloWorld));
         }
 
         [Test]
@@ -79,8 +79,8 @@ namespace Nemcache.Tests.IO
 
             var buffer = new byte[10];
             var read = partitioningStream.Read(buffer, 0, 10);
-            Assert.AreEqual(10, read);
-            Assert.AreEqual("1234567890", Encoding.ASCII.GetString(buffer));
+            Assert.That(read, Is.EqualTo(10));
+            Assert.That(Encoding.ASCII.GetString(buffer), Is.EqualTo("1234567890"));
         }
 
         [Test]
@@ -94,8 +94,8 @@ namespace Nemcache.Tests.IO
 
             var buffer = new byte[12];
             var read = partitioningStream.Read(buffer, 0, 12);
-            Assert.AreEqual(12, read);
-            Assert.AreEqual("1234567890ab", Encoding.ASCII.GetString(buffer));
+            Assert.That(read, Is.EqualTo(12));
+            Assert.That(Encoding.ASCII.GetString(buffer), Is.EqualTo("1234567890ab"));
         }
 
         [Test]
@@ -107,7 +107,7 @@ namespace Nemcache.Tests.IO
 
             partitioningStream.Flush();
 
-            Assert.IsTrue(stream.HasCalledFlush);
+            Assert.That(stream.HasCalledFlush, Is.True);
         }
 
         [Test]
@@ -119,7 +119,7 @@ namespace Nemcache.Tests.IO
 
             partitioningStream.Dispose();
 
-            Assert.IsTrue(stream.HasCalledClose);
+            Assert.That(stream.HasCalledClose, Is.True);
         }
 
         // TODO: check the filename for read
@@ -137,7 +137,7 @@ namespace Nemcache.Tests.IO
             partitioningStream.Write(buffer, 0, buffer.Length);
             partitioningStream.Flush();
 
-            Assert.AreEqual(helloWorld, Encoding.ASCII.GetString(memoryStream.ToArray()));
+            Assert.That(Encoding.ASCII.GetString(memoryStream.ToArray()), Is.EqualTo(helloWorld));
         }
 
         [Test]
@@ -154,8 +154,8 @@ namespace Nemcache.Tests.IO
             partitioningStream.Write(buffer, 0, buffer.Length);
             partitioningStream.Flush();
 
-            Assert.AreEqual(helloWorld.Substring(0, 6), Encoding.ASCII.GetString(memoryStream1.ToArray()));
-            Assert.AreEqual(helloWorld.Substring(6, 6), Encoding.ASCII.GetString(memoryStream2.ToArray()));
+            Assert.That(Encoding.ASCII.GetString(memoryStream1.ToArray()), Is.EqualTo(helloWorld.Substring(0, 6)));
+            Assert.That(Encoding.ASCII.GetString(memoryStream2.ToArray()), Is.EqualTo(helloWorld.Substring(6, 6)));
         }
 
         // TODO: Read then Write
@@ -169,7 +169,7 @@ namespace Nemcache.Tests.IO
             var fileSystem = new FakeFileSystem(null, null, null);
             var partitioningStream = new PartitioningFileStream(fileSystem, "FileName", "ext", 6, FileAccess.Write);
 
-            Assert.AreEqual(0, partitioningStream.Length);
+            Assert.That(partitioningStream.Length, Is.EqualTo(0));
         }
 
         [Test]
@@ -181,7 +181,7 @@ namespace Nemcache.Tests.IO
             var fileSystem = new FakeFileSystem(memoryStream1, memoryStream2, null);
             var partitioningStream = new PartitioningFileStream(fileSystem, "FileName", "ext", 6, FileAccess.Write);
 
-            Assert.AreEqual(20, partitioningStream.Length);
+            Assert.That(partitioningStream.Length, Is.EqualTo(20));
         }
 
         [Test]
@@ -193,7 +193,7 @@ namespace Nemcache.Tests.IO
             var fileSystem = new FakeFileSystem(memoryStream1, memoryStream2, null);
             var partitioningStream = new PartitioningFileStream(fileSystem, "FileName", "ext", 10, FileAccess.Write);
             partitioningStream.Write(new byte[20], 0, 5);
-            Assert.AreEqual(5, partitioningStream.Length);
+            Assert.That(partitioningStream.Length, Is.EqualTo(5));
         }
 
         [Test]
@@ -205,7 +205,7 @@ namespace Nemcache.Tests.IO
             var fileSystem = new FakeFileSystem(memoryStream1, memoryStream2, null);
             var partitioningStream = new PartitioningFileStream(fileSystem, "FileName", "ext", 10, FileAccess.Write);
             partitioningStream.Write(new byte[20], 0, 15);
-            Assert.AreEqual(15, partitioningStream.Length);
+            Assert.That(partitioningStream.Length, Is.EqualTo(15));
         }
 
         [Test]
@@ -214,7 +214,7 @@ namespace Nemcache.Tests.IO
             var fileSystem = new FakeFileSystem(null, null, null);
             var partitioningStream = new PartitioningFileStream(fileSystem, "FileName", "ext", 6, FileAccess.Write);
 
-            Assert.AreEqual(0, partitioningStream.Position);
+            Assert.That(partitioningStream.Position, Is.EqualTo(0));
         }
 
         [Test]
@@ -226,7 +226,7 @@ namespace Nemcache.Tests.IO
             var partitioningStream = new PartitioningFileStream(fileSystem, "FileName", "ext", 6, FileAccess.Write);
             var buffer = new byte[9];
             partitioningStream.Read(buffer, 0, 9);
-            Assert.AreEqual(9, partitioningStream.Position);
+            Assert.That(partitioningStream.Position, Is.EqualTo(9));
         }
 
         [Test]
@@ -239,7 +239,7 @@ namespace Nemcache.Tests.IO
 
             var buffer = new byte[9];
             partitioningStream.Write(buffer, 0, 9);
-            Assert.AreEqual(9, partitioningStream.Position);
+            Assert.That(partitioningStream.Position, Is.EqualTo(9));
         }
 
         [Test]
@@ -254,7 +254,7 @@ namespace Nemcache.Tests.IO
             var buffer = new byte[9];
             partitioningStream.Read(buffer, 0, 4);
             partitioningStream.Write(buffer, 0, 9);
-            Assert.AreEqual(13, partitioningStream.Position);
+            Assert.That(partitioningStream.Position, Is.EqualTo(13));
         }
 
         [Test]
@@ -269,7 +269,7 @@ namespace Nemcache.Tests.IO
             var buffer = new byte[40];
             partitioningStream.Read(buffer, 0, 20);
             partitioningStream.Write(buffer, 0, 10);
-            Assert.AreEqual(30, partitioningStream.Position);
+            Assert.That(partitioningStream.Position, Is.EqualTo(30));
         }
 
         [Test]
@@ -281,7 +281,7 @@ namespace Nemcache.Tests.IO
             var fileSystem = new FakeFileSystem(memoryStream1, memoryStream2, null);
             var partitioningStream = new PartitioningFileStream(fileSystem, "FileName", "ext", 6, FileAccess.Write);
             partitioningStream.Write(new byte[5], 0, 5);
-            Assert.AreEqual(20, partitioningStream.Length);
+            Assert.That(partitioningStream.Length, Is.EqualTo(20));
         }
 
         [Test]
@@ -297,7 +297,7 @@ namespace Nemcache.Tests.IO
             var buffer = Encoding.ASCII.GetBytes(helloWorld);
             partitioningStream.Write(buffer, 0, buffer.Length);
 
-            Assert.IsTrue(stream1.HasCalledClose);
+            Assert.That(stream1.HasCalledClose, Is.True);
         }
     }
 }

@@ -24,8 +24,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             string text = Encoding.ASCII.GetString(request);
 
             // Per memcached protocol, noreply token must be the literal string "noreply"
-            Assert.AreEqual("incr mykey 1 noreply\r\n", text,
-                "MutateRequestBuilder should emit 'noreply' not 'True'");
+            Assert.That(text, Is.EqualTo("incr mykey 1 noreply\r\n"), "MutateRequestBuilder should emit 'noreply' not 'True'");
         }
     }
 }

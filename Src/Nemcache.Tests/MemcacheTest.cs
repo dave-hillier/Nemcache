@@ -25,14 +25,14 @@ namespace Nemcache.Tests
         [Test]
         public void UsedEmptyTest()
         {
-            Assert.AreEqual(0UL, _cache.Used);
+            Assert.That(_cache.Used, Is.EqualTo(0UL));
         }
         [Test]
         public void UsedSetTest()
         {
             _cache.Store("k", 0, new byte[10], DateTime.MaxValue);
 
-            Assert.AreEqual(10UL, _cache.Used);
+            Assert.That(_cache.Used, Is.EqualTo(10UL));
         }
 
         [Test]
@@ -40,7 +40,7 @@ namespace Nemcache.Tests
         {
             _cache.Store("k", 0, new byte[10], DateTime.MaxValue);
             _cache.Remove("k");
-            Assert.AreEqual(0UL, _cache.Used);
+            Assert.That(_cache.Used, Is.EqualTo(0UL));
         }
 
         [Test]
@@ -49,7 +49,7 @@ namespace Nemcache.Tests
             _cache.Store("k", 0, new byte[999], DateTime.MaxValue);
             _cache.Store("k", 0, new byte[123], DateTime.MaxValue);
 
-            Assert.AreEqual(123UL, _cache.Used);
+            Assert.That(_cache.Used, Is.EqualTo(123UL));
         }
 
         [Test]
@@ -58,7 +58,7 @@ namespace Nemcache.Tests
             _cache.Store("k1", 0, new byte[999], DateTime.MaxValue);
             _cache.Store("k2", 0, new byte[10], DateTime.MaxValue);
 
-            Assert.AreEqual(10UL, _cache.Used);
+            Assert.That(_cache.Used, Is.EqualTo(10UL));
         }
 
         [Test]
@@ -68,7 +68,7 @@ namespace Nemcache.Tests
             _cache.Store("k2", 0, new byte[499], DateTime.MaxValue);
             _cache.Store("k3", 0, new byte[999], DateTime.MaxValue);
 
-            Assert.AreEqual(999UL, _cache.Used);
+            Assert.That(_cache.Used, Is.EqualTo(999UL));
         }
 
 
@@ -79,7 +79,7 @@ namespace Nemcache.Tests
 
             _testScheduler.AdvanceBy(TimeSpan.FromSeconds(11).Ticks);
 
-            Assert.AreEqual(0UL, _cache.Used);
+            Assert.That(_cache.Used, Is.EqualTo(0UL));
         }
 
         [Test]
@@ -92,7 +92,7 @@ namespace Nemcache.Tests
                 _cache.Remove(key);
             });
 
-            Assert.AreEqual(0UL, _cache.Used);
+            Assert.That(_cache.Used, Is.EqualTo(0UL));
         }
 
         [Test]
@@ -102,8 +102,8 @@ namespace Nemcache.Tests
             _testScheduler.AdvanceBy(TimeSpan.FromSeconds(1).Ticks);
             CacheEntry entry;
             var exists = _cache.TryGet("k", out entry);
-            Assert.IsFalse(exists);
-            Assert.AreEqual(0UL, _cache.Used);
+            Assert.That(exists, Is.False);
+            Assert.That(_cache.Used, Is.EqualTo(0UL));
         }
 
         [Test]
@@ -117,14 +117,14 @@ namespace Nemcache.Tests
                     Interlocked.Increment(ref addSuccess);
                 }
             });
-            Assert.AreEqual(1, addSuccess);
-            Assert.AreEqual(1UL, _cache.Used);
+            Assert.That(addSuccess, Is.EqualTo(1));
+            Assert.That(_cache.Used, Is.EqualTo(1UL));
 
             Parallel.For(0, 10, i =>
             {
                 _cache.Replace("k", 0, DateTime.MaxValue, new byte[] { (byte)i });
             });
-            Assert.AreEqual(1UL, _cache.Used);
+            Assert.That(_cache.Used, Is.EqualTo(1UL));
             var value = _cache.Get("k").Data[0];
             Assert.That(value, Is.InRange(0, 9));
         }
@@ -134,7 +134,7 @@ namespace Nemcache.Tests
         {
             _cache.Store("k", 0, Encoding.ASCII.GetBytes("foo"), DateTime.MinValue + TimeSpan.FromSeconds(10));
 
-            Assert.AreEqual("foo", Encoding.ASCII.GetString(_cache.Get("k").Data));
+            Assert.That(Encoding.ASCII.GetString(_cache.Get("k").Data), Is.EqualTo("foo"));
         }
 
         [Test]
@@ -149,7 +149,7 @@ namespace Nemcache.Tests
             {
                 caught = true;
             }
-            Assert.IsTrue(caught);
+            Assert.That(caught, Is.True);
         }
 
         [Test]
@@ -157,7 +157,7 @@ namespace Nemcache.Tests
         {
             CacheEntry cacheEntry;
             var result = _cache.TryGet("k", out cacheEntry);
-            Assert.AreEqual(false, result);
+            Assert.That(result, Is.EqualTo(false));
         }
 
         [Test]
@@ -166,8 +166,8 @@ namespace Nemcache.Tests
             _cache.Store("k", 0, Encoding.ASCII.GetBytes("foo"), DateTime.MinValue + TimeSpan.FromSeconds(10));
             CacheEntry cacheEntry;
             var result = _cache.TryGet("k", out cacheEntry);
-            Assert.AreEqual(true, result);
-            Assert.AreEqual("foo", Encoding.ASCII.GetString(_cache.Get("k").Data));
+            Assert.That(result, Is.EqualTo(true));
+            Assert.That(Encoding.ASCII.GetString(_cache.Get("k").Data), Is.EqualTo("foo"));
         }
     }
 }

@@ -49,8 +49,8 @@ namespace Nemcache.Tests.Persistence
 
             var notification = Serializer.DeserializeWithLengthPrefix<ArchiveEntry>(
                 new MemoryStream(output), PrefixStyle.Fixed32);
-            Assert.IsNotNull(notification.Store);
-            Assert.AreEqual("my_key", notification.Store.Key);
+            Assert.That(notification.Store, Is.Not.Null);
+            Assert.That(notification.Store.Key, Is.EqualTo("my_key"));
             // TODO: rest of the data
         }
 
@@ -58,14 +58,14 @@ namespace Nemcache.Tests.Persistence
         public void CompleteWillDisposeStream()
         {
             _streamArchiver.OnCompleted();
-            Assert.IsFalse(_writeStream.CanWrite); // TODO: Replace with a test double?
+            Assert.That(_writeStream.CanWrite, Is.False); // TODO: Replace with a test double?
         }
 
         [Test]
         public void ErrorWillDisposeStream()
         {
             _streamArchiver.OnError(new Exception());
-            Assert.IsFalse(_writeStream.CanWrite); // TODO: Replace with a test double?
+            Assert.That(_writeStream.CanWrite, Is.False); // TODO: Replace with a test double?
         }
 
         // 

@@ -58,8 +58,8 @@ namespace Nemcache.Tests.Persistence
 
             using (var store = new BitcaskStore(_fs, _dir, 1000))
             {
-                Assert.IsTrue(store.TryGet("k", out var value));
-                CollectionAssert.AreEqual(new byte[] {1,2,3}, value);
+                Assert.That(store.TryGet("k", out var value), Is.True);
+                Assert.That(value, Is.EqualTo(new byte[] {1,2,3}));
             }
         }
 
@@ -73,8 +73,8 @@ namespace Nemcache.Tests.Persistence
 
             using (var store2 = new BitcaskStore(_fs, _dir, 1000))
             {
-                Assert.IsTrue(store2.TryGet("a", out var value));
-                CollectionAssert.AreEqual(new byte[] {4,5,6}, value);
+                Assert.That(store2.TryGet("a", out var value), Is.True);
+                Assert.That(value, Is.EqualTo(new byte[] {4,5,6}));
             }
         }
 
@@ -85,7 +85,7 @@ namespace Nemcache.Tests.Persistence
             {
                 store.Put("z", new byte[] {9});
                 store.Delete("z");
-                Assert.IsFalse(store.TryGet("z", out _));
+                Assert.That(store.TryGet("z", out _), Is.False);
             }
         }
 
@@ -97,8 +97,8 @@ namespace Nemcache.Tests.Persistence
 
             using (var store2 = new BitcaskStore(_fs, _dir, 1000))
             {
-                Assert.IsTrue(store2.TryGet("c", out var value));
-                CollectionAssert.AreEqual(new byte[] {7, 8}, value);
+                Assert.That(store2.TryGet("c", out var value), Is.True);
+                Assert.That(value, Is.EqualTo(new byte[] {7, 8}));
             }
 
             store1.Dispose();
@@ -129,7 +129,7 @@ namespace Nemcache.Tests.Persistence
             }
 
             var compactSize = Directory.GetFiles(compDir, "data.*").Sum(f => new FileInfo(f).Length);
-            Assert.Less(compactSize, originalSize);
+            Assert.That(compactSize, Is.LessThan(originalSize));
         }
 
         [Test]
@@ -144,12 +144,12 @@ namespace Nemcache.Tests.Persistence
                     lock (gate)
                     {
                         store.Put(key, new byte[] { 1 });
-                        Assert.IsTrue(store.TryGet(key, out _));
+                        Assert.That(store.TryGet(key, out _), Is.True);
                         store.Delete(key);
                     }
                 });
 
-                Assert.IsEmpty(store.Keys);
+                Assert.That(store.Keys, Is.Empty);
             }
         }
 
@@ -170,8 +170,8 @@ namespace Nemcache.Tests.Persistence
 
             using (var store = new BitcaskStore(_fs, _dir, 1000))
             {
-                Assert.IsTrue(store.TryGet("good", out var val));
-                CollectionAssert.AreEqual(new byte[] { 1, 2, 3 }, val);
+                Assert.That(store.TryGet("good", out var val), Is.True);
+                Assert.That(val, Is.EqualTo(new byte[] { 1, 2, 3 }));
             }
         }
     }

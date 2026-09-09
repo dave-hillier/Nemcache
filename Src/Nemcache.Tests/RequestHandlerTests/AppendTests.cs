@@ -28,7 +28,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
 
             var response = Dispatch(appendBuilder.ToAsciiRequest());
 
-            Assert.AreEqual("NOT_STORED\r\n", response.ToAsciiString());
+            Assert.That(response.ToAsciiString(), Is.EqualTo("NOT_STORED\r\n"));
         }
 
 
@@ -40,7 +40,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
 
             var response = Dispatch(appendBuilder.ToAsciiRequest());
 
-            Assert.AreEqual("", response.ToAsciiString());
+            Assert.That(response.ToAsciiString(), Is.EqualTo(""));
         }
 
 
@@ -52,7 +52,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
 
             var appendBuilder = new StoreRequestBuilder("append", "key", "value");
             var response = Dispatch(appendBuilder.ToAsciiRequest());
-            Assert.AreEqual("STORED\r\n", response.ToAsciiString());
+            Assert.That(response.ToAsciiString(), Is.EqualTo("STORED\r\n"));
         }
 
         // TODO: get value of no reply
@@ -64,7 +64,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
 
             var getBuilder = new GetRequestBuilder("get", "key");
             var response = Dispatch(getBuilder.ToAsciiRequest());
-            Assert.AreEqual("VALUE key 0 5\r\nvalue\r\nEND\r\n", response.ToAsciiString());
+            Assert.That(response.ToAsciiString(), Is.EqualTo("VALUE key 0 5\r\nvalue\r\nEND\r\n"));
         }*/
 
         [Test]
@@ -78,7 +78,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
 
             var getBuilder = new GetRequestBuilder("get", "key");
             var response = Dispatch(getBuilder.ToAsciiRequest());
-            Assert.AreEqual("VALUE key 0 12\r\nfirst second\r\nEND\r\n", response.ToAsciiString());
+            Assert.That(response.ToAsciiString(), Is.EqualTo("VALUE key 0 12\r\nfirst second\r\nEND\r\n"));
         }
 
 
@@ -89,7 +89,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
 
             var response = Dispatch(prependBuilder.ToAsciiRequest());
 
-            Assert.AreEqual("NOT_STORED\r\n", response.ToAsciiString());
+            Assert.That(response.ToAsciiString(), Is.EqualTo("NOT_STORED\r\n"));
         }
 
         [Test]
@@ -100,7 +100,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
 
             var response = Dispatch(prependBuilder.ToAsciiRequest());
 
-            Assert.AreEqual("", response.ToAsciiString());
+            Assert.That(response.ToAsciiString(), Is.EqualTo(""));
         }
 
         [Test]
@@ -114,7 +114,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
 
             var response = Dispatch(prependBuilder.ToAsciiRequest());
 
-            Assert.AreEqual("STORED\r\n", response.ToAsciiString());
+            Assert.That(response.ToAsciiString(), Is.EqualTo("STORED\r\n"));
         }
 
         /*
@@ -127,7 +127,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
 
             var getBuilder = new GetRequestBuilder("get", "key");
             var response = Dispatch(getBuilder.ToAsciiRequest());
-            Assert.AreEqual("VALUE key 0 5\r\nvalue\r\nEND\r\n", response.ToAsciiString());
+            Assert.That(response.ToAsciiString(), Is.EqualTo("VALUE key 0 5\r\nvalue\r\nEND\r\n"));
         }
         */
         // TODO: prepend ignores existing flags and exp
@@ -143,7 +143,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
 
             var getBuilder = new GetRequestBuilder("get", "key");
             var response = Dispatch(getBuilder.ToAsciiRequest());
-            Assert.AreEqual("VALUE key 0 12\r\nsecond first\r\nEND\r\n", response.ToAsciiString());
+            Assert.That(response.ToAsciiString(), Is.EqualTo("VALUE key 0 12\r\nsecond first\r\nEND\r\n"));
         }
     }
 }

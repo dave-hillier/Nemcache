@@ -1,6 +1,6 @@
 # Nemcache
 
-Nemcache is a persistent, key-value store implemented in C# targeting .NET 8.
+Nemcache is a persistent, key-value store implemented in C# targeting .NET 10.
 It is client compatible with [Memcache](http://memcached.org/) (an in-memory key-value store).
 
 ## Installation

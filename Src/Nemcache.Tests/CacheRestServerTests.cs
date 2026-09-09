@@ -41,7 +41,7 @@ namespace Nemcache.Tests
         {
             var webClient = new WebClient();
             var response = webClient.DownloadString(new Uri("http://localhost:44444/cache/test"));
-            Assert.AreEqual("Response", response);
+            Assert.That(response, Is.EqualTo("Response"));
         }
 
         [Test]
@@ -49,9 +49,9 @@ namespace Nemcache.Tests
         {
             var webClient = new WebClient();
             webClient.DownloadString(new Uri("http://localhost:44444/cache/regex/param/123"));
-            Assert.AreEqual(2, TestHandler.LastParams.Length);
-            Assert.AreEqual("param", TestHandler.LastParams[0]);
-            Assert.AreEqual("123", TestHandler.LastParams[1]);
+            Assert.That(TestHandler.LastParams.Length, Is.EqualTo(2));
+            Assert.That(TestHandler.LastParams[0], Is.EqualTo("param"));
+            Assert.That(TestHandler.LastParams[1], Is.EqualTo("123"));
         }
 
         [Test]
@@ -60,8 +60,8 @@ namespace Nemcache.Tests
             var webClient = new WebClient();
             var response = webClient.UploadString(new Uri("http://localhost:44444/cache/test"), "PUT", "data");
 
-            Assert.AreEqual("Response", response);
-            Assert.AreEqual("data", TestHandler.LastRequest);
+            Assert.That(response, Is.EqualTo("Response"));
+            Assert.That(TestHandler.LastRequest, Is.EqualTo("data"));
         }
 
         [Test]
@@ -70,8 +70,8 @@ namespace Nemcache.Tests
             var webClient = new WebClient();
             var response = webClient.UploadString(new Uri("http://localhost:44444/cache/test"), "POST", "body");
 
-            Assert.AreEqual("Response", response);
-            Assert.AreEqual("body", TestHandler.LastRequest);
+            Assert.That(response, Is.EqualTo("Response"));
+            Assert.That(TestHandler.LastRequest, Is.EqualTo("body"));
         }
 
         [Test]
@@ -80,8 +80,8 @@ namespace Nemcache.Tests
             var webClient = new WebClient();
             var response = webClient.UploadString(new Uri("http://localhost:44444/cache/test"), "DELETE", "thing!");
 
-            Assert.AreEqual("Response", response);
-            Assert.AreEqual("thing!", TestHandler.LastRequest);
+            Assert.That(response, Is.EqualTo("Response"));
+            Assert.That(TestHandler.LastRequest, Is.EqualTo("thing!"));
         }
 
         [Test]
@@ -95,10 +95,10 @@ namespace Nemcache.Tests
             }
             catch (WebException ex)
             {
-                Assert.IsTrue(ex.Message.Contains("404"));
+                Assert.That(ex.Message.Contains("404"), Is.True);
                 thrown = true;
             }
-            Assert.IsTrue(thrown);
+            Assert.That(thrown, Is.True);
         }
     }
 

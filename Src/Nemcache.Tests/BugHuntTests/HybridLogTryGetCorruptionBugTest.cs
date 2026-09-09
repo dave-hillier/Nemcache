@@ -59,21 +59,19 @@ namespace Nemcache.Tests.Persistence
             store.Put("B", new byte[] { 4, 5, 6 });
 
             // TryGet "A" - this moves the memLog position backwards
-            Assert.IsTrue(store.TryGet("A", out var valA));
-            CollectionAssert.AreEqual(new byte[] { 1, 2, 3 }, valA);
+            Assert.That(store.TryGet("A", out var valA), Is.True);
+            Assert.That(valA, Is.EqualTo(new byte[] { 1, 2, 3 }));
 
             // Now put a third entry - this should NOT overwrite B
             store.Put("C", new byte[] { 7, 8, 9 });
 
             // B should still be intact
-            Assert.IsTrue(store.TryGet("B", out var valB),
-                "Key B should still exist after Put(C)");
-            CollectionAssert.AreEqual(new byte[] { 4, 5, 6 }, valB,
-                "Key B's data should not be corrupted by Put(C) after TryGet(A)");
+            Assert.That(store.TryGet("B", out var valB), Is.True, "Key B should still exist after Put(C)");
+            Assert.That(valB, Is.EqualTo(new byte[] { 4, 5, 6 }), "Key B's data should not be corrupted by Put(C) after TryGet(A)");
 
             // C should also be correct
-            Assert.IsTrue(store.TryGet("C", out var valC));
-            CollectionAssert.AreEqual(new byte[] { 7, 8, 9 }, valC);
+            Assert.That(store.TryGet("C", out var valC), Is.True);
+            Assert.That(valC, Is.EqualTo(new byte[] { 7, 8, 9 }));
         }
     }
 }

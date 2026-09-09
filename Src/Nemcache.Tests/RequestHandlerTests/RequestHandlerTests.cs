@@ -28,7 +28,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
         {
             var error = Dispatch(Encoding.ASCII.GetBytes("NotACommand\r\n"));
 
-            Assert.AreEqual("ERROR Unknown command: NotACommand\r\n", Encoding.ASCII.GetString(error));
+            Assert.That(Encoding.ASCII.GetString(error), Is.EqualTo("ERROR Unknown command: NotACommand\r\n"));
         }
 
         [Test]
@@ -36,7 +36,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
         {
             var error = Dispatch(Encoding.ASCII.GetBytes("malformed command").Concat(new byte[512]).ToArray());
 
-            Assert.AreEqual("SERVER ERROR New line not found\r\n", Encoding.ASCII.GetString(error));
+            Assert.That(Encoding.ASCII.GetString(error), Is.EqualTo("SERVER ERROR New line not found\r\n"));
         }
 
         [Test]
@@ -44,7 +44,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
         {
             var error = Dispatch(Encoding.ASCII.GetBytes("exception\r\n"));
 
-            Assert.AreEqual("SERVER ERROR test exception\r\n", Encoding.ASCII.GetString(error));
+            Assert.That(Encoding.ASCII.GetString(error), Is.EqualTo("SERVER ERROR test exception\r\n"));
         }
 
         [Test]
@@ -54,7 +54,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             bool disposed = false;
             _client.OnDisconnect = (() => { disposed = true; });
             Dispatch(Encoding.ASCII.GetBytes("quit\r\n"));
-            Assert.AreEqual(disposed, true);
+            Assert.That(true, Is.EqualTo(disposed));
         }
 
         [Test]
@@ -62,9 +62,9 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
         {
             var result = Dispatch(Encoding.ASCII.GetBytes("stats\r\n"));
             var text = result.ToAsciiString();
-            StringAssert.Contains("STAT version", text);
-            StringAssert.Contains("STAT uptime", text);
-            StringAssert.EndsWith("END\r\n", text);
+            Assert.That(text, Does.Contain("STAT version"));
+            Assert.That(text, Does.Contain("STAT uptime"));
+            Assert.That(text, Does.EndWith("END\r\n"));
         }
 
         [Test]
@@ -72,8 +72,8 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
         {
             var result = Dispatch(Encoding.ASCII.GetBytes("stats settings\r\n"));
             var text = result.ToAsciiString();
-            StringAssert.Contains("STAT maxbytes", text);
-            StringAssert.EndsWith("END\r\n", text);
+            Assert.That(text, Does.Contain("STAT maxbytes"));
+            Assert.That(text, Does.EndWith("END\r\n"));
         }
     }
 }

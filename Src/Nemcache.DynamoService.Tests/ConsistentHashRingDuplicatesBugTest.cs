@@ -37,8 +37,7 @@ namespace Nemcache.Tests.BugHuntTests
 
             // If GetNodes properly deduplicates, no key should ever return duplicates
             // when requesting 3 replicas from 4 physical nodes
-            Assert.AreEqual(0, duplicateCount,
-                $"GetNodes returned duplicate physical nodes for {duplicateCount}/1000 keys. " +
+            Assert.That(duplicateCount, Is.EqualTo(0), $"GetNodes returned duplicate physical nodes for {duplicateCount}/1000 keys. " +
                 "GetNodes should deduplicate virtual-to-physical node mappings.");
         }
 
@@ -50,8 +49,7 @@ namespace Nemcache.Tests.BugHuntTests
             for (int i = 0; i < 100; i++)
             {
                 var result = ring.GetNodes($"key-{i}", 2).ToArray();
-                Assert.AreEqual(2, result.Distinct().Count(),
-                    $"GetNodes(key-{i}, 2) returned [{string.Join(", ", result)}] - " +
+                Assert.That(result.Distinct().Count(), Is.EqualTo(2), $"GetNodes(key-{i}, 2) returned [{string.Join(", ", result)}] - " +
                     "should be 2 distinct nodes");
             }
         }

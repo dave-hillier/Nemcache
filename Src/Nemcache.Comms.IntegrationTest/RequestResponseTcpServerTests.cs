@@ -26,7 +26,7 @@ namespace Nemcache.Comms.IntegrationTest
             var tcpClient = new TcpClient();
             tcpClient.Connect("127.0.0.1", 55555);
 
-            Assert.IsTrue(tcpClient.Connected);
+            Assert.That(tcpClient.Connected, Is.True);
 
             tcpClient.Close();
         }

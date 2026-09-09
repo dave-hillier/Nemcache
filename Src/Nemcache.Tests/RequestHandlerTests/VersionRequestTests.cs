@@ -26,7 +26,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
         {
             var flushRequest = Encoding.ASCII.GetBytes("version\r\n");
             var response = Dispatch(flushRequest);
-            Assert.AreEqual("Nemcache 1.0.0.0\r\n", response.ToAsciiString());
+            Assert.That(response.ToAsciiString(), Is.EqualTo("Nemcache 1.0.0.0\r\n"));
         }
     }
 }

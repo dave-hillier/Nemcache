@@ -28,7 +28,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             var delBuilder = new DeleteRequestBuilder("key");
             var response = Dispatch(delBuilder.ToAsciiRequest());
 
-            Assert.AreEqual("NOT_FOUND\r\n", response.ToAsciiString());
+            Assert.That(response.ToAsciiString(), Is.EqualTo("NOT_FOUND\r\n"));
         }
 
         [Test]
@@ -40,7 +40,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             var delBuilder = new DeleteRequestBuilder("key");
             var response = Dispatch(delBuilder.ToAsciiRequest());
 
-            Assert.AreEqual("DELETED\r\n", response.ToAsciiString());
+            Assert.That(response.ToAsciiString(), Is.EqualTo("DELETED\r\n"));
         }
 
         [Test]
@@ -54,7 +54,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
 
             var getBuilder = new GetRequestBuilder("get", "key");
             var response = Dispatch(getBuilder.ToAsciiRequest());
-            Assert.AreEqual("END\r\n", response.ToAsciiString());
+            Assert.That(response.ToAsciiString(), Is.EqualTo("END\r\n"));
         }
     }
 }

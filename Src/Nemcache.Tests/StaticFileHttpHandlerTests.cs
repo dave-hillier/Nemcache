@@ -52,9 +52,9 @@ namespace Nemcache.Tests
             var response = await client.GetAsync("http://localhost:45555/static/index.html");
             var content = await response.Content.ReadAsStringAsync();
 
-            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
-            Assert.AreEqual("text/html", response.Content.Headers.ContentType?.MediaType);
-            Assert.AreEqual("<html>ok</html>", content);
+            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+            Assert.That(response.Content.Headers.ContentType?.MediaType, Is.EqualTo("text/html"));
+            Assert.That(content, Is.EqualTo("<html>ok</html>"));
         }
 
         [Test]
@@ -70,7 +70,7 @@ namespace Nemcache.Tests
             using var client = new HttpClient();
             var response = await client.GetAsync("http://localhost:45556/static/../secret.txt");
 
-            Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);
+            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
         }
 
         [Test]
@@ -85,7 +85,7 @@ namespace Nemcache.Tests
             using var client = new HttpClient();
             var response = await client.GetAsync("http://localhost:45557/static/data.bin");
 
-            Assert.AreEqual(HttpStatusCode.Forbidden, response.StatusCode);
+            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Forbidden));
         }
     }
 }

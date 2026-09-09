@@ -34,7 +34,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             var flushRequest = Encoding.ASCII.GetBytes("flush_all\r\n");
             var response = Dispatch(flushRequest);
 
-            Assert.AreEqual("OK\r\n", response.ToAsciiString());
+            Assert.That(response.ToAsciiString(), Is.EqualTo("OK\r\n"));
         }
 
         [Test]
@@ -46,7 +46,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             var flushRequest = Encoding.ASCII.GetBytes("flush_all 123\r\n");
             var response = Dispatch(flushRequest);
 
-            Assert.AreEqual("OK\r\n", response.ToAsciiString());
+            Assert.That(response.ToAsciiString(), Is.EqualTo("OK\r\n"));
         }
 
         [Test]
@@ -60,7 +60,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
 
             var getBuilder = new GetRequestBuilder("get", "key");
             var response = Dispatch(getBuilder.ToAsciiRequest());
-            Assert.AreEqual("END\r\n", response.ToAsciiString());
+            Assert.That(response.ToAsciiString(), Is.EqualTo("END\r\n"));
         }
 
         [Test]
@@ -76,7 +76,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
 
             var getBuilder = new GetRequestBuilder("get", "key");
             var response = Dispatch(getBuilder.ToAsciiRequest());
-            Assert.AreEqual("END\r\n", response.ToAsciiString());
+            Assert.That(response.ToAsciiString(), Is.EqualTo("END\r\n"));
         }
 
         [Test]
@@ -92,7 +92,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
 
             var getBuilder = new GetRequestBuilder("get", "key");
             var response = Dispatch(getBuilder.ToAsciiRequest());
-            Assert.AreEqual("VALUE key 0 5\r\nvalue\r\nEND\r\n", response.ToAsciiString());
+            Assert.That(response.ToAsciiString(), Is.EqualTo("VALUE key 0 5\r\nvalue\r\nEND\r\n"));
         }
 
 
@@ -109,7 +109,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
 
             var getBuilder = new GetRequestBuilder("get", "key");
             var response = Dispatch(getBuilder.ToAsciiRequest());
-            Assert.AreEqual("END\r\n", response.ToAsciiString());
+            Assert.That(response.ToAsciiString(), Is.EqualTo("END\r\n"));
         }
     }
 }

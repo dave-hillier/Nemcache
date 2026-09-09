@@ -45,7 +45,7 @@ namespace Nemcache.Tests
         {
             var tcpClient = new TcpClient();
             tcpClient.Connect("127.0.0.1", 55555);
-            Assert.IsTrue(tcpClient.Connected);
+            Assert.That(tcpClient.Connected, Is.True);
             tcpClient.Close();
 
             RequestResponseTest();
@@ -63,7 +63,7 @@ namespace Nemcache.Tests
                 streamWriter.WriteLine("Ping!\r\n");
                 streamWriter.Flush();
                 var response = streamReader.ReadLine();
-                Assert.AreEqual("Pong!", response);
+                Assert.That(response, Is.EqualTo("Pong!"));
             }
         }
 

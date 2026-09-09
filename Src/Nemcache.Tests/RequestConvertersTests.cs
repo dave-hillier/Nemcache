@@ -20,7 +20,7 @@ namespace Nemcache.Tests
         public void ToKey_AllowsValidKey()
         {
             const string key = "valid-key";
-            Assert.AreEqual(key, _converters.ToKey(key));
+            Assert.That(_converters.ToKey(key), Is.EqualTo(key));
         }
 
         [Test]

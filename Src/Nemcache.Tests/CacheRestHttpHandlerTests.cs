@@ -41,14 +41,14 @@ namespace Nemcache.Tests
             using var client = new HttpClient();
             var content = new StringContent("hello world", Encoding.UTF8, "text/custom");
             var putResponse = await client.PutAsync("http://localhost:46660/cache/mykey", content);
-            Assert.AreEqual(HttpStatusCode.OK, putResponse.StatusCode);
+            Assert.That(putResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK));
 
             var getResponse = await client.GetAsync("http://localhost:46660/cache/mykey");
             var body = await getResponse.Content.ReadAsStringAsync();
 
-            Assert.AreEqual(HttpStatusCode.OK, getResponse.StatusCode);
-            Assert.AreEqual("text/custom", getResponse.Content.Headers.ContentType?.MediaType);
-            Assert.AreEqual("hello world", body);
+            Assert.That(getResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+            Assert.That(getResponse.Content.Headers.ContentType?.MediaType, Is.EqualTo("text/custom"));
+            Assert.That(body, Is.EqualTo("hello world"));
         }
 
         [Test]
@@ -61,7 +61,7 @@ namespace Nemcache.Tests
             using var client = new HttpClient();
             var response = await client.GetAsync("http://localhost:46661/cache/orphan");
 
-            Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);
+            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
         }
     }
 }

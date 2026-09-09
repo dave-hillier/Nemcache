@@ -25,9 +25,9 @@ namespace Nemcache.Tests.Eviction
 
             var keys = _cache.Keys.ToArray();
 
-            Assert.AreEqual(2, keys.Length);
-            Assert.IsTrue(keys.Contains("key2"));
-            Assert.IsTrue(keys.Contains("key3"));
+            Assert.That(keys.Length, Is.EqualTo(2));
+            Assert.That(keys.Contains("key2"), Is.True);
+            Assert.That(keys.Contains("key3"), Is.True);
         }
 
         [Test]
@@ -39,9 +39,9 @@ namespace Nemcache.Tests.Eviction
 
             var keys = _cache.Keys.ToArray();
 
-            Assert.AreEqual(2, keys.Length);
-            Assert.IsTrue(keys.Contains("key2"));
-            Assert.IsTrue(keys.Contains("key3"));
+            Assert.That(keys.Length, Is.EqualTo(2));
+            Assert.That(keys.Contains("key2"), Is.True);
+            Assert.That(keys.Contains("key3"), Is.True);
         }
 
         [Test]
@@ -55,9 +55,9 @@ namespace Nemcache.Tests.Eviction
 
             var keys = _cache.Keys.ToArray();
 
-            Assert.AreEqual(2, keys.Length);
-            Assert.IsTrue(keys.Contains("key1"));
-            Assert.IsTrue(keys.Contains("key3"));
+            Assert.That(keys.Length, Is.EqualTo(2));
+            Assert.That(keys.Contains("key1"), Is.True);
+            Assert.That(keys.Contains("key3"), Is.True);
         }
 
         [Test]
@@ -71,9 +71,9 @@ namespace Nemcache.Tests.Eviction
 
             var keys = _cache.Keys.ToArray();
 
-            Assert.AreEqual(2, keys.Length);
-            Assert.IsTrue(keys.Contains("key1"));
-            Assert.IsTrue(keys.Contains("key3"));
+            Assert.That(keys.Length, Is.EqualTo(2));
+            Assert.That(keys.Contains("key1"), Is.True);
+            Assert.That(keys.Contains("key3"), Is.True);
         }
 
         [Test]
@@ -87,9 +87,9 @@ namespace Nemcache.Tests.Eviction
 
             var keys = _cache.Keys.ToArray();
 
-            Assert.AreEqual(2, keys.Length);
-            Assert.IsTrue(keys.Contains("key1"));
-            Assert.IsTrue(keys.Contains("key3"));
+            Assert.That(keys.Length, Is.EqualTo(2));
+            Assert.That(keys.Contains("key1"), Is.True);
+            Assert.That(keys.Contains("key3"), Is.True);
         }
 
         [Test]
@@ -103,9 +103,9 @@ namespace Nemcache.Tests.Eviction
 
             var keys = _cache.Keys.ToArray();
 
-            Assert.AreEqual(2, keys.Length);
-            Assert.IsTrue(keys.Contains("key3"));
-            Assert.IsTrue(keys.Contains("key4"));
+            Assert.That(keys.Length, Is.EqualTo(2));
+            Assert.That(keys.Contains("key3"), Is.True);
+            Assert.That(keys.Contains("key4"), Is.True);
         }
     }
 }

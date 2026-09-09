@@ -28,7 +28,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
 
             var response = Dispatch(replaceBuilder.ToAsciiRequest());
 
-            Assert.AreEqual("NOT_STORED\r\n", response.ToAsciiString());
+            Assert.That(response.ToAsciiString(), Is.EqualTo("NOT_STORED\r\n"));
         }
 
         [Test]
@@ -39,7 +39,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
 
             var response = Dispatch(replaceBuilder.ToAsciiRequest());
 
-            Assert.AreEqual("", response.ToAsciiString());
+            Assert.That(response.ToAsciiString(), Is.EqualTo(""));
         }
 
         [Test]
@@ -50,7 +50,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
 
             var replaceBuilder = new StoreRequestBuilder("replace", "key", "value");
             var response = Dispatch(replaceBuilder.ToAsciiRequest());
-            Assert.AreEqual("STORED\r\n", response.ToAsciiString());
+            Assert.That(response.ToAsciiString(), Is.EqualTo("STORED\r\n"));
         }
 
         // TODO: replace ignores existing flags and exp
@@ -66,7 +66,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
 
             var getBuilder = new GetRequestBuilder("get", "key");
             var response = Dispatch(getBuilder.ToAsciiRequest());
-            Assert.AreEqual("VALUE key 0 6\r\nsecond\r\nEND\r\n", response.ToAsciiString());
+            Assert.That(response.ToAsciiString(), Is.EqualTo("VALUE key 0 6\r\nsecond\r\nEND\r\n"));
         }
     }
 }

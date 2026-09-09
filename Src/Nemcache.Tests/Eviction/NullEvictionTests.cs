@@ -19,8 +19,8 @@ namespace Nemcache.Tests.Eviction
             strategy.EvictEntry();
 
             CacheEntry entry;
-            Assert.IsTrue(cache.TryGet("key", out entry));
-            Assert.AreEqual(usedBefore, cache.Used);
+            Assert.That(cache.TryGet("key", out entry), Is.True);
+            Assert.That(cache.Used, Is.EqualTo(usedBefore));
         }
     }
 }
