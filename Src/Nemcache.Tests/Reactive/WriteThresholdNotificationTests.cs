@@ -21,7 +21,7 @@ namespace Nemcache.Tests.Reactive
             observable.Subscribe(results);
             testScheduler.AdvanceBy(1000);
 
-            Assert.AreEqual(0, results.Messages.Count);
+            Assert.That(results.Messages.Count, Is.EqualTo(0));
         }
 
         [Test]
@@ -39,7 +39,7 @@ namespace Nemcache.Tests.Reactive
             observable.Subscribe(results);
             testScheduler.AdvanceBy(1000);
 
-            Assert.AreEqual(0, results.Messages.Count);
+            Assert.That(results.Messages.Count, Is.EqualTo(0));
         }
 
 

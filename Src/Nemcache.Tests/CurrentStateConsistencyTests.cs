@@ -28,7 +28,7 @@ namespace Nemcache.Tests
                 var state = cache.CurrentState;
                 foreach (var entry in state.Item2)
                 {
-                    Assert.LessOrEqual(entry.Value.EventId, state.Item1);
+                    Assert.That(entry.Value.EventId, Is.LessThanOrEqualTo(state.Item1));
                 }
             }
 
@@ -36,7 +36,7 @@ namespace Nemcache.Tests
             var finalState = cache.CurrentState;
             foreach (var entry in finalState.Item2)
             {
-                Assert.LessOrEqual(entry.Value.EventId, finalState.Item1);
+                Assert.That(entry.Value.EventId, Is.LessThanOrEqualTo(finalState.Item1));
             }
         }
     }

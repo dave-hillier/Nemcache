@@ -144,7 +144,7 @@ namespace Nemcache.Tests.Persistence
                 It.IsAny<bool>()), Times.Once());
 
             var entries = CacheRestorer.ReadLog(new MemoryStream(_writeStream.ToArray()));
-            Assert.AreEqual(3, entries.Count());
+            Assert.That(entries.Count(), Is.EqualTo(3));
         }
 
         // TODO: touch entries

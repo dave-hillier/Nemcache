@@ -30,7 +30,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
 
             var response = Dispatch(addBuilder.ToAsciiRequest());
 
-            Assert.AreEqual("STORED\r\n", response.ToAsciiString());
+            Assert.That(response.ToAsciiString(), Is.EqualTo("STORED\r\n"));
         }
 
         [Test]
@@ -41,7 +41,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
 
             var response = Dispatch(addBuilder.ToAsciiRequest());
 
-            Assert.AreEqual("", response.ToAsciiString());
+            Assert.That(response.ToAsciiString(), Is.EqualTo(""));
         }
 
         [Test]
@@ -55,7 +55,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
 
             var response = Dispatch(addBuilder.ToAsciiRequest());
 
-            Assert.AreEqual("NOT_STORED\r\n", response.ToAsciiString());
+            Assert.That(response.ToAsciiString(), Is.EqualTo("NOT_STORED\r\n"));
         }
 
         [Test]
@@ -67,7 +67,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
 
             var getBuilder = new GetRequestBuilder("get", "key");
             var response = Dispatch(getBuilder.ToAsciiRequest());
-            Assert.AreEqual("VALUE key 0 5\r\nvalue\r\nEND\r\n", response.ToAsciiString());
+            Assert.That(response.ToAsciiString(), Is.EqualTo("VALUE key 0 5\r\nvalue\r\nEND\r\n"));
         }
 
         #endregion

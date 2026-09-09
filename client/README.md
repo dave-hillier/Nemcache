@@ -52,3 +52,7 @@ export default tseslint.config({
   },
 })
 ```
+
+## TypeScript version
+
+TypeScript is pinned to the 6.0 line because `typescript-eslint` does not support the TypeScript 7 API, and `yarn lint` fails against it.

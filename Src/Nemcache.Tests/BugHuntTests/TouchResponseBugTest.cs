@@ -51,8 +51,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             var response = Dispatch(touchBuilder.ToAsciiRequest());
 
             // Per memcached protocol, successful touch should return "TOUCHED\r\n"
-            Assert.AreEqual("TOUCHED\r\n", response.ToAsciiString(),
-                "Memcached protocol specifies 'TOUCHED\\r\\n' response, not 'OK\\r\\n'");
+            Assert.That(response.ToAsciiString(), Is.EqualTo("TOUCHED\r\n"), "Memcached protocol specifies 'TOUCHED\\r\\n' response, not 'OK\\r\\n'");
         }
     }
 }

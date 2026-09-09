@@ -28,11 +28,11 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             casBuilder.WithCasUnique(lastCas);
 
             var response = Dispatch(casBuilder.ToAsciiRequest());
-            Assert.AreEqual("STORED\r\n", response.ToAsciiString());
+            Assert.That(response.ToAsciiString(), Is.EqualTo("STORED\r\n"));
 
             var getBuilder = new GetRequestBuilder("get", "key");
             var getResponse = Dispatch(getBuilder.ToAsciiRequest());
-            Assert.AreEqual("VALUE key 0 5 123\r\nvalue\r\nEND\r\n", getResponse.ToAsciiString());
+            Assert.That(getResponse.ToAsciiString(), Is.EqualTo("VALUE key 0 5 123\r\nvalue\r\nEND\r\n"));
         }
 
         [Test]
@@ -47,7 +47,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
 
             var response2 = Dispatch(casBuilder2.ToAsciiRequest());
 
-            Assert.AreEqual("STORED\r\n", response2.ToAsciiString());
+            Assert.That(response2.ToAsciiString(), Is.EqualTo("STORED\r\n"));
         }
 
         [Test]
@@ -61,7 +61,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             casBuilder2.WithCasUnique(567);
 
             var response2 = Dispatch(casBuilder2.ToAsciiRequest());
-            Assert.AreEqual("EXISTS\r\n", response2.ToAsciiString());
+            Assert.That(response2.ToAsciiString(), Is.EqualTo("EXISTS\r\n"));
         }
 
 
@@ -79,7 +79,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
 
             var getBuilder = new GetRequestBuilder("get", "key");
             var getResponse = Dispatch(getBuilder.ToAsciiRequest());
-            Assert.AreEqual("VALUE key 0 6 567\r\nvalue2\r\nEND\r\n", getResponse.ToAsciiString());
+            Assert.That(getResponse.ToAsciiString(), Is.EqualTo("VALUE key 0 6 567\r\nvalue2\r\nEND\r\n"));
         }
 
         [Test]
@@ -96,7 +96,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
 
             var getBuilder = new GetRequestBuilder("get", "key");
             var getResponse = Dispatch(getBuilder.ToAsciiRequest());
-            Assert.AreEqual("VALUE key 0 6 789\r\nvalue1\r\nEND\r\n", getResponse.ToAsciiString());
+            Assert.That(getResponse.ToAsciiString(), Is.EqualTo("VALUE key 0 6 789\r\nvalue1\r\nEND\r\n"));
         }
     }
 }

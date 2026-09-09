@@ -16,7 +16,7 @@ namespace Nemcache.Tests
         public void DummyToString()
         {
             var s = new DummyNotification {EventId = 123}.ToString();
-            Assert.AreEqual("Notification: 123", s);
+            Assert.That(s, Is.EqualTo("Notification: 123"));
         }
 
         [Test]

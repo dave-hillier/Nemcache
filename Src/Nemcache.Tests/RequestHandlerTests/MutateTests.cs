@@ -27,7 +27,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             var builder = new MutateRequestBuilder("incr", "key", 1);
             var response = Dispatch(builder.ToAsciiRequest());
 
-            Assert.AreEqual("NOT_FOUND\r\n", response.ToAsciiString());
+            Assert.That(response.ToAsciiString(), Is.EqualTo("NOT_FOUND\r\n"));
         }
 
         [Test]
@@ -36,7 +36,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             var builder = new MutateRequestBuilder("decr", "key", 1);
             var response = Dispatch(builder.ToAsciiRequest());
 
-            Assert.AreEqual("NOT_FOUND\r\n", response.ToAsciiString());
+            Assert.That(response.ToAsciiString(), Is.EqualTo("NOT_FOUND\r\n"));
         }
 
         [Test]
@@ -46,7 +46,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             Dispatch(storageBuilder.ToAsciiRequest());
             var builder = new MutateRequestBuilder("incr", "key", 1);
             var response = Dispatch(builder.ToAsciiRequest());
-            Assert.AreEqual("124\r\n", response.ToAsciiString());
+            Assert.That(response.ToAsciiString(), Is.EqualTo("124\r\n"));
         }
 
         [Test]
@@ -56,7 +56,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             Dispatch(storageBuilder.ToAsciiRequest());
             var builder = new MutateRequestBuilder("decr", "key", 1);
             var response = Dispatch(builder.ToAsciiRequest());
-            Assert.AreEqual("122\r\n", response.ToAsciiString());
+            Assert.That(response.ToAsciiString(), Is.EqualTo("122\r\n"));
         }
 
         // TODO: incr/decr max and overflow, non-int start value

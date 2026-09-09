@@ -65,20 +65,16 @@ namespace Nemcache.Tests.Persistence
                 store.Delete("key1");
 
                 // Verify it's deleted in the current session
-                Assert.IsFalse(store.TryGet("key1", out _),
-                    "key1 should be deleted in current session");
-                Assert.IsTrue(store.TryGet("key2", out _),
-                    "key2 should still exist in current session");
+                Assert.That(store.TryGet("key1", out _), Is.False, "key1 should be deleted in current session");
+                Assert.That(store.TryGet("key2", out _), Is.True, "key2 should still exist in current session");
             }
 
             // Reload - deleted key should NOT reappear
             using (var store2 = new BitcaskStore(_fs, _dir, 1000))
             {
-                Assert.IsFalse(store2.TryGet("key1", out _),
-                    "key1 was deleted before restart and should not reappear after reload");
-                Assert.IsTrue(store2.TryGet("key2", out var val),
-                    "key2 should persist across restart");
-                CollectionAssert.AreEqual(new byte[] { 4, 5, 6 }, val);
+                Assert.That(store2.TryGet("key1", out _), Is.False, "key1 was deleted before restart and should not reappear after reload");
+                Assert.That(store2.TryGet("key2", out var val), Is.True, "key2 should persist across restart");
+                Assert.That(val, Is.EqualTo(new byte[] { 4, 5, 6 }));
             }
         }
 
@@ -94,9 +90,8 @@ namespace Nemcache.Tests.Persistence
 
             using (var store2 = new BitcaskStore(_fs, _dir, 1000))
             {
-                CollectionAssert.DoesNotContain(store2.Keys.ToArray(), "a",
-                    "Deleted key 'a' should not appear in Keys after reload");
-                CollectionAssert.Contains(store2.Keys.ToArray(), "b");
+                Assert.That(store2.Keys.ToArray(), Does.Not.Contain("a"), "Deleted key 'a' should not appear in Keys after reload");
+                Assert.That(store2.Keys.ToArray(), Does.Contain("b"));
             }
         }
     }

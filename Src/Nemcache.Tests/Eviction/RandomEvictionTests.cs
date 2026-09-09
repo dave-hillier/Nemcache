@@ -27,7 +27,7 @@ namespace Nemcache.Tests.Eviction
             var memCache = new MemCache(100, Scheduler.Default);
             var strategy = CreateStrategy(memCache);
             strategy.EvictEntry();
-            Assert.IsFalse(memCache.Keys.Any());
+            Assert.That(memCache.Keys.Any(), Is.False);
         }
 
         [Test]
@@ -37,7 +37,7 @@ namespace Nemcache.Tests.Eviction
             memCache.Add("mykey", 0, DateTime.MaxValue, new byte[] { });
             var strategy = CreateStrategy(memCache);
             strategy.EvictEntry();
-            Assert.AreEqual(0, memCache.Keys.Count());
+            Assert.That(memCache.Keys.Count(), Is.EqualTo(0));
         }
 
         [Test]
@@ -48,7 +48,7 @@ namespace Nemcache.Tests.Eviction
             memCache.Add("mykey2", 0, DateTime.MaxValue, new byte[] { });
             var strategy = CreateStrategy(memCache);
             strategy.EvictEntry();
-            Assert.AreEqual(1, memCache.Keys.Count());
+            Assert.That(memCache.Keys.Count(), Is.EqualTo(1));
         }
 
         [Test]
@@ -75,8 +75,8 @@ namespace Nemcache.Tests.Eviction
                 removed.Add(removedKey);
             }
 
-            CollectionAssert.AreEqual(expectedOrder, removed);
-            Assert.IsFalse(memCache.Keys.Any());
+            Assert.That(removed, Is.EqualTo(expectedOrder));
+            Assert.That(memCache.Keys.Any(), Is.False);
         }
     }
 }

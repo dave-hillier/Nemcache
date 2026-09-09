@@ -36,7 +36,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
 
             var getBuilder = new GetRequestBuilder("get", "key");
             var response = Dispatch(getBuilder.ToAsciiRequest());
-            Assert.AreEqual("VALUE key 0 5\r\nvalue\r\nEND\r\n", response.ToAsciiString());
+            Assert.That(response.ToAsciiString(), Is.EqualTo("VALUE key 0 5\r\nvalue\r\nEND\r\n"));
         }
 
         [Test]
@@ -51,7 +51,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
 
             var getBuilder = new GetRequestBuilder("get", "key");
             var response = Dispatch(getBuilder.ToAsciiRequest());
-            Assert.AreEqual("END\r\n", response.ToAsciiString());
+            Assert.That(response.ToAsciiString(), Is.EqualTo("END\r\n"));
         }
 
         [Test]
@@ -71,7 +71,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
 
             var getBuilder = new GetRequestBuilder("get", "key");
             var response = Dispatch(getBuilder.ToAsciiRequest());
-            Assert.AreEqual("END\r\n", response.ToAsciiString());
+            Assert.That(response.ToAsciiString(), Is.EqualTo("END\r\n"));
         }
     }
 }

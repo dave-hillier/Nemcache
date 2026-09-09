@@ -36,12 +36,12 @@ namespace Nemcache.Tests
             var notification = GetNotification();
 
             var store = notification as StoreNotification;
-            Assert.IsNotNull(store);
-            Assert.AreEqual("key", store.Key);
-            Assert.AreEqual("TestData", Encoding.ASCII.GetString(store.Data));
-            Assert.AreEqual((ulong) 123, store.Flags);
-            Assert.AreEqual(StoreOperation.Add, store.Operation);
-            Assert.AreEqual(new DateTime(1999, 1, 1), store.Expiry);
+            Assert.That(store, Is.Not.Null);
+            Assert.That(store.Key, Is.EqualTo("key"));
+            Assert.That(Encoding.ASCII.GetString(store.Data), Is.EqualTo("TestData"));
+            Assert.That(store.Flags, Is.EqualTo((ulong) 123));
+            Assert.That(store.Operation, Is.EqualTo(StoreOperation.Add));
+            Assert.That(store.Expiry, Is.EqualTo(new DateTime(1999, 1, 1)));
         }
 
         private void CreateObserverAndSubscribe()
@@ -57,12 +57,12 @@ namespace Nemcache.Tests
 
             var notification = GetNotification();
             var store = notification as StoreNotification;
-            Assert.IsNotNull(store);
-            Assert.AreEqual("key", store.Key);
-            Assert.AreEqual("TestData", Encoding.ASCII.GetString(store.Data));
-            Assert.AreEqual((ulong) 123, store.Flags);
-            Assert.AreEqual(StoreOperation.Store, store.Operation);
-            Assert.AreEqual(new DateTime(1999, 1, 1), store.Expiry);
+            Assert.That(store, Is.Not.Null);
+            Assert.That(store.Key, Is.EqualTo("key"));
+            Assert.That(Encoding.ASCII.GetString(store.Data), Is.EqualTo("TestData"));
+            Assert.That(store.Flags, Is.EqualTo((ulong) 123));
+            Assert.That(store.Operation, Is.EqualTo(StoreOperation.Store));
+            Assert.That(store.Expiry, Is.EqualTo(new DateTime(1999, 1, 1)));
         }
 
         [Test]
@@ -72,9 +72,9 @@ namespace Nemcache.Tests
             _cache.Remove("key");
 
             var storeNotification = GetNotification();
-            Assert.IsInstanceOf<StoreNotification>(storeNotification);
+            Assert.That(storeNotification, Is.InstanceOf<StoreNotification>());
             var removeNotifaction = GetNotification(1);
-            Assert.IsInstanceOf<RemoveNotification>(removeNotifaction);
+            Assert.That(removeNotifaction, Is.InstanceOf<RemoveNotification>());
         }
 
         [Test]
@@ -83,11 +83,11 @@ namespace Nemcache.Tests
             _cache.Store("key", 123, Encoding.ASCII.GetBytes("12345"), new DateTime(1999, 1, 1));
             _cache.Append("key", 123, new DateTime(1999, 1, 1), Encoding.ASCII.GetBytes("12345"), false);
 
-            Assert.AreEqual(2, _testObserver.Messages.Count);
+            Assert.That(_testObserver.Messages.Count, Is.EqualTo(2));
             var storeNotification1 = GetNotification();
-            Assert.IsInstanceOf<StoreNotification>(storeNotification1);
+            Assert.That(storeNotification1, Is.InstanceOf<StoreNotification>());
             var storeNotification2 = GetNotification();
-            Assert.IsInstanceOf<StoreNotification>(storeNotification2);
+            Assert.That(storeNotification2, Is.InstanceOf<StoreNotification>());
         }
 
         [Test]
@@ -96,11 +96,11 @@ namespace Nemcache.Tests
             _cache.Store("key", 123, Encoding.ASCII.GetBytes("12345"), new DateTime(1999, 1, 1));
             _cache.Replace("key", 123, new DateTime(1999, 1, 1), Encoding.ASCII.GetBytes("12345"));
 
-            Assert.AreEqual(2, _testObserver.Messages.Count);
+            Assert.That(_testObserver.Messages.Count, Is.EqualTo(2));
             var storeNotification1 = GetNotification();
-            Assert.IsInstanceOf<StoreNotification>(storeNotification1);
+            Assert.That(storeNotification1, Is.InstanceOf<StoreNotification>());
             var storeNotification2 = GetNotification(1);
-            Assert.IsInstanceOf<StoreNotification>(storeNotification2);
+            Assert.That(storeNotification2, Is.InstanceOf<StoreNotification>());
         }
 
         [Test]
@@ -109,11 +109,11 @@ namespace Nemcache.Tests
             _cache.Store("key", 123, Encoding.ASCII.GetBytes("12345"), new DateTime(1999, 1, 1));
             _cache.Clear();
 
-            Assert.AreEqual(2, _testObserver.Messages.Count);
+            Assert.That(_testObserver.Messages.Count, Is.EqualTo(2));
             var storeNotification = GetNotification();
-            Assert.IsInstanceOf<StoreNotification>(storeNotification);
+            Assert.That(storeNotification, Is.InstanceOf<StoreNotification>());
             var clearNotification = GetNotification(1);
-            Assert.IsInstanceOf<ClearNotification>(clearNotification);
+            Assert.That(clearNotification, Is.InstanceOf<ClearNotification>());
         }
 
         [Test]
@@ -122,11 +122,11 @@ namespace Nemcache.Tests
             _cache.Store("key", 123, Encoding.ASCII.GetBytes("12345"), new DateTime(1999, 1, 1));
             _cache.Touch("key", new DateTime(1999, 1, 1));
 
-            Assert.AreEqual(2, _testObserver.Messages.Count);
+            Assert.That(_testObserver.Messages.Count, Is.EqualTo(2));
             var storeNotification1 = GetNotification();
-            Assert.IsInstanceOf<StoreNotification>(storeNotification1);
+            Assert.That(storeNotification1, Is.InstanceOf<StoreNotification>());
             var storeNotification2 = GetNotification(1);
-            Assert.IsInstanceOf<TouchNotification>(storeNotification2);
+            Assert.That(storeNotification2, Is.InstanceOf<TouchNotification>());
         }
 
         // TODO: Cas tests

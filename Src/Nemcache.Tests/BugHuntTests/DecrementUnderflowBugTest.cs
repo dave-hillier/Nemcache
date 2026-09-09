@@ -34,8 +34,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             var builder = new MutateRequestBuilder("decr", "key", 10);
             var response = Dispatch(builder.ToAsciiRequest());
 
-            Assert.AreEqual("0\r\n", response.ToAsciiString(),
-                "Decrementing below zero should clamp to 0, not wrap around");
+            Assert.That(response.ToAsciiString(), Is.EqualTo("0\r\n"), "Decrementing below zero should clamp to 0, not wrap around");
         }
 
         [Test]
@@ -48,7 +47,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             var builder = new MutateRequestBuilder("decr", "key", 5);
             var response = Dispatch(builder.ToAsciiRequest());
 
-            Assert.AreEqual("0\r\n", response.ToAsciiString());
+            Assert.That(response.ToAsciiString(), Is.EqualTo("0\r\n"));
         }
     }
 }

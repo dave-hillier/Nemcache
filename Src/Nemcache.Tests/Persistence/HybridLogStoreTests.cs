@@ -47,14 +47,14 @@ namespace Nemcache.Tests.Persistence
             using (var store = new HybridLogStore(_fs, path, 1024))
             {
                 store.Put("k", new byte[] {1,2,3});
-                Assert.IsTrue(store.TryGet("k", out var val));
-                CollectionAssert.AreEqual(new byte[] {1,2,3}, val);
+                Assert.That(store.TryGet("k", out var val), Is.True);
+                Assert.That(val, Is.EqualTo(new byte[] {1,2,3}));
             }
 
             using (var store = new HybridLogStore(_fs, path, 1024))
             {
-                Assert.IsTrue(store.TryGet("k", out var value));
-                CollectionAssert.AreEqual(new byte[] {1,2,3}, value);
+                Assert.That(store.TryGet("k", out var value), Is.True);
+                Assert.That(value, Is.EqualTo(new byte[] {1,2,3}));
             }
         }
 
@@ -69,8 +69,8 @@ namespace Nemcache.Tests.Persistence
 
             using (var store = new HybridLogStore(_fs, path, 10))
             {
-                Assert.IsTrue(store.TryGet("a", out var value));
-                CollectionAssert.AreEqual(new byte[] {4,5,6,7,8,9}, value);
+                Assert.That(store.TryGet("a", out var value), Is.True);
+                Assert.That(value, Is.EqualTo(new byte[] {4,5,6,7,8,9}));
             }
         }
 
@@ -82,7 +82,7 @@ namespace Nemcache.Tests.Persistence
             {
                 store.Put("z", new byte[] {9});
                 store.Delete("z");
-                Assert.IsFalse(store.TryGet("z", out _));
+                Assert.That(store.TryGet("z", out _), Is.False);
             }
         }
 
@@ -108,7 +108,7 @@ namespace Nemcache.Tests.Persistence
             }
 
             var compactSize = new FileInfo(compactPath).Length;
-            Assert.Less(compactSize, originalSize);
+            Assert.That(compactSize, Is.LessThan(originalSize));
         }
 
         [Test]
@@ -124,12 +124,12 @@ namespace Nemcache.Tests.Persistence
                     lock (gate)
                     {
                         store.Put(key, new byte[] {1});
-                        Assert.IsTrue(store.TryGet(key, out _));
+                        Assert.That(store.TryGet(key, out _), Is.True);
                         store.Delete(key);
                     }
                 });
 
-                Assert.IsEmpty(store.Keys);
+                Assert.That(store.Keys, Is.Empty);
             }
         }
 
@@ -150,8 +150,8 @@ namespace Nemcache.Tests.Persistence
 
             using (var store = new HybridLogStore(_fs, path, 100))
             {
-                Assert.IsTrue(store.TryGet("good", out var val));
-                CollectionAssert.AreEqual(new byte[] {1,2,3}, val);
+                Assert.That(store.TryGet("good", out var val), Is.True);
+                Assert.That(val, Is.EqualTo(new byte[] {1,2,3}));
             }
         }
     }

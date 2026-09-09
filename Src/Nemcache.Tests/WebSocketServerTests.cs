@@ -52,8 +52,8 @@ namespace Nemcache.Tests
             var responseString = Encoding.UTF8.GetString(buffer.Array);
 
             // Expect an initial value - or no value if it doesnt exist?
-            Assert.AreEqual(WebSocketMessageType.Text, response.MessageType);
-            Assert.AreEqual("{\"subscription\":\"mykey\",\"response\":\"OK\"}", responseString.Trim('\0'));
+            Assert.That(response.MessageType, Is.EqualTo(WebSocketMessageType.Text));
+            Assert.That(responseString.Trim('\0'), Is.EqualTo("{\"subscription\":\"mykey\",\"response\":\"OK\"}"));
         }
 
         [Test]
@@ -71,8 +71,8 @@ namespace Nemcache.Tests
             var response = _clientWebSocket.ReceiveAsync(buffer, _cts.Token).Result;
             var responseString = Encoding.UTF8.GetString(buffer.Array);
 
-            Assert.AreEqual(WebSocketMessageType.Text, response.MessageType);
-            Assert.AreEqual("{\"subscription\":\"mykey\",\"response\":\"OK\"}", responseString.Trim('\0'));
+            Assert.That(response.MessageType, Is.EqualTo(WebSocketMessageType.Text));
+            Assert.That(responseString.Trim('\0'), Is.EqualTo("{\"subscription\":\"mykey\",\"response\":\"OK\"}"));
         }
 
         [Test]
@@ -91,8 +91,8 @@ namespace Nemcache.Tests
             var response = _clientWebSocket.ReceiveAsync(buffer, _cts.Token).Result;
             var responseString = Encoding.UTF8.GetString(buffer.Array);
 
-            Assert.AreEqual(WebSocketMessageType.Text, response.MessageType);
-            Assert.AreEqual("{\"subscription\":\"mykey\",\"response\":\"OK\"}", responseString.Trim('\0'));
+            Assert.That(response.MessageType, Is.EqualTo(WebSocketMessageType.Text));
+            Assert.That(responseString.Trim('\0'), Is.EqualTo("{\"subscription\":\"mykey\",\"response\":\"OK\"}"));
         }
 
         [Test]
@@ -116,8 +116,8 @@ namespace Nemcache.Tests
             var response = _clientWebSocket.ReceiveAsync(buffer, _cts.Token).Result;
             var responseString = Encoding.UTF8.GetString(buffer.Array);
 
-            Assert.AreEqual(WebSocketMessageType.Text, response.MessageType);
-            Assert.AreEqual("{\"subscription\":\"mykey\",\"response\":\"OK\"}", responseString.Trim('\0'));
+            Assert.That(response.MessageType, Is.EqualTo(WebSocketMessageType.Text));
+            Assert.That(responseString.Trim('\0'), Is.EqualTo("{\"subscription\":\"mykey\",\"response\":\"OK\"}"));
         }
 
         [Test]
@@ -140,10 +140,10 @@ namespace Nemcache.Tests
                 var resp2 = other.ReceiveAsync(buffer2, _cts.Token).Result;
                 var str2 = Encoding.UTF8.GetString(buffer2.Array);
 
-                Assert.AreEqual(WebSocketMessageType.Text, resp1.MessageType);
-                Assert.AreEqual(WebSocketMessageType.Text, resp2.MessageType);
-                Assert.AreEqual("{\"subscription\":\"mykey\",\"response\":\"OK\"}", str1.Trim('\0'));
-                Assert.AreEqual("{\"subscription\":\"mykey\",\"response\":\"OK\"}", str2.Trim('\0'));
+                Assert.That(resp1.MessageType, Is.EqualTo(WebSocketMessageType.Text));
+                Assert.That(resp2.MessageType, Is.EqualTo(WebSocketMessageType.Text));
+                Assert.That(str1.Trim('\0'), Is.EqualTo("{\"subscription\":\"mykey\",\"response\":\"OK\"}"));
+                Assert.That(str2.Trim('\0'), Is.EqualTo("{\"subscription\":\"mykey\",\"response\":\"OK\"}"));
             }
         }
 

@@ -41,7 +41,7 @@ namespace Nemcache.Comms.IntegrationTest
             
             var webClient = new WebClient();
             var response = webClient.DownloadString(new Uri("http://localhost:44444/cache/test"));
-            Assert.AreEqual("Response", response);
+            Assert.That(response, Is.EqualTo("Response"));
         }
 
         [Test]
@@ -56,10 +56,10 @@ namespace Nemcache.Comms.IntegrationTest
             }
             catch (WebException ex)
             {
-                Assert.IsTrue(ex.Message.Contains("404"));
+                Assert.That(ex.Message.Contains("404"), Is.True);
                 thrown = true;
             }
-            Assert.IsTrue(thrown);
+            Assert.That(thrown, Is.True);
         }
     }
 

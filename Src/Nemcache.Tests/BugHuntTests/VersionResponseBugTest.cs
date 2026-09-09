@@ -30,8 +30,7 @@ namespace Nemcache.Tests.RequestHandlerIntegrationTests
             var responseStr = response.ToAsciiString();
 
             // Per memcached protocol, the response must begin with "VERSION "
-            Assert.IsTrue(responseStr.StartsWith("VERSION "),
-                $"Version response should start with 'VERSION ' prefix but was: '{responseStr}'");
+            Assert.That(responseStr.StartsWith("VERSION "), Is.True, $"Version response should start with 'VERSION ' prefix but was: '{responseStr}'");
         }
     }
 }
